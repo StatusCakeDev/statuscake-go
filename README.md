@@ -1,4 +1,4 @@
-# statuscake-go
+# statuscake-go ![test](https://github.com/StatusCakeDev/statuscake-go/workflows/test/badge.svg)
 
 The [Go](https://golang.org/) implementation of the [StatusCake
 API](https://www.statuscake.com/api/v1) client. Documentation for this library
