@@ -1,0 +1,32 @@
+{
+  "data": [
+    {
+      "id": "1",
+      "paused": false,
+      "name": "google.com",
+      "website_url": "https://www.google.com",
+      "test_type": "HTTP",
+      "check_rate": 60,
+      "contact_groups": [],
+      "status": "up",
+      "tags": [],
+      "uptime": 0
+    },
+    {
+      "id": "2",
+      "paused": true,
+      "name": "statuscake.com",
+      "website_url": "https://www.statuscake.com",
+      "test_type": "HTTP",
+      "check_rate": 3600,
+      "contact_groups": [
+        "123"
+      ],
+      "status": "up",
+      "tags": [
+        "testing"
+      ],
+      "uptime": 100
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "data": {
+    "id": "2",
+    "paused": true,
+    "name": "statuscake.com",
+    "test_type": "HTTP",
+    "website_url": "https://www.statuscake.com",
+    "check_rate": 3600,
+    "confirmation": 6,
+    "contact_groups": [
+      "123"
+    ],
+    "do_not_find": true,
+    "enable_ssl_alert": true,
+    "follow_redirects": true,
+    "host": "AWS",
+    "servers": [
+      {
+        "description": "Singapore",
+        "region": "Singapore",
+        "ipv4": "128.199.222.65",
+        "region_code": "singapore",
+        "status": "up"
+      },
+      {
+        "description": "United Kingdom, London - 5",
+        "region": "United Kingdom / London",
+        "ipv4": "178.62.78.199",
+        "ipv6": "2a03:b0c0:1:d0::5e:f001",
+        "region_code": "london",
+        "status": "down"
+      },
+      {
+        "description": "Germany, Frankfurt - 10",
+        "region": "Germany / Frankfurt",
+        "ipv4": "139.59.152.248",
+        "region_code": "frankfurt",
+        "status": "up"
+      }
+    ],
+    "processing": false,
+    "status": "up",
+    "tags": [
+      "testing"
+    ],
+    "timeout": 10,
+    "trigger_rate": 2,
+    "uptime": 100,
+    "use_jar": true,
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1700.102 Safari/537.3",
+    "custom_header": "Authorization: Bearer abc123",
+    "dns_ips": [
+      "1.1.1.1"
+    ],
+    "dns_server": "dns.statuscake.com",
+    "final_endpoint": "https://www.statuscake.com/redirected",
+    "find_string": "Hello, world",
+    "last_tested_at": "2020-10-26T13:00:00+00:00",
+    "port": 123,
+    "post_body": "{\"key\":\"value\"}",
+    "post_raw": "key=value",
+    "status_codes": [
+      "200",
+      "201"
+    ]
+  }
+}

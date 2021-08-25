@@ -1,0 +1,10 @@
+{
+  "data": [
+    {
+      "id": "2",
+      "status": "down",
+      "status_code": 404,
+      "triggered_at": "2021-01-28T13:36:00+00:00"
+    }
+  ]
+}

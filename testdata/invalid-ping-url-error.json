@@ -1,0 +1,8 @@
+{
+  "message": "The provided parameters are invalid. Check the errors output for details information.",
+  "errors": {
+    "ping_url": [
+      "Ping Url is not a valid URL"
+    ]
+  }
+}

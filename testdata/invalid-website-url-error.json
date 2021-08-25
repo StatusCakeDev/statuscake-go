@@ -1,0 +1,8 @@
+{
+  "message": "The provided parameters are invalid. Check the errors output for details information.",
+  "errors": {
+    "website_url": [
+      "Website Url is not a valid URL"
+    ]
+  }
+}
