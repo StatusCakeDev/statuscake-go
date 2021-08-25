@@ -1,7 +1,8 @@
 # statuscake-go
 
-This README outlines the details of collaborating on this Go package. A short
-introduction of this package could easily go here.
+The [Go](https://golang.org/) implementation of the [StatusCake
+API](https://www.statuscake.com/api/v1) client. Documentation for this library
+can be found [here](https://www.statuscake.com/api/v1).
 
 ## Prerequisites
 
