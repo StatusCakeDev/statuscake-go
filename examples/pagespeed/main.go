@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/StatusCakeDev/statuscake-go"
+	"github.com/StatusCakeDev/statuscake-go/credentials"
 )
 
 func main() {
@@ -15,7 +16,8 @@ func main() {
 		panic("STATUSCAKE_API_TOKEN not set in environment")
 	}
 
-	client := statuscake.NewAPIClient(apiToken)
+	bearer := credentials.NewBearerWithStaticToken(apiToken)
+	client := statuscake.NewClient(statuscake.WithRequestCredentials(bearer))
 
 	res, _ := client.CreateContactGroup(context.Background()).
 		Name("Development Team").
@@ -27,15 +29,15 @@ func main() {
 	res, err := client.CreatePagespeedTest(context.Background()).
 		Name("statuscake.com").
 		WebsiteURL("https://www.statuscake.com").
-		LocationISO(statuscake.PagespeedTestLocationISOUnitedKingdom).
 		CheckRate(statuscake.PagespeedTestCheckRateOneDay).
-		ContactGroups([]string{
-			groupID,
-		}).
 		AlertSmaller(10).
 		AlertBigger(100).
 		AlertSlower(1000).
+		ContactGroups([]string{
+			groupID,
+		}).
 		Paused(true).
+		Region(statuscake.PagespeedTestRegionUnitedKingdom).
 		Execute()
 	if err != nil {
 		printError(err)
@@ -43,14 +45,14 @@ func main() {
 	}
 
 	testID := res.Data.NewID
-	fmt.Printf("PAGESPEED TEST ID: %s\n", testID)
+	fmt.Printf("PAGESPEED CHECK ID: %s\n", testID)
 
 	test, err := client.GetPagespeedTest(context.Background(), testID).Execute()
 	if err != nil {
 		printError(err)
 	}
 
-	fmt.Printf("PAGESPEED TEST: %+v\n", test.Data)
+	fmt.Printf("PAGESPEED CHECK: %+v\n", test.Data)
 
 	err = client.UpdatePagespeedTest(context.Background(), testID).
 		CheckRate(statuscake.PagespeedTestCheckRateOneHour).
@@ -66,23 +68,23 @@ func main() {
 		printError(err)
 	}
 
-	fmt.Printf("UPDATED PAGESPEED TEST: %+v\n", test.Data)
+	fmt.Printf("UPDATED PAGESPEED CHECK: %+v\n", test.Data)
 
 	tests, err := client.ListPagespeedTests(context.Background()).Execute()
 	if err != nil {
 		printError(err)
 	}
 
-	fmt.Printf("PAGESPEED TESTS: %+v\n", tests.Data)
+	fmt.Printf("PAGESPEED CHECKS: %+v\n", tests.Data)
 
-	history, err := client.ListPagespeedTestHistory(context.Background(), testID).
+	results, err := client.ListPagespeedTestHistory(context.Background(), testID).
 		Days(4).
 		Execute()
 	if err != nil {
 		printError(err)
 	}
 
-	fmt.Printf("PAGESPEED TEST HISTORY: %+v\n", history.Data)
+	fmt.Printf("PAGESPEED CHECK HISTORY: %+v\n", results.Data)
 
 	err = client.DeletePagespeedTest(context.Background(), testID).Execute()
 	if err != nil {

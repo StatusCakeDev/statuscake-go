@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -39,30 +39,31 @@ type ContactGroup struct {
 	ID string `json:"id"`
 	// Name of the contact group
 	Name string `json:"name"`
-	// URL or IP address of an endpoint to push uptime events. Currently this only supports HTTP GET endpoints
-	PingURL *string `json:"ping_url,omitempty"`
 	// List of email addresses
 	EmailAddresses []string `json:"email_addresses"`
-	// List of international format mobile phone numbers
-	MobileNumbers []string `json:"mobile_numbers"`
 	// List of configured integration IDs
 	Integrations []string `json:"integrations"`
+	// List of international format mobile phone numbers
+	MobileNumbers []string `json:"mobile_numbers"`
+	// URL or IP address of an endpoint to push uptime events. Currently this only supports HTTP GET endpoints
+	PingURL *string `json:"ping_url,omitempty"`
 }
 
 // NewContactGroup instantiates a new ContactGroup object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewContactGroup(id string, name string, emailAddresses []string, mobileNumbers []string, integrations []string) *ContactGroup {
+func NewContactGroup(id string, name string, emailAddresses []string, integrations []string, mobileNumbers []string) *ContactGroup {
 	return &ContactGroup{
 		ID:             id,
 		Name:           name,
 		EmailAddresses: emailAddresses,
-		MobileNumbers:  mobileNumbers,
 		Integrations:   integrations,
+		MobileNumbers:  mobileNumbers,
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o ContactGroup) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
@@ -71,17 +72,17 @@ func (o ContactGroup) MarshalJSON() ([]byte, error) {
 	if true {
 		toSerialize["name"] = o.Name
 	}
-	if o.PingURL != nil {
-		toSerialize["ping_url"] = o.PingURL
-	}
 	if true {
 		toSerialize["email_addresses"] = o.EmailAddresses
 	}
 	if true {
-		toSerialize["mobile_numbers"] = o.MobileNumbers
+		toSerialize["integrations"] = o.Integrations
 	}
 	if true {
-		toSerialize["integrations"] = o.Integrations
+		toSerialize["mobile_numbers"] = o.MobileNumbers
+	}
+	if o.PingURL != nil {
+		toSerialize["ping_url"] = o.PingURL
 	}
 	return json.Marshal(toSerialize)
 }

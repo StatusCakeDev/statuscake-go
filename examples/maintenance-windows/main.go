@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/StatusCakeDev/statuscake-go"
+	"github.com/StatusCakeDev/statuscake-go/credentials"
 )
 
 func main() {
@@ -16,14 +17,15 @@ func main() {
 		panic("STATUSCAKE_API_TOKEN not set in environment")
 	}
 
-	client := statuscake.NewAPIClient(apiToken)
+	bearer := credentials.NewBearerWithStaticToken(apiToken)
+	client := statuscake.NewClient(statuscake.WithRequestCredentials(bearer))
 
 	t := time.Now()
 	res, err := client.CreateMaintenanceWindow(context.Background()).
 		Name("Weekly maintenance").
-		Start(t).
 		End(t.Add(time.Hour * 3)).
 		RepeatInterval(statuscake.MaintenanceWindowRepeatIntervalWeekly).
+		Start(t).
 		Tags([]string{"testing"}).
 		Timezone("UTC").
 		Execute()
@@ -44,9 +46,9 @@ func main() {
 
 	err = client.UpdateMaintenanceWindow(context.Background(), windowID).
 		Name("Monthly maintenance").
-		Start(t).
 		End(t.Add(time.Hour * 48)).
 		RepeatInterval(statuscake.MaintenanceWindowRepeatIntervalMonthly).
+		Start(t).
 		Execute()
 	if err != nil {
 		printError(err)

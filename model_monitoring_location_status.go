@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -44,6 +44,7 @@ const (
 	MonitoringLocationStatusUp MonitoringLocationStatus = "up"
 )
 
+// Unmarshal JSON data into any of the pointers in the type.
 func (v *MonitoringLocationStatus) UnmarshalJSON(src []byte) error {
 	var value string
 	if err := json.Unmarshal(src, &value); err != nil {
@@ -64,7 +65,7 @@ func (v MonitoringLocationStatus) Valid() bool {
 	return v == MonitoringLocationStatusDown || v == MonitoringLocationStatusUp
 }
 
-// MonitoringLocationStatusValues returns the values of MonitoringLocationStatus
+// MonitoringLocationStatusValues returns the values of MonitoringLocationStatus.
 func MonitoringLocationStatusValues() []string {
 	return []string{
 		"down",

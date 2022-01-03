@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -35,8 +35,11 @@ import (
 
 // PagespeedTestHistoryDataAggregatedFilesize Aggregate filesize (kb)
 type PagespeedTestHistoryDataAggregatedFilesize struct {
+	// Minimum filesize across all checks
 	Min float32 `json:"min"`
+	// Maximum filesize across all checks
 	Max float32 `json:"max"`
+	// Average filesize acress all checks
 	Avg float32 `json:"avg"`
 }
 
@@ -52,6 +55,7 @@ func NewPagespeedTestHistoryDataAggregatedFilesize(min float32, max float32, avg
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o PagespeedTestHistoryDataAggregatedFilesize) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {

@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -35,21 +35,23 @@ import (
 
 // PagespeedTestHistoryData struct for PagespeedTestHistoryData
 type PagespeedTestHistoryData struct {
-	Aggregated PagespeedTestHistoryDataAggregated    `json:"aggregated"`
-	Results    map[string]PagespeedTestHistoryResult `json:"results"`
+	Aggregated PagespeedTestHistoryDataAggregated `json:"aggregated"`
+	// List of individual results
+	Results []PagespeedTestHistoryResult `json:"results"`
 }
 
 // NewPagespeedTestHistoryData instantiates a new PagespeedTestHistoryData object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewPagespeedTestHistoryData(aggregated PagespeedTestHistoryDataAggregated, results map[string]PagespeedTestHistoryResult) *PagespeedTestHistoryData {
+func NewPagespeedTestHistoryData(aggregated PagespeedTestHistoryDataAggregated, results []PagespeedTestHistoryResult) *PagespeedTestHistoryData {
 	return &PagespeedTestHistoryData{
 		Aggregated: aggregated,
 		Results:    results,
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o PagespeedTestHistoryData) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {

@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -35,14 +35,14 @@ import (
 
 // PagespeedTestStats struct for PagespeedTestStats
 type PagespeedTestStats struct {
-	// Latest recorded loadtime (ms)
-	Loadtime int32 `json:"loadtime"`
 	// Latest recorded filesize (kb)
 	Filesize float32 `json:"filesize"`
+	// Whether the latest check has an issue
+	HasIssue bool `json:"has_issue"`
+	// Latest recorded loadtime (ms)
+	Loadtime int32 `json:"loadtime"`
 	// Latest recorded request count
 	Requests int32 `json:"requests"`
-	// Whether the latest test has an issue
-	HasIssue bool `json:"has_issue"`
 	// Latest recorded issue
 	LatestIssue *string `json:"latest_issue,omitempty"`
 }
@@ -51,28 +51,29 @@ type PagespeedTestStats struct {
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewPagespeedTestStats(loadtime int32, filesize float32, requests int32, hasIssue bool) *PagespeedTestStats {
+func NewPagespeedTestStats(filesize float32, hasIssue bool, loadtime int32, requests int32) *PagespeedTestStats {
 	return &PagespeedTestStats{
-		Loadtime: loadtime,
 		Filesize: filesize,
-		Requests: requests,
 		HasIssue: hasIssue,
+		Loadtime: loadtime,
+		Requests: requests,
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o PagespeedTestStats) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if true {
-		toSerialize["loadtime"] = o.Loadtime
-	}
 	if true {
 		toSerialize["filesize"] = o.Filesize
 	}
 	if true {
-		toSerialize["requests"] = o.Requests
+		toSerialize["has_issue"] = o.HasIssue
 	}
 	if true {
-		toSerialize["has_issue"] = o.HasIssue
+		toSerialize["loadtime"] = o.Loadtime
+	}
+	if true {
+		toSerialize["requests"] = o.Requests
 	}
 	if o.LatestIssue != nil {
 		toSerialize["latest_issue"] = o.LatestIssue

@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -35,8 +35,11 @@ import (
 
 // PagespeedTestHistoryDataAggregatedLoadtime Aggregate loadtime (ms)
 type PagespeedTestHistoryDataAggregatedLoadtime struct {
-	Min int64   `json:"min"`
-	Max int64   `json:"max"`
+	// Minimum loadtime across all checks
+	Min int64 `json:"min"`
+	// Maximum loadtime across all checks
+	Max int64 `json:"max"`
+	// Average loadtime acress all checks
 	Avg float64 `json:"avg"`
 }
 
@@ -52,6 +55,7 @@ func NewPagespeedTestHistoryDataAggregatedLoadtime(min int64, max int64, avg flo
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o PagespeedTestHistoryDataAggregatedLoadtime) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {

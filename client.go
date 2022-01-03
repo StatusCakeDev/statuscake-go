@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -47,24 +47,52 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
-	"runtime"
 	"strings"
 	"time"
-	"unicode/utf8"
-
-	"golang.org/x/oauth2"
 )
 
 var (
 	jsonCheck = regexp.MustCompile(`(?i:(?:application|text)/(?:vnd\.[^;]+\+)?json)`)
 	xmlCheck  = regexp.MustCompile(`(?i:(?:application|text)/xml)`)
+
+	// ContextServerIndex uses a server configuration from the index.
+	ContextServerIndex = contextKey("serverIndex")
+
+	// ContextOperationServerIndices uses a server configuration from the index mapping.
+	ContextOperationServerIndices = contextKey("serverOperationIndices")
+
+	// ContextServerVariables overrides a server configuration variables.
+	ContextServerVariables = contextKey("serverVariables")
+
+	// ContextOperationServerVariables overrides a server configuration variables using operation specific values.
+	ContextOperationServerVariables = contextKey("serverOperationVariables")
 )
 
-// APIClient manages communication with the StatusCake API API v1.0.0-beta.1
-// In most cases there should be only one, shared, APIClient.
-type APIClient struct {
-	cfg    *Configuration
-	common service // Reuse a single struct instead of allocating one for each service on the heap.
+// contextKeys are used to identify the type of value in the context. Since
+// these are strings, it is possible to get a short description of the context
+// key for logging and debugging using key.String().
+type contextKey string
+
+func (c contextKey) String() string {
+	switch c {
+	case ContextServerIndex:
+		return "server index"
+	case ContextOperationServerIndices:
+		return "server operation indicies"
+	case ContextServerVariables:
+		return "server variables"
+	case ContextOperationServerVariables:
+		return "server operation variables"
+	default:
+		return "unknown"
+	}
+}
+
+// Client manages communication with the StatusCake API API v1.0.0-beta.1
+// In most cases there should be only one, shared, Client.
+type Client struct {
+	options options
+	common  service // Reuse a single struct instead of allocating one for each service on the heap.
 
 	// API Services
 	// These are embedded so that from a user perspective they do not appear as
@@ -72,42 +100,32 @@ type APIClient struct {
 	// specification this will not cause function conflicts.
 	ContactGroupsAPI
 	LocationsAPI
+	MaintenanceWindowsAPI
 	PagespeedAPI
 	SslAPI
 	UptimeAPI
 }
 
 type service struct {
-	client *APIClient
+	client *Client
 }
 
-// NewAPIClient creates a new API client. It requires an API token to
-// authenticate with each endpoint. The returned client exposes configuration
-// describing the application and, optionally, a custom http.Client to allow
-// for advance features and overrides.
-func NewAPIClient(apiToken string) *APIClient {
-	cfg := NewConfiguration()
-	cfg.UserAgent = getUserAgent()
-
-	// Add the API token to the HTTP headers of each request.
-	cfg.AddDefaultHeader("Authorization", "Bearer "+apiToken)
-
-	c := &APIClient{}
-	c.cfg = cfg
+// NewClient creates a new API client. Additional options may be given to
+// override default configuration values.
+func NewClient(opts ...Option) *Client {
+	c := &Client{}
+	c.options = applyOptions(opts)
 	c.common.client = c
 
 	// API Services
 	c.ContactGroupsAPI = (*ContactGroupsService)(&c.common)
 	c.LocationsAPI = (*LocationsService)(&c.common)
+	c.MaintenanceWindowsAPI = (*MaintenanceWindowsService)(&c.common)
 	c.PagespeedAPI = (*PagespeedService)(&c.common)
 	c.SslAPI = (*SslService)(&c.common)
 	c.UptimeAPI = (*UptimeService)(&c.common)
 
 	return c
-}
-
-func getUserAgent() string {
-	return "statuscake-go" + " Go/" + runtime.Version()
 }
 
 // selectHeaderContentType select a content type from the available list.
@@ -157,8 +175,43 @@ func parameterToJson(obj interface{}) (string, error) {
 }
 
 // callAPI wraps debug information around a HTTP request.
-func (c *APIClient) callAPI(request *http.Request) (*http.Response, error) {
-	if c.cfg.Debug {
+func (c *Client) callAPI(request *http.Request) (*http.Response, error) {
+	if c.options.disableRetry {
+		return c.do(request)
+	}
+
+	ctx := request.Context()
+	backoffIdx := 0
+
+	var res *http.Response
+	var err error
+
+	for backoffIdx <= c.options.maxRetries {
+		res, err = c.do(request)
+		if backoffIdx == c.options.maxRetries {
+			break
+		}
+		if err != nil {
+			backoffFor := c.options.backoff.Backoff(backoffIdx)
+
+			timer := time.NewTimer(backoffFor)
+			select {
+			case <-timer.C:
+				backoffIdx++
+				continue
+			case <-ctx.Done():
+				timer.Stop()
+			}
+		}
+
+		return res, err
+	}
+
+	return res, fmt.Errorf("retries exceeded: %w", err)
+}
+
+func (c *Client) do(request *http.Request) (*http.Response, error) {
+	if c.options.debug {
 		dump, err := httputil.DumpRequestOut(request, true)
 		if err != nil {
 			return nil, err
@@ -167,34 +220,25 @@ func (c *APIClient) callAPI(request *http.Request) (*http.Response, error) {
 		log.Printf("\n%s\n", string(dump))
 	}
 
-	resp, err := c.cfg.HTTPClient.Do(request)
+	res, err := c.options.client.Do(request)
 	if err != nil {
-		return resp, err
+		return res, err
 	}
 
-	if c.cfg.Debug {
-		dump, err := httputil.DumpResponse(resp, true)
+	if c.options.debug {
+		dump, err := httputil.DumpResponse(res, true)
 		if err != nil {
-			return resp, err
+			return res, err
 		}
 
 		log.Printf("\n%s\n", string(dump))
 	}
 
-	return resp, err
-}
-
-// GetConfig allows modification of underlying configuration for alternate
-// implementations and testing.
-//
-// Caution: modifying the configuration while live can cause data races and
-// potentially unwanted behavior.
-func (c *APIClient) GetConfig() *Configuration {
-	return c.cfg
+	return res, err
 }
 
 // prepareRequest build the request.
-func (c *APIClient) prepareRequest(ctx context.Context, path string, method string, postBody interface{}, headerParams map[string]string, queryParams url.Values, formParams url.Values, fieldName string, fileName string, fileBytes []byte) (req *http.Request, err error) {
+func (c *Client) prepareRequest(ctx context.Context, path string, method string, postBody interface{}, headerParams map[string]string, queryParams url.Values, formParams url.Values, fieldName string, fileName string, fileBytes []byte) (req *http.Request, err error) {
 	var body *bytes.Buffer
 
 	// Detect postBody type and post.
@@ -271,16 +315,6 @@ func (c *APIClient) prepareRequest(ctx context.Context, path string, method stri
 		return nil, err
 	}
 
-	// Override request host, if applicable
-	if c.cfg.Host != "" {
-		url.Host = c.cfg.Host
-	}
-
-	// Override request scheme, if applicable
-	if c.cfg.Scheme != "" {
-		url.Scheme = c.cfg.Scheme
-	}
-
 	// Adding Query Param
 	query := url.Query()
 	for k, v := range queryParams {
@@ -291,6 +325,17 @@ func (c *APIClient) prepareRequest(ctx context.Context, path string, method stri
 
 	// Encode the parameters.
 	url.RawQuery = query.Encode()
+
+	// Override request host. This can be useful for testing purposes.
+	if c.options.host != "" {
+		urlOverride, err := url.Parse(c.options.host)
+		if err != nil {
+			return nil, err
+		}
+
+		url.Scheme = urlOverride.Scheme
+		url.Host = urlOverride.Host
+	}
 
 	// Generate a new request. It is imperitive the check for `nil` is done here.
 	// It may appear that if body is never initialised then it will be `nil` but
@@ -314,46 +359,34 @@ func (c *APIClient) prepareRequest(ctx context.Context, path string, method stri
 		req.Header = headers
 	}
 
-	// Add the user agent to the request.
-	req.Header.Add("User-Agent", c.cfg.UserAgent)
-
 	if ctx != nil {
-		// add context to the request
 		req = req.WithContext(ctx)
-
-		// Walk through any authentication.
-
-		// OAuth2 authentication
-		if tok, ok := ctx.Value(ContextOAuth2).(oauth2.TokenSource); ok {
-			// We were able to grab an oauth2 token from the context
-			var latestToken *oauth2.Token
-			if latestToken, err = tok.Token(); err != nil {
-				return nil, err
-			}
-
-			latestToken.SetAuthHeader(req)
-		}
-
-		// Basic HTTP Authentication
-		if auth, ok := ctx.Value(ContextBasicAuth).(BasicAuth); ok {
-			req.SetBasicAuth(auth.UserName, auth.Password)
-		}
-
-		// AccessToken Authentication
-		if auth, ok := ctx.Value(ContextAccessToken).(string); ok {
-			req.Header.Add("Authorization", "Bearer "+auth)
-		}
-
 	}
 
-	for header, value := range c.cfg.DefaultHeader {
-		req.Header.Add(header, value)
+	if c.options.credentials != nil {
+		c.options.credentials.AddCredentials(req)
+	}
+
+	// Add the user agent to the request.
+	req.Header.Add(http.CanonicalHeaderKey("User-Agent"), c.options.userAgent)
+
+	// Apply default, static, headers. These will be appended to existing headers
+	// set by client options such as authentication credentials, and any header
+	// parameters previously applied to the request.
+	//
+	// Header names are taken verbatim from the consumer and not transoformed
+	// into canonical names. If it is important that headers are named in the
+	// correct HTTP format this must be done by the caller.
+	for header, values := range c.options.headers {
+		for _, value := range values {
+			req.Header.Add(header, value)
+		}
 	}
 
 	return req, nil
 }
 
-func (c *APIClient) decode(v interface{}, b []byte, contentType string) error {
+func (c *Client) decode(v interface{}, b []byte, contentType string) error {
 	if len(b) == 0 {
 		return nil
 	}
@@ -421,12 +454,6 @@ func addFile(w *multipart.Writer, fieldName, path string) error {
 	return err
 }
 
-// errorf is a wrapper around fmt.Errorf necessary to prevent unused import
-// from individual api files.
-func errorf(format string, v ...interface{}) error {
-	return fmt.Errorf(format, v...)
-}
-
 // Set request body from an interface{}
 func setBody(body interface{}, contentType string) (bodyBuf *bytes.Buffer, err error) {
 	if bodyBuf == nil {
@@ -482,56 +509,83 @@ func detectContentType(body interface{}) string {
 	return contentType
 }
 
-// Ripped from https://github.com/gregjones/httpcache/blob/master/httpcache.go
-type cacheControl map[string]string
-
-func parseCacheControl(headers http.Header) cacheControl {
-	cc := cacheControl{}
-	ccHeader := headers.Get("Cache-Control")
-	for _, part := range strings.Split(ccHeader, ",") {
-		part = strings.Trim(part, " ")
-		if part == "" {
-			continue
-		}
-		if strings.ContainsRune(part, '=') {
-			keyval := strings.Split(part, "=")
-			cc[strings.Trim(keyval[0], " ")] = strings.Trim(keyval[1], ",")
-		} else {
-			cc[part] = ""
-		}
-	}
-	return cc
+// ServerURL returns URL based on server settings.
+func (c *Client) ServerURL(index int, variables map[string]string) (string, error) {
+	return c.options.servers.URL(index, variables)
 }
 
-// CacheExpires helper function to determine remaining time before repeating a request.
-func CacheExpires(r *http.Response) time.Time {
-	// Figure out when the cache expires.
-	var expires time.Time
-	now, err := time.Parse(time.RFC1123, r.Header.Get("date"))
-	if err != nil {
-		return time.Now()
+// ServerURLWithContext returns a new server URL given an endpoint.
+func (c *Client) ServerURLWithContext(ctx context.Context, endpoint string) (string, error) {
+	sc, ok := c.options.operationServers[endpoint]
+	if !ok {
+		sc = c.options.servers
 	}
-	respCacheControl := parseCacheControl(r.Header)
 
-	if maxAge, ok := respCacheControl["max-age"]; ok {
-		lifetime, err := time.ParseDuration(maxAge + "s")
-		if err != nil {
-			expires = now
-		} else {
-			expires = now.Add(lifetime)
+	if ctx == nil {
+		return sc.URL(0, nil)
+	}
+
+	index, err := getServerOperationIndex(ctx, endpoint)
+	if err != nil {
+		return "", err
+	}
+
+	variables, err := getServerOperationVariables(ctx, endpoint)
+	if err != nil {
+		return "", err
+	}
+
+	return sc.URL(index, variables)
+}
+
+func getServerIndex(ctx context.Context) (int, error) {
+	si := ctx.Value(ContextServerIndex)
+	if si != nil {
+		if index, ok := si.(int); ok {
+			return index, nil
 		}
-	} else {
-		expiresHeader := r.Header.Get("Expires")
-		if expiresHeader != "" {
-			expires, err = time.Parse(time.RFC1123, expiresHeader)
-			if err != nil {
-				expires = now
+		return 0, fmt.Errorf("Invalid type %T should be int", si)
+	}
+	return 0, nil
+}
+
+func getServerOperationIndex(ctx context.Context, endpoint string) (int, error) {
+	osi := ctx.Value(ContextOperationServerIndices)
+	if osi != nil {
+		if operationIndices, ok := osi.(map[string]int); !ok {
+			return 0, fmt.Errorf("Invalid type %T should be map[string]int", osi)
+		} else {
+			index, ok := operationIndices[endpoint]
+			if ok {
+				return index, nil
 			}
 		}
 	}
-	return expires
+	return getServerIndex(ctx)
 }
 
-func strlen(s string) int {
-	return utf8.RuneCountInString(s)
+func getServerVariables(ctx context.Context) (map[string]string, error) {
+	sv := ctx.Value(ContextServerVariables)
+	if sv != nil {
+		if variables, ok := sv.(map[string]string); ok {
+			return variables, nil
+		}
+		return nil, fmt.Errorf("ctx value of ContextServerVariables has invalid type %T should be map[string]string", sv)
+	}
+	return nil, nil
+}
+
+func getServerOperationVariables(ctx context.Context, endpoint string) (map[string]string, error) {
+	osv := ctx.Value(ContextOperationServerVariables)
+	if osv != nil {
+		if operationVariables, ok := osv.(map[string]map[string]string); !ok {
+			return nil, fmt.Errorf("ctx value of ContextOperationServerVariables has invalid type %T should be map[string]map[string]string", osv)
+		} else {
+			variables, ok := operationVariables[endpoint]
+			if ok {
+				return variables, nil
+			}
+		}
+	}
+	return getServerVariables(ctx)
 }

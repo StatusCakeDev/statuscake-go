@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/StatusCakeDev/statuscake-go"
+	"github.com/StatusCakeDev/statuscake-go/credentials"
 )
 
 func main() {
@@ -16,7 +17,8 @@ func main() {
 		panic("STATUSCAKE_API_TOKEN not set in environment")
 	}
 
-	client := statuscake.NewAPIClient(apiToken)
+	bearer := credentials.NewBearerWithStaticToken(apiToken)
+	client := statuscake.NewClient(statuscake.WithRequestCredentials(bearer))
 
 	res, _ := client.CreateContactGroup(context.Background()).
 		Name("Development Team").
@@ -28,9 +30,9 @@ func main() {
 	t := time.Now()
 	res, _ = client.CreateMaintenanceWindow(context.Background()).
 		Name("Saturday maintenance").
-		Start(t).
 		End(t.Add(time.Hour * 3)).
 		RepeatInterval(statuscake.MaintenanceWindowRepeatIntervalWeekly).
+		Start(t).
 		Tags([]string{"testing"}).
 		Timezone("UTC").
 		Execute()
@@ -62,14 +64,14 @@ func main() {
 	}
 
 	testID := res.Data.NewID
-	fmt.Printf("UPTIME TEST ID: %s\n", testID)
+	fmt.Printf("UPTIME CHECK ID: %s\n", testID)
 
 	test, err := client.GetUptimeTest(context.Background(), testID).Execute()
 	if err != nil {
 		printError(err)
 	}
 
-	fmt.Printf("UPTIME TEST: %+v\n", test.Data)
+	fmt.Printf("UPTIME CHECK: %+v\n", test.Data)
 
 	err = client.UpdateUptimeTest(context.Background(), testID).
 		CheckRate(statuscake.UptimeTestCheckRateThirtyMinutes).
@@ -88,23 +90,30 @@ func main() {
 		printError(err)
 	}
 
-	fmt.Printf("UPDATED UPTIME TEST: %+v\n", test.Data)
+	fmt.Printf("UPDATED UPTIME CHECK: %+v\n", test.Data)
 
 	tests, err := client.ListUptimeTests(context.Background()).Execute()
 	if err != nil {
 		printError(err)
 	}
 
-	fmt.Printf("UPTIME TESTS: %+v\n", tests.Data)
+	fmt.Printf("UPTIME CHECKS: %+v\n", tests.Data)
 
-	history, err := client.ListUptimeTestHistory(context.Background(), testID).Execute()
+	results, err := client.ListUptimeTestHistory(context.Background(), testID).Execute()
 	if err != nil {
 		printError(err)
 	}
 
-	fmt.Printf("UPTIME TEST HISTORY: %+v\n", history.Data)
+	fmt.Printf("UPTIME CHECK HISTORY: %+v\n", results.Data)
 
-	alerts, err := client.ListSentAlerts(context.Background(), testID).Execute()
+	periods, err := client.ListUptimeTestPeriods(context.Background(), testID).Execute()
+	if err != nil {
+		printError(err)
+	}
+
+	fmt.Printf("UPTIME CHECK PERIODS: %+v\n", periods.Data)
+
+	alerts, err := client.ListUptimeTestAlerts(context.Background(), testID).Execute()
 	if err != nil {
 		printError(err)
 	}

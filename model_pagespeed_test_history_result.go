@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -38,51 +38,52 @@ import (
 type PagespeedTestHistoryResult struct {
 	// Creation time of the result (RFC3339 format)
 	Created time.Time `json:"created_at"`
-	// Recorded loadtime (ms)
-	Loadtime int64 `json:"loadtime"`
 	// Recorded filesize (kb)
 	Filesize float32 `json:"filesize"`
+	// Location of the saved HAR file
+	HARLocation string `json:"har_location"`
+	// Recorded loadtime (ms)
+	Loadtime int64 `json:"loadtime"`
 	// Recorded request count
 	Requests   int32                   `json:"requests"`
 	Throttling PagespeedTestThrottling `json:"throttling"`
-	// Location of the saved HAR file
-	HARLocation string `json:"har_location"`
 }
 
 // NewPagespeedTestHistoryResult instantiates a new PagespeedTestHistoryResult object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewPagespeedTestHistoryResult(createdAt time.Time, loadtime int64, filesize float32, requests int32, throttling PagespeedTestThrottling, harLocation string) *PagespeedTestHistoryResult {
+func NewPagespeedTestHistoryResult(createdAt time.Time, filesize float32, harLocation string, loadtime int64, requests int32, throttling PagespeedTestThrottling) *PagespeedTestHistoryResult {
 	return &PagespeedTestHistoryResult{
 		Created:     createdAt,
-		Loadtime:    loadtime,
 		Filesize:    filesize,
+		HARLocation: harLocation,
+		Loadtime:    loadtime,
 		Requests:    requests,
 		Throttling:  throttling,
-		HARLocation: harLocation,
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o PagespeedTestHistoryResult) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
 		toSerialize["created_at"] = o.Created
 	}
 	if true {
-		toSerialize["loadtime"] = o.Loadtime
+		toSerialize["filesize"] = o.Filesize
 	}
 	if true {
-		toSerialize["filesize"] = o.Filesize
+		toSerialize["har_location"] = o.HARLocation
+	}
+	if true {
+		toSerialize["loadtime"] = o.Loadtime
 	}
 	if true {
 		toSerialize["requests"] = o.Requests
 	}
 	if true {
 		toSerialize["throttling"] = o.Throttling
-	}
-	if true {
-		toSerialize["har_location"] = o.HARLocation
 	}
 	return json.Marshal(toSerialize)
 }

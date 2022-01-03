@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -84,6 +84,14 @@ func (a *LocationsService) ListPagespeedMonitoringLocations(ctx context.Context)
 	}
 }
 
+// ListPagespeedMonitoringLocationsWithData Get all pagespeed monitoring locations.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *LocationsService) ListPagespeedMonitoringLocationsWithData(ctx context.Context, m map[string]interface{}) APIListPagespeedMonitoringLocationsRequest {
+	r := a.ListPagespeedMonitoringLocations(ctx)
+	return r
+}
+
 // Execute executes the request.
 func (a *LocationsService) ListPagespeedMonitoringLocationsExecute(r APIListPagespeedMonitoringLocationsRequest) (MonitoringLocations, error) {
 	var (
@@ -94,7 +102,7 @@ func (a *LocationsService) ListPagespeedMonitoringLocationsExecute(r APIListPage
 		returnValue          MonitoringLocations
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "LocationsService.ListPagespeedMonitoringLocations")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "LocationsService.ListPagespeedMonitoringLocations")
 	if err != nil {
 		return returnValue, err
 	}
@@ -150,6 +158,13 @@ func (a *LocationsService) ListPagespeedMonitoringLocationsExecute(r APIListPage
 
 	if res.StatusCode >= 300 {
 		var v APIError
+		if err := a.client.decode(&v, responseBody, responseContentType); err != nil {
+			return returnValue, APIError{
+				Status:  res.StatusCode,
+				Message: "failed to deserialise error response",
+				parent:  err,
+			}
+		}
 		v.Status = res.StatusCode
 		return returnValue, v
 	}
@@ -198,6 +213,14 @@ func (a *LocationsService) ListUptimeMonitoringLocations(ctx context.Context) AP
 	}
 }
 
+// ListUptimeMonitoringLocationsWithData Get all uptime monitoring locations.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *LocationsService) ListUptimeMonitoringLocationsWithData(ctx context.Context, m map[string]interface{}) APIListUptimeMonitoringLocationsRequest {
+	r := a.ListUptimeMonitoringLocations(ctx)
+	return r
+}
+
 // Execute executes the request.
 func (a *LocationsService) ListUptimeMonitoringLocationsExecute(r APIListUptimeMonitoringLocationsRequest) (MonitoringLocations, error) {
 	var (
@@ -208,7 +231,7 @@ func (a *LocationsService) ListUptimeMonitoringLocationsExecute(r APIListUptimeM
 		returnValue          MonitoringLocations
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "LocationsService.ListUptimeMonitoringLocations")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "LocationsService.ListUptimeMonitoringLocations")
 	if err != nil {
 		return returnValue, err
 	}
@@ -264,6 +287,13 @@ func (a *LocationsService) ListUptimeMonitoringLocationsExecute(r APIListUptimeM
 
 	if res.StatusCode >= 300 {
 		var v APIError
+		if err := a.client.decode(&v, responseBody, responseContentType); err != nil {
+			return returnValue, APIError{
+				Status:  res.StatusCode,
+				Message: "failed to deserialise error response",
+				parent:  err,
+			}
+		}
 		v.Status = res.StatusCode
 		return returnValue, v
 	}

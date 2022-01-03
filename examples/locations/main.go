@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/StatusCakeDev/statuscake-go"
+	"github.com/StatusCakeDev/statuscake-go/credentials"
 )
 
 func main() {
@@ -15,7 +16,8 @@ func main() {
 		panic("STATUSCAKE_API_TOKEN not set in environment")
 	}
 
-	client := statuscake.NewAPIClient(apiToken)
+	bearer := credentials.NewBearerWithStaticToken(apiToken)
+	client := statuscake.NewClient(statuscake.WithRequestCredentials(bearer))
 
 	locations, err := client.ListPagespeedMonitoringLocations(context.Background()).Execute()
 	if err != nil {

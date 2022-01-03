@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -36,14 +36,12 @@ import (
 
 // UptimeTest struct for UptimeTest
 type UptimeTest struct {
-	// Uptime test ID
+	// Uptime check ID
 	ID string `json:"id"`
-	// Whether the test should be run
-	Paused bool `json:"paused"`
-	// Name of the test
+	// Name of the check
 	Name     string         `json:"name"`
 	TestType UptimeTestType `json:"test_type"`
-	// URL or IP address of the website under test
+	// URL or IP address of the server under test
 	WebsiteURL string              `json:"website_url"`
 	CheckRate  UptimeTestCheckRate `json:"check_rate"`
 	// Number of confirmation servers to confirm downtime before an alert is triggered
@@ -56,49 +54,53 @@ type UptimeTest struct {
 	DNSIPs []string `json:"dns_ips"`
 	// Hostname or IP address of the nameserver to query
 	DNSServer *string `json:"dns_server,omitempty"`
-	// Whether to consider the test as down if the string in FindString is present within the response
+	// Whether to consider the check as down if the content is present within the response
 	DoNotFind bool `json:"do_not_find"`
-	// Send an alert if the SSL certificate is soon to expire
+	// Whether to send an alert if the SSL certificate is soon to expire
 	EnableSSLAlert bool `json:"enable_ssl_alert"`
 	// Specify where the redirect chain should end
 	FinalEndpoint *string `json:"final_endpoint,omitempty"`
 	// String to look for within the response. Considered down if not found
 	FindString *string `json:"find_string,omitempty"`
-	// Allow tests to follow redirects
+	// Whether to follow redirects when testing. Disabled by default
 	FollowRedirects bool `json:"follow_redirects"`
+	// Include header content in string match search
+	IncludeHeader bool `json:"include_header"`
 	// Name of the hosting provider
 	Host *string `json:"host,omitempty"`
-	// When the test was last run (RFC3339 format)
+	// When the check was last run (RFC3339 format)
 	LastTested *time.Time `json:"last_tested_at,omitempty"`
-	// The server location the test will run next
+	// The server location the check will run next
 	NextLocation *string `json:"next_location,omitempty"`
-	// Destination port for TCP tests
+	// Whether the check should be run
+	Paused bool `json:"paused"`
+	// Destination port for TCP checks
 	Port *int32 `json:"port,omitempty"`
-	// JSON object. This is converted to form data on request
+	// JSON object. Payload submitted with the request. Setting this updates the check to use the HTTP POST verb
 	PostBody *string `json:"post_body,omitempty"`
 	// Raw HTTP POST string to send to the server
 	PostRaw *string `json:"post_raw,omitempty"`
-	// Whether the test is currently being processed
+	// Whether the check is currently being processed
 	Processing bool `json:"processing"`
-	// The server location the test is currently being run
+	// The server location the check is currently being run
 	ProcessingOn    *string                    `json:"processing_on,omitempty"`
 	ProcessingState *UptimeTestProcessingState `json:"processing_state,omitempty"`
-	// List of servers on which to run tests
+	// List of assigned monitoring locations on which to run checks
 	Servers []MonitoringLocation `json:"servers"`
 	Status  UptimeTestStatus     `json:"status"`
 	// List of status codes that trigger an alert
 	StatusCodes []string `json:"status_codes"`
 	// List of tags
 	Tags []string `json:"tags"`
-	// How long to wait to receive the first byte
+	// The number of seconds to wait to receive the first byte
 	Timeout int32 `json:"timeout"`
 	// The number of minutes to wait before sending an alert
 	TriggerRate int32 `json:"trigger_rate"`
-	// Uptime percentage for a test
+	// Uptime percentage for a check
 	Uptime float32 `json:"uptime"`
-	// Enable cookie storage
+	// Whether to enable cookie storage
 	UseJAR bool `json:"use_jar"`
-	// User agent to be used when making requests
+	// Custom user agent string set when testing
 	UserAgent *string `json:"user_agent,omitempty"`
 }
 
@@ -106,10 +108,9 @@ type UptimeTest struct {
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewUptimeTest(id string, paused bool, name string, testType UptimeTestType, websiteUrl string, checkRate UptimeTestCheckRate, confirmation int32, contactGroups []string, dnsIps []string, doNotFind bool, enableSslAlert bool, followRedirects bool, processing bool, servers []MonitoringLocation, status UptimeTestStatus, statusCodes []string, tags []string, timeout int32, triggerRate int32, uptime float32, useJar bool) *UptimeTest {
+func NewUptimeTest(id string, name string, testType UptimeTestType, websiteUrl string, checkRate UptimeTestCheckRate, confirmation int32, contactGroups []string, dnsIps []string, doNotFind bool, enableSslAlert bool, followRedirects bool, includeHeader bool, paused bool, processing bool, servers []MonitoringLocation, status UptimeTestStatus, statusCodes []string, tags []string, timeout int32, triggerRate int32, uptime float32, useJar bool) *UptimeTest {
 	return &UptimeTest{
 		ID:              id,
-		Paused:          paused,
 		Name:            name,
 		TestType:        testType,
 		WebsiteURL:      websiteUrl,
@@ -120,6 +121,8 @@ func NewUptimeTest(id string, paused bool, name string, testType UptimeTestType,
 		DoNotFind:       doNotFind,
 		EnableSSLAlert:  enableSslAlert,
 		FollowRedirects: followRedirects,
+		IncludeHeader:   includeHeader,
+		Paused:          paused,
 		Processing:      processing,
 		Servers:         servers,
 		Status:          status,
@@ -132,13 +135,11 @@ func NewUptimeTest(id string, paused bool, name string, testType UptimeTestType,
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o UptimeTest) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
 		toSerialize["id"] = o.ID
-	}
-	if true {
-		toSerialize["paused"] = o.Paused
 	}
 	if true {
 		toSerialize["name"] = o.Name
@@ -182,6 +183,9 @@ func (o UptimeTest) MarshalJSON() ([]byte, error) {
 	if true {
 		toSerialize["follow_redirects"] = o.FollowRedirects
 	}
+	if true {
+		toSerialize["include_header"] = o.IncludeHeader
+	}
 	if o.Host != nil {
 		toSerialize["host"] = o.Host
 	}
@@ -190,6 +194,9 @@ func (o UptimeTest) MarshalJSON() ([]byte, error) {
 	}
 	if o.NextLocation != nil {
 		toSerialize["next_location"] = o.NextLocation
+	}
+	if true {
+		toSerialize["paused"] = o.Paused
 	}
 	if o.Port != nil {
 		toSerialize["port"] = o.Port

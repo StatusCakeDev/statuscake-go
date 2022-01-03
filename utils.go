@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -29,10 +29,17 @@
 
 package statuscake
 
+// This file contains functions that could not be included closer to the caller
+// becasue they would have either been duplicated when generated, or may
+// otherwise have caused syntax errors when generated due to unused imports. As
+// such some of the functions may not be used in the generated source.
+
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 // PtrBool is a helper routine that returns a pointer to given boolean value.
@@ -72,4 +79,15 @@ func contains(haystack []string, needle string) bool {
 		}
 	}
 	return false
+}
+
+// strlen returns the length of a string.
+func strlen(s string) int {
+	return utf8.RuneCountInString(s)
+}
+
+// errorf is a wrapper around fmt.Errorf necessary to prevent unused import
+// from individual api files.
+func errorf(format string, v ...interface{}) error {
+	return fmt.Errorf(format, v...)
 }

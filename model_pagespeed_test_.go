@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -35,56 +35,52 @@ import (
 
 // PagespeedTest struct for PagespeedTest
 type PagespeedTest struct {
-	// Pagespeed test ID
+	// Pagespeed check ID
 	ID string `json:"id"`
-	// Whether the test should be run
-	Paused bool `json:"paused"`
-	// Name of the test
+	// Name of the check
 	Name string `json:"name"`
 	// URL or IP address of the website under test
-	WebsiteURL string `json:"website_url"`
-	// Assigned server where tests will be run
-	Location    string                   `json:"location"`
-	LocationISO PagespeedTestLocationISO `json:"location_iso"`
-	CheckRate   PagespeedTestCheckRate   `json:"check_rate"`
-	// List of contact group IDs
-	ContactGroups []string `json:"contact_groups"`
+	WebsiteURL string                 `json:"website_url"`
+	CheckRate  PagespeedTestCheckRate `json:"check_rate"`
 	// An alert will be sent if the size of the page is larger than this value (kb). A value of 0 prevents alerts being sent.
 	AlertBigger int32 `json:"alert_bigger"`
 	// An alert will be sent if the load time of the page exceeds this value (ms). A value of 0 prevents alerts being sent
-	AlertSlower int32 `json:"alert_slower"`
+	AlertSlower int64 `json:"alert_slower"`
 	// An alert will be sent if the size of the page is smaller than this value (kb). A value of 0 prevents alerts being sent
-	AlertSmaller int32               `json:"alert_smaller"`
-	LatestStats  *PagespeedTestStats `json:"latest_stats,omitempty"`
+	AlertSmaller int32 `json:"alert_smaller"`
+	// List of contact group IDs
+	ContactGroups []string            `json:"contact_groups"`
+	LatestStats   *PagespeedTestStats `json:"latest_stats,omitempty"`
+	// Assigned monitoring location on which checks will be run
+	Location string `json:"location"`
+	// Whether the check should be run
+	Paused bool `json:"paused"`
 }
 
 // NewPagespeedTest instantiates a new PagespeedTest object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewPagespeedTest(id string, paused bool, name string, websiteUrl string, location string, locationIso PagespeedTestLocationISO, checkRate PagespeedTestCheckRate, contactGroups []string, alertBigger int32, alertSlower int32, alertSmaller int32) *PagespeedTest {
+func NewPagespeedTest(id string, name string, websiteUrl string, checkRate PagespeedTestCheckRate, alertBigger int32, alertSlower int64, alertSmaller int32, contactGroups []string, location string, paused bool) *PagespeedTest {
 	return &PagespeedTest{
 		ID:            id,
-		Paused:        paused,
 		Name:          name,
 		WebsiteURL:    websiteUrl,
-		Location:      location,
-		LocationISO:   locationIso,
 		CheckRate:     checkRate,
-		ContactGroups: contactGroups,
 		AlertBigger:   alertBigger,
 		AlertSlower:   alertSlower,
 		AlertSmaller:  alertSmaller,
+		ContactGroups: contactGroups,
+		Location:      location,
+		Paused:        paused,
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o PagespeedTest) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
 		toSerialize["id"] = o.ID
-	}
-	if true {
-		toSerialize["paused"] = o.Paused
 	}
 	if true {
 		toSerialize["name"] = o.Name
@@ -93,16 +89,7 @@ func (o PagespeedTest) MarshalJSON() ([]byte, error) {
 		toSerialize["website_url"] = o.WebsiteURL
 	}
 	if true {
-		toSerialize["location"] = o.Location
-	}
-	if true {
-		toSerialize["location_iso"] = o.LocationISO
-	}
-	if true {
 		toSerialize["check_rate"] = o.CheckRate
-	}
-	if true {
-		toSerialize["contact_groups"] = o.ContactGroups
 	}
 	if true {
 		toSerialize["alert_bigger"] = o.AlertBigger
@@ -113,8 +100,17 @@ func (o PagespeedTest) MarshalJSON() ([]byte, error) {
 	if true {
 		toSerialize["alert_smaller"] = o.AlertSmaller
 	}
+	if true {
+		toSerialize["contact_groups"] = o.ContactGroups
+	}
 	if o.LatestStats != nil {
 		toSerialize["latest_stats"] = o.LatestStats
+	}
+	if true {
+		toSerialize["location"] = o.Location
+	}
+	if true {
+		toSerialize["paused"] = o.Paused
 	}
 	return json.Marshal(toSerialize)
 }

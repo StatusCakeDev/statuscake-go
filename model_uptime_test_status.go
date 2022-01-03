@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -34,16 +34,17 @@ import (
 	"fmt"
 )
 
-// UptimeTestStatus The returned status of an Uptime test
+// UptimeTestStatus The returned status of an uptime check
 type UptimeTestStatus string
 
 const (
-	// UptimeTestStatusDown an uptime test with a down status.
+	// UptimeTestStatusDown an uptime check with a down status.
 	UptimeTestStatusDown UptimeTestStatus = "down"
-	// UptimeTestStatusUp an uptime test with an up status.
+	// UptimeTestStatusUp an uptime check with an up status.
 	UptimeTestStatusUp UptimeTestStatus = "up"
 )
 
+// Unmarshal JSON data into any of the pointers in the type.
 func (v *UptimeTestStatus) UnmarshalJSON(src []byte) error {
 	var value string
 	if err := json.Unmarshal(src, &value); err != nil {
@@ -64,7 +65,7 @@ func (v UptimeTestStatus) Valid() bool {
 	return v == UptimeTestStatusDown || v == UptimeTestStatusUp
 }
 
-// UptimeTestStatusValues returns the values of UptimeTestStatus
+// UptimeTestStatusValues returns the values of UptimeTestStatus.
 func UptimeTestStatusValues() []string {
 	return []string{
 		"down",

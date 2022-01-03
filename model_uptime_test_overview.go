@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -35,22 +35,22 @@ import (
 
 // UptimeTestOverview struct for UptimeTestOverview
 type UptimeTestOverview struct {
-	// Uptime test ID
+	// Uptime check ID
 	ID string `json:"id"`
-	// Whether the test should be run
-	Paused bool `json:"paused"`
-	// Name of the test
+	// Name of the check
 	Name string `json:"name"`
-	// URL or IP address of the website under test
+	// URL or IP address of the server under test
 	WebsiteURL string              `json:"website_url"`
 	TestType   UptimeTestType      `json:"test_type"`
 	CheckRate  UptimeTestCheckRate `json:"check_rate"`
 	// List of contact group IDs
-	ContactGroups []string         `json:"contact_groups"`
-	Status        UptimeTestStatus `json:"status"`
+	ContactGroups []string `json:"contact_groups"`
+	// Whether the check should be run
+	Paused bool             `json:"paused"`
+	Status UptimeTestStatus `json:"status"`
 	// List of tags
 	Tags []string `json:"tags"`
-	// Uptime percentage for a test
+	// Uptime percentage for a check
 	Uptime *float32 `json:"uptime,omitempty"`
 }
 
@@ -58,27 +58,25 @@ type UptimeTestOverview struct {
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewUptimeTestOverview(id string, paused bool, name string, websiteUrl string, testType UptimeTestType, checkRate UptimeTestCheckRate, contactGroups []string, status UptimeTestStatus, tags []string) *UptimeTestOverview {
+func NewUptimeTestOverview(id string, name string, websiteUrl string, testType UptimeTestType, checkRate UptimeTestCheckRate, contactGroups []string, paused bool, status UptimeTestStatus, tags []string) *UptimeTestOverview {
 	return &UptimeTestOverview{
 		ID:            id,
-		Paused:        paused,
 		Name:          name,
 		WebsiteURL:    websiteUrl,
 		TestType:      testType,
 		CheckRate:     checkRate,
 		ContactGroups: contactGroups,
+		Paused:        paused,
 		Status:        status,
 		Tags:          tags,
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o UptimeTestOverview) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
 		toSerialize["id"] = o.ID
-	}
-	if true {
-		toSerialize["paused"] = o.Paused
 	}
 	if true {
 		toSerialize["name"] = o.Name
@@ -94,6 +92,9 @@ func (o UptimeTestOverview) MarshalJSON() ([]byte, error) {
 	}
 	if true {
 		toSerialize["contact_groups"] = o.ContactGroups
+	}
+	if true {
+		toSerialize["paused"] = o.Paused
 	}
 	if true {
 		toSerialize["status"] = o.Status

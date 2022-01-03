@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -34,7 +34,7 @@ import (
 	"fmt"
 )
 
-// PagespeedTestCheckRate Number of minutes between tests
+// PagespeedTestCheckRate Number of seconds between checks
 type PagespeedTestCheckRate int32
 
 const (
@@ -54,6 +54,7 @@ const (
 	PagespeedTestCheckRateOneDay PagespeedTestCheckRate = 86400
 )
 
+// Unmarshal JSON data into any of the pointers in the type.
 func (v *PagespeedTestCheckRate) UnmarshalJSON(src []byte) error {
 	var value int32
 	if err := json.Unmarshal(src, &value); err != nil {
@@ -74,7 +75,7 @@ func (v PagespeedTestCheckRate) Valid() bool {
 	return v == PagespeedTestCheckRateOneMinute || v == PagespeedTestCheckRateFiveMinutes || v == PagespeedTestCheckRateTenMinutes || v == PagespeedTestCheckRateFifteenMinutes || v == PagespeedTestCheckRateThirtyMinutes || v == PagespeedTestCheckRateOneHour || v == PagespeedTestCheckRateOneDay
 }
 
-// PagespeedTestCheckRateValues returns the values of PagespeedTestCheckRate
+// PagespeedTestCheckRateValues returns the values of PagespeedTestCheckRate.
 func PagespeedTestCheckRateValues() []int32 {
 	return []int32{
 		60,

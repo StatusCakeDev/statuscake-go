@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/StatusCakeDev/statuscake-go"
+	"github.com/StatusCakeDev/statuscake-go/credentials"
 )
 
 func main() {
@@ -15,7 +16,8 @@ func main() {
 		panic("STATUSCAKE_API_TOKEN not set in environment")
 	}
 
-	client := statuscake.NewAPIClient(apiToken)
+	bearer := credentials.NewBearerWithStaticToken(apiToken)
+	client := statuscake.NewClient(statuscake.WithRequestCredentials(bearer))
 
 	res, _ := client.CreateContactGroup(context.Background()).
 		Name("Development Team").
@@ -27,14 +29,14 @@ func main() {
 	res, err := client.CreateSslTest(context.Background()).
 		WebsiteURL("https://www.statuscake.com").
 		CheckRate(statuscake.SSLTestCheckRateFiveMinutes).
-		ContactGroups([]string{
-			groupID,
-		}).
-		AlertAt([]string{"1", "7", "30"}).
+		AlertAt([]int32{1, 7, 30}).
 		AlertBroken(true).
 		AlertExpiry(true).
 		AlertMixed(true).
 		AlertReminder(true).
+		ContactGroups([]string{
+			groupID,
+		}).
 		FollowRedirects(true).
 		Paused(true).
 		Execute()
@@ -44,14 +46,14 @@ func main() {
 	}
 
 	testID := res.Data.NewID
-	fmt.Printf("SSL TEST ID: %s\n", testID)
+	fmt.Printf("SSL CHECK ID: %s\n", testID)
 
 	test, err := client.GetSslTest(context.Background(), testID).Execute()
 	if err != nil {
 		printError(err)
 	}
 
-	fmt.Printf("SSL TEST: %+v\n", test.Data)
+	fmt.Printf("SSL CHECK: %+v\n", test.Data)
 
 	err = client.UpdateSslTest(context.Background(), testID).
 		CheckRate(statuscake.SSLTestCheckRateOneHour).
@@ -67,14 +69,14 @@ func main() {
 		printError(err)
 	}
 
-	fmt.Printf("UPDATED SSL TEST: %+v\n", test.Data)
+	fmt.Printf("UPDATED SSL CHECK: %+v\n", test.Data)
 
 	tests, err := client.ListSslTests(context.Background()).Execute()
 	if err != nil {
 		printError(err)
 	}
 
-	fmt.Printf("SSL TESTS: %+v\n", tests.Data)
+	fmt.Printf("SSL CHECKS: %+v\n", tests.Data)
 
 	err = client.DeleteSslTest(context.Background(), testID).Execute()
 	if err != nil {

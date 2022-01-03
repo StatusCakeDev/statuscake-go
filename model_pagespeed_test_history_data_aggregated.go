@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -33,10 +33,10 @@ import (
 	"encoding/json"
 )
 
-// PagespeedTestHistoryDataAggregated struct for PagespeedTestHistoryDataAggregated
+// PagespeedTestHistoryDataAggregated Aggregated results
 type PagespeedTestHistoryDataAggregated struct {
-	Loadtime PagespeedTestHistoryDataAggregatedLoadtime `json:"loadtime"`
 	Filesize PagespeedTestHistoryDataAggregatedFilesize `json:"filesize"`
+	Loadtime PagespeedTestHistoryDataAggregatedLoadtime `json:"loadtime"`
 	Requests PagespeedTestHistoryDataAggregatedRequests `json:"requests"`
 	// Total number of returned results
 	Results int32 `json:"results"`
@@ -46,22 +46,23 @@ type PagespeedTestHistoryDataAggregated struct {
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewPagespeedTestHistoryDataAggregated(loadtime PagespeedTestHistoryDataAggregatedLoadtime, filesize PagespeedTestHistoryDataAggregatedFilesize, requests PagespeedTestHistoryDataAggregatedRequests, results int32) *PagespeedTestHistoryDataAggregated {
+func NewPagespeedTestHistoryDataAggregated(filesize PagespeedTestHistoryDataAggregatedFilesize, loadtime PagespeedTestHistoryDataAggregatedLoadtime, requests PagespeedTestHistoryDataAggregatedRequests, results int32) *PagespeedTestHistoryDataAggregated {
 	return &PagespeedTestHistoryDataAggregated{
-		Loadtime: loadtime,
 		Filesize: filesize,
+		Loadtime: loadtime,
 		Requests: requests,
 		Results:  results,
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o PagespeedTestHistoryDataAggregated) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
-		toSerialize["loadtime"] = o.Loadtime
+		toSerialize["filesize"] = o.Filesize
 	}
 	if true {
-		toSerialize["filesize"] = o.Filesize
+		toSerialize["loadtime"] = o.Loadtime
 	}
 	if true {
 		toSerialize["requests"] = o.Requests

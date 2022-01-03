@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -34,7 +34,7 @@ import (
 	"fmt"
 )
 
-// UptimeTestCheckRate Number of seconds between tests
+// UptimeTestCheckRate Number of seconds between checks
 type UptimeTestCheckRate int32
 
 const (
@@ -56,6 +56,7 @@ const (
 	UptimeTestCheckRateOneDay UptimeTestCheckRate = 86400
 )
 
+// Unmarshal JSON data into any of the pointers in the type.
 func (v *UptimeTestCheckRate) UnmarshalJSON(src []byte) error {
 	var value int32
 	if err := json.Unmarshal(src, &value); err != nil {
@@ -76,7 +77,7 @@ func (v UptimeTestCheckRate) Valid() bool {
 	return v == UptimeTestCheckRateConstant || v == UptimeTestCheckRateThirtySeconds || v == UptimeTestCheckRateOneMinute || v == UptimeTestCheckRateFiveMinutes || v == UptimeTestCheckRateFifteenMinutes || v == UptimeTestCheckRateThirtyMinutes || v == UptimeTestCheckRateOneHour || v == UptimeTestCheckRateOneDay
 }
 
-// UptimeTestCheckRateValues returns the values of UptimeTestCheckRate
+// UptimeTestCheckRateValues returns the values of UptimeTestCheckRate.
 func UptimeTestCheckRateValues() []int32 {
 	return []int32{
 		0,

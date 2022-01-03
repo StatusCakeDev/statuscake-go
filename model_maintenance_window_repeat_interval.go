@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -50,6 +50,7 @@ const (
 	MaintenanceWindowRepeatIntervalMonthly MaintenanceWindowRepeatInterval = "1m"
 )
 
+// Unmarshal JSON data into any of the pointers in the type.
 func (v *MaintenanceWindowRepeatInterval) UnmarshalJSON(src []byte) error {
 	var value string
 	if err := json.Unmarshal(src, &value); err != nil {
@@ -70,7 +71,7 @@ func (v MaintenanceWindowRepeatInterval) Valid() bool {
 	return v == MaintenanceWindowRepeatIntervalNever || v == MaintenanceWindowRepeatIntervalDaily || v == MaintenanceWindowRepeatIntervalWeekly || v == MaintenanceWindowRepeatIntervalBiweekly || v == MaintenanceWindowRepeatIntervalMonthly
 }
 
-// MaintenanceWindowRepeatIntervalValues returns the values of MaintenanceWindowRepeatInterval
+// MaintenanceWindowRepeatIntervalValues returns the values of MaintenanceWindowRepeatInterval.
 func MaintenanceWindowRepeatIntervalValues() []string {
 	return []string{
 		"never",
