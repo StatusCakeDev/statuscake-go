@@ -51,6 +51,8 @@ type MaintenanceWindowsAPI interface {
 	DeleteMaintenanceWindowExecute(r APIDeleteMaintenanceWindowRequest) error
 	GetMaintenanceWindow(ctx context.Context, windowId string) APIGetMaintenanceWindowRequest
 	GetMaintenanceWindowExecute(r APIGetMaintenanceWindowRequest) (MaintenanceWindowResponse, error)
+	ListMaintenanceWindows(ctx context.Context) APIListMaintenanceWindowsRequest
+	ListMaintenanceWindowsExecute(r APIListMaintenanceWindowsRequest) (MaintenanceWindows, error)
 	UpdateMaintenanceWindow(ctx context.Context, windowId string) APIUpdateMaintenanceWindowRequest
 	UpdateMaintenanceWindowWithData(ctx context.Context, windowId string, m map[string]interface{}) APIUpdateMaintenanceWindowRequest
 	UpdateMaintenanceWindowExecute(r APIUpdateMaintenanceWindowRequest) error
@@ -476,6 +478,125 @@ func (a *MaintenanceWindowsService) GetMaintenanceWindowExecute(r APIGetMaintena
 	queryParams := url.Values{}
 	formParams := url.Values{}
 
+	// Determine the Content-Type header.
+	contentTypes := []string{}
+
+	// Set Content-Type header
+	requestContentTypeHeader := selectHeaderContentType(contentTypes)
+	if requestContentTypeHeader != "" {
+		headerParams["Content-Type"] = requestContentTypeHeader
+	}
+
+	// Determine the Accept header.
+	accepts := []string{"application/json"}
+
+	// Set Accept header.
+	requestAcceptHeader := selectHeaderAccept(accepts)
+	if requestAcceptHeader != "" {
+		headerParams["Accept"] = requestAcceptHeader
+	}
+
+	req, err := a.client.prepareRequest(r.ctx, requestPath, http.MethodGet, requestBody, headerParams, queryParams, formParams, requestFormFieldName, requestFileName, requestFileBytes)
+	if err != nil {
+		return returnValue, err
+	}
+
+	res, err := a.client.callAPI(req)
+	if err != nil || res == nil {
+		return returnValue, err
+	}
+
+	responseBody, err := ioutil.ReadAll(res.Body)
+	res.Body.Close()
+	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	if err != nil {
+		return returnValue, err
+	}
+
+	responseContentType := res.Header.Get("Content-Type")
+
+	if res.StatusCode >= 300 {
+		var v APIError
+		if err := a.client.decode(&v, responseBody, responseContentType); err != nil {
+			return returnValue, APIError{
+				Status:  res.StatusCode,
+				Message: "failed to deserialise error response",
+				parent:  err,
+			}
+		}
+		v.Status = res.StatusCode
+		return returnValue, v
+	}
+
+	if err := a.client.decode(&returnValue, responseBody, responseContentType); err != nil {
+		return returnValue, APIError{
+			Status:  res.StatusCode,
+			Message: "failed to deserialise response body",
+			parent:  err,
+		}
+	}
+
+	return returnValue, nil
+}
+
+// APIListMaintenanceWindowsRequest represents a request type.
+type APIListMaintenanceWindowsRequest struct {
+	ctx        context.Context
+	APIService MaintenanceWindowsAPI
+	state      *string
+}
+
+// State sets state on the request type.
+func (r APIListMaintenanceWindowsRequest) State(state string) APIListMaintenanceWindowsRequest {
+	r.state = &state
+	return r
+}
+
+// Execute executes the request.
+func (r APIListMaintenanceWindowsRequest) Execute() (MaintenanceWindows, error) {
+	return r.APIService.ListMaintenanceWindowsExecute(r)
+}
+
+// ListMaintenanceWindows Get all maintenance windows.
+func (a *MaintenanceWindowsService) ListMaintenanceWindows(ctx context.Context) APIListMaintenanceWindowsRequest {
+	return APIListMaintenanceWindowsRequest{
+		ctx:        ctx,
+		APIService: a,
+	}
+}
+
+// ListMaintenanceWindowsWithData Get all maintenance windows.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *MaintenanceWindowsService) ListMaintenanceWindowsWithData(ctx context.Context, m map[string]interface{}) APIListMaintenanceWindowsRequest {
+	r := a.ListMaintenanceWindows(ctx)
+	return r
+}
+
+// Execute executes the request.
+func (a *MaintenanceWindowsService) ListMaintenanceWindowsExecute(r APIListMaintenanceWindowsRequest) (MaintenanceWindows, error) {
+	var (
+		requestBody          interface{}
+		requestFormFieldName string
+		requestFileName      string
+		requestFileBytes     []byte
+		returnValue          MaintenanceWindows
+	)
+
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "MaintenanceWindowsService.ListMaintenanceWindows")
+	if err != nil {
+		return returnValue, err
+	}
+
+	requestPath := basePath + "/maintenance-windows"
+
+	headerParams := make(map[string]string)
+	queryParams := url.Values{}
+	formParams := url.Values{}
+
+	if r.state != nil {
+		queryParams.Add("state", parameterToString(*r.state))
+	}
 	// Determine the Content-Type header.
 	contentTypes := []string{}
 

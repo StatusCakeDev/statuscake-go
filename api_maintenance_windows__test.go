@@ -35,6 +35,7 @@ import (
 	"context"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/pact-foundation/pact-go/v2/matchers"
 	. "github.com/pact-foundation/pact-go/v2/sugar"
@@ -42,27 +43,31 @@ import (
 	"github.com/StatusCakeDev/statuscake-go"
 )
 
-func TestCreateContactGroup(t *testing.T) {
+func TestCreateMaintenanceWindow(t *testing.T) {
 	t.Run("returns a created status on success", func(t *testing.T) {
 		mockProvider.
 			AddInteraction().
-			UponReceiving("A request to create a valid contact group").
-			WithRequest(http.MethodPost, S("/v1/contact-groups")).
+			Given(ProviderStateV3{
+				Name: "An existing uptime test",
+				Parameters: map[string]interface{}{
+					"test_id": 1,
+				},
+			}).
+			UponReceiving("A request to create a valid maintenance window").
+			WithRequest(http.MethodPost, S("/v1/maintenance-windows")).
 			WithHeaders(matchers.HeadersMatcher{
 				"Accept":        []Matcher{S("application/json")},
 				"Authorization": []Matcher{S("Bearer 123456789")},
 				"Content-Type":  []Matcher{S("application/x-www-form-urlencoded")},
 			}).
 			WithBody("application/x-www-form-urlencoded", []byte(
-				"email_addresses%5B%5D=johnsmith%40example.com&"+
-					"email_addresses%5B%5D=janesmith%40example.com&"+
-					"integrations%5B%5D=1&"+
-					"integrations%5B%5D=2&"+
-					"integrations%5B%5D=3&"+
-					"mobile_numbers%5B%5D=447712345678&"+
-					"mobile_numbers%5B%5D=447987462344&"+
-					"name=Operations+Team&"+
-					"ping_url=https%3A%2F%2Fping.example.com",
+				"end_at=2020-07-11T03%3A30%3A00Z&"+
+					"name=Monthly+Maintenance&"+
+					"repeat_interval=1m&"+
+					"start_at=2020-07-11T03%3A00%3A00Z&"+
+					"tags%5B%5D=testing&"+
+					"tests%5B%5D=1&"+
+					"timezone=UTC",
 			)).
 			WillRespondWith(http.StatusCreated).
 			WithHeader("Content-Type", S("application/json")).
@@ -73,22 +78,18 @@ func TestCreateContactGroup(t *testing.T) {
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
-			res, _ := c.CreateContactGroup(context.Background()).
-				Name("Operations Team").
-				EmailAddresses([]string{
-					"johnsmith@example.com",
-					"janesmith@example.com",
+			res, _ := c.CreateMaintenanceWindow(context.Background()).
+				Name("Monthly Maintenance").
+				End(time.Date(2020, 7, 11, 3, 30, 0, 0, time.UTC)).
+				RepeatInterval(statuscake.MaintenanceWindowRepeatIntervalMonthly).
+				Start(time.Date(2020, 7, 11, 3, 0, 0, 0, time.UTC)).
+				Tags([]string{
+					"testing",
 				}).
-				Integrations([]string{
+				Tests([]string{
 					"1",
-					"2",
-					"3",
 				}).
-				MobileNumbers([]string{
-					"447712345678",
-					"447987462344",
-				}).
-				PingURL("https://ping.example.com").
+				Timezone("UTC").
 				Execute()
 
 			return equal(res.Data.NewID, "1")
@@ -98,52 +99,52 @@ func TestCreateContactGroup(t *testing.T) {
 	t.Run("returns an error if the request fails", func(t *testing.T) {
 		mockProvider.
 			AddInteraction().
-			UponReceiving("A request to create an invalid contact group").
-			WithRequest(http.MethodPost, S("/v1/contact-groups")).
+			UponReceiving("A request to create an invalid maintenance window").
+			WithRequest(http.MethodPost, S("/v1/maintenance-windows")).
 			WithHeaders(matchers.HeadersMatcher{
 				"Accept":        []Matcher{S("application/json")},
 				"Authorization": []Matcher{S("Bearer 123456789")},
 				"Content-Type":  []Matcher{S("application/x-www-form-urlencoded")},
 			}).
 			WithBody("application/x-www-form-urlencoded", []byte(
-				"name=Operations+Team&"+
-					"ping_url=this%2Cis%2Cnot%2Cvalid",
+				"end_at=2020-07-11T03%3A30%3A00Z&"+
+					"name=Monthly+Maintenance&"+
+					"start_at=2020-07-11T03%3A00%3A00Z&"+
+					"timezone=UTC",
 			)).
 			WillRespondWith(http.StatusBadRequest).
 			WithHeader("Content-Type", S("application/json")).
 			WithJSONBody(Map{
-				"message": Like("The provided parameters are invalid. Check the errors output for detailed information."),
-				"errors": matchers.StructMatcher{
-					"ping_url": EachLike("Ping Url is not a valid URL", 1),
-				},
+				"message": Like("Both test and tags cannot be empty."),
+				"errors":  matchers.StructMatcher{},
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
-			_, err := c.CreateContactGroup(context.Background()).
-				Name("Operations Team").
-				PingURL("this,is,not,valid").
+			_, err := c.CreateMaintenanceWindow(context.Background()).
+				Name("Monthly Maintenance").
+				End(time.Date(2020, 7, 11, 3, 30, 0, 0, time.UTC)).
+				Start(time.Date(2020, 7, 11, 3, 0, 0, 0, time.UTC)).
+				Timezone("UTC").
 				Execute()
 
 			return equal(err, statuscake.APIError{
 				Status:  http.StatusBadRequest,
-				Message: "The provided parameters are invalid. Check the errors output for detailed information.",
-				Errors: map[string][]string{
-					"ping_url": []string{"Ping Url is not a valid URL"},
-				},
+				Message: "Both test and tags cannot be empty.",
+				Errors:  map[string][]string{},
 			})
 		})
 	})
 }
 
-func TestDeleteContactGroup(t *testing.T) {
+func TestDeleteMaintenanceWindow(t *testing.T) {
 	t.Run("returns a no content status on success", func(t *testing.T) {
 		mockProvider.
 			AddInteraction().
 			Given(ProviderStateV3{
-				Name: "An existing contact group",
+				Name: "An existing maintenance window",
 			}).
-			UponReceiving("A request to delete a contact group").
-			WithRequest(http.MethodDelete, FromProviderState("/v1/contact-groups/${id}", "/v1/contact-groups/1")).
+			UponReceiving("A request to delete a maintenance window").
+			WithRequest(http.MethodDelete, FromProviderState("/v1/maintenance-windows/${id}", "/v1/maintenance-windows/1")).
 			WithHeaders(matchers.HeadersMatcher{
 				"Accept":        []Matcher{S("application/json")},
 				"Authorization": []Matcher{S("Bearer 123456789")},
@@ -151,15 +152,15 @@ func TestDeleteContactGroup(t *testing.T) {
 			WillRespondWith(http.StatusNoContent)
 
 		executeTest(t, func(c *statuscake.Client) error {
-			return c.DeleteContactGroup(context.Background(), "1").Execute()
+			return c.DeleteMaintenanceWindow(context.Background(), "1").Execute()
 		})
 	})
 
-	t.Run("returns an error when the contact group does not exist", func(t *testing.T) {
+	t.Run("returns an error when the maintenance window does not exist", func(t *testing.T) {
 		mockProvider.
 			AddInteraction().
-			UponReceiving("A request to delete a contact group").
-			WithRequest(http.MethodDelete, S("/v1/contact-groups/2")).
+			UponReceiving("A request to delete a maintenance window").
+			WithRequest(http.MethodDelete, S("/v1/maintenance-windows/2")).
 			WithHeaders(matchers.HeadersMatcher{
 				"Accept":        []Matcher{S("application/json")},
 				"Authorization": []Matcher{S("Bearer 123456789")},
@@ -172,7 +173,7 @@ func TestDeleteContactGroup(t *testing.T) {
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
-			err := c.DeleteContactGroup(context.Background(), "2").Execute()
+			err := c.DeleteMaintenanceWindow(context.Background(), "2").Execute()
 			return equal(err, statuscake.APIError{
 				Status:  http.StatusNotFound,
 				Message: "No results found",
@@ -182,15 +183,15 @@ func TestDeleteContactGroup(t *testing.T) {
 	})
 }
 
-func TestGetContactGroup(t *testing.T) {
-	t.Run("returns a contact group on success", func(t *testing.T) {
+func TestGetMaintenanceWindow(t *testing.T) {
+	t.Run("returns a maintenance window on success", func(t *testing.T) {
 		mockProvider.
 			AddInteraction().
 			Given(ProviderStateV3{
-				Name: "An existing contact group",
+				Name: "An existing maintenance window and uptime test",
 			}).
-			UponReceiving("A request to get a contact group").
-			WithRequest(http.MethodGet, FromProviderState("/v1/contact-groups/${id}", "/v1/contact-groups/1")).
+			UponReceiving("A request to get a maintenance window").
+			WithRequest(http.MethodGet, FromProviderState("/v1/maintenance-windows/${id}", "/v1/maintenance-windows/1")).
 			WithHeaders(matchers.HeadersMatcher{
 				"Accept":        []Matcher{S("application/json")},
 				"Authorization": []Matcher{S("Bearer 123456789")},
@@ -200,38 +201,42 @@ func TestGetContactGroup(t *testing.T) {
 			WithJSONBody(Map{
 				"data": matchers.StructMatcher{
 					"id":              FromProviderState("${id}", "1"),
-					"name":            Like("Operations Team"),
-					"email_addresses": EachLike("johnsmith@example.com", 1),
-					"integrations":    EachLike("1", 1),
-					"mobile_numbers":  EachLike("447712345678", 1),
-					"ping_url":        Like("https://ping.example.com"),
+					"name":            Like("Monthly Maintenance"),
+					"end_at":          Timestamp(),
+					"repeat_interval": Like("1m"),
+					"start_at":        Timestamp(),
+					"state":           Like("pending"),
+					"tags":            EachLike("testing", 1),
+					"tests":           EachLike("1", 1),
+					"timezone":        "UTC",
 				},
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
-			group, _ := c.GetContactGroup(context.Background(), "1").Execute()
-			return equal(group.Data, statuscake.ContactGroup{
-				ID:   "1",
-				Name: "Operations Team",
-				EmailAddresses: []string{
-					"johnsmith@example.com",
+			window, _ := c.GetMaintenanceWindow(context.Background(), "1").Execute()
+			return equal(window.Data, statuscake.MaintenanceWindow{
+				ID:             "1",
+				Name:           "Monthly Maintenance",
+				End:            time.Date(2000, 2, 1, 12, 30, 0, 0, time.UTC),
+				RepeatInterval: statuscake.MaintenanceWindowRepeatIntervalMonthly,
+				Start:          time.Date(2000, 2, 1, 12, 30, 0, 0, time.UTC),
+				State:          statuscake.MaintenanceWindowStatePending,
+				Tags: []string{
+					"testing",
 				},
-				Integrations: []string{
+				Tests: []string{
 					"1",
 				},
-				MobileNumbers: []string{
-					"447712345678",
-				},
-				PingURL: statuscake.PtrString("https://ping.example.com"),
+				Timezone: "UTC",
 			})
 		})
 	})
 
-	t.Run("returns an error when the contact group does not exist", func(t *testing.T) {
+	t.Run("returns an error when the maintenance window does not exist", func(t *testing.T) {
 		mockProvider.
 			AddInteraction().
-			UponReceiving("A request to get a contact group").
-			WithRequest(http.MethodGet, S("/v1/contact-groups/2")).
+			UponReceiving("A request to get a maintenance windoe").
+			WithRequest(http.MethodGet, S("/v1/maintenance-windows/2")).
 			WithHeaders(matchers.HeadersMatcher{
 				"Accept":        []Matcher{S("application/json")},
 				"Authorization": []Matcher{S("Bearer 123456789")},
@@ -244,7 +249,7 @@ func TestGetContactGroup(t *testing.T) {
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
-			_, err := c.GetContactGroup(context.Background(), "2").Execute()
+			_, err := c.GetMaintenanceWindow(context.Background(), "2").Execute()
 			return equal(err, statuscake.APIError{
 				Status:  http.StatusNotFound,
 				Message: "No results found",
@@ -254,15 +259,15 @@ func TestGetContactGroup(t *testing.T) {
 	})
 }
 
-func TestListContactGroups(t *testing.T) {
-	t.Run("returns a list of contact groups on success", func(t *testing.T) {
+func TestListMaintenanceWindows(t *testing.T) {
+	t.Run("returns a list of maintenance windows on success", func(t *testing.T) {
 		mockProvider.
 			AddInteraction().
 			Given(ProviderStateV3{
-				Name: "Existing contact groups",
+				Name: "Existing maintenance windows and uptime test",
 			}).
-			UponReceiving("A request to get a list of contact groups").
-			WithRequest(http.MethodGet, S("/v1/contact-groups")).
+			UponReceiving("A request to get a list of maintenance windows").
+			WithRequest(http.MethodGet, S("/v1/maintenance-windows")).
 			WithHeaders(matchers.HeadersMatcher{
 				"Accept":        []Matcher{S("application/json")},
 				"Authorization": []Matcher{S("Bearer 123456789")},
@@ -273,41 +278,45 @@ func TestListContactGroups(t *testing.T) {
 				"data": EachLike(
 					matchers.StructMatcher{
 						"id":              FromProviderState("${id}", "1"),
-						"name":            Like("Operations Team"),
-						"email_addresses": EachLike("johnsmith@example.com", 1),
-						"integrations":    EachLike("1", 1),
-						"mobile_numbers":  EachLike("447712345678", 1),
-						"ping_url":        Like("https://ping.example.com"),
+						"name":            Like("Monthly Maintenance"),
+						"end_at":          Timestamp(),
+						"repeat_interval": Like("1m"),
+						"start_at":        Timestamp(),
+						"state":           Like("pending"),
+						"tags":            EachLike("testing", 1),
+						"tests":           EachLike("1", 1),
+						"timezone":        "UTC",
 					}, 1,
 				),
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
-			groups, _ := c.ListContactGroups(context.Background()).Execute()
-			return equal(groups.Data, []statuscake.ContactGroup{
-				statuscake.ContactGroup{
-					ID:   "1",
-					Name: "Operations Team",
-					EmailAddresses: []string{
-						"johnsmith@example.com",
+			windows, _ := c.ListMaintenanceWindows(context.Background()).Execute()
+			return equal(windows.Data, []statuscake.MaintenanceWindow{
+				statuscake.MaintenanceWindow{
+					ID:             "1",
+					Name:           "Monthly Maintenance",
+					End:            time.Date(2000, 2, 1, 12, 30, 0, 0, time.UTC),
+					RepeatInterval: statuscake.MaintenanceWindowRepeatIntervalMonthly,
+					Start:          time.Date(2000, 2, 1, 12, 30, 0, 0, time.UTC),
+					State:          statuscake.MaintenanceWindowStatePending,
+					Tags: []string{
+						"testing",
 					},
-					MobileNumbers: []string{
-						"447712345678",
-					},
-					Integrations: []string{
+					Tests: []string{
 						"1",
 					},
-					PingURL: statuscake.PtrString("https://ping.example.com"),
+					Timezone: "UTC",
 				},
 			})
 		})
 	})
 
-	t.Run("returns an empty list when there are no contact groups", func(t *testing.T) {
+	t.Run("returns an empty list when there are no maintenance windows", func(t *testing.T) {
 		mockProvider.
 			AddInteraction().
-			UponReceiving("A request to get a list of contact groups").
-			WithRequest(http.MethodGet, S("/v1/contact-groups")).
+			UponReceiving("A request to get a list of maintenance windows").
+			WithRequest(http.MethodGet, S("/v1/maintenance-windows")).
 			WithHeaders(matchers.HeadersMatcher{
 				"Accept":        []Matcher{S("application/json")},
 				"Authorization": []Matcher{S("Bearer 123456789")},
@@ -319,50 +328,36 @@ func TestListContactGroups(t *testing.T) {
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
-			groups, _ := c.ListContactGroups(context.Background()).Execute()
-			return equal(groups.Data, []statuscake.ContactGroup{})
+			windows, _ := c.ListMaintenanceWindows(context.Background()).Execute()
+			return equal(windows.Data, []statuscake.MaintenanceWindow{})
 		})
 	})
 }
 
-func TestUpdateContactGroup(t *testing.T) {
+func TestUpdateMaintenanceWindow(t *testing.T) {
 	t.Run("returns a no content status on success", func(t *testing.T) {
 		mockProvider.
 			AddInteraction().
 			Given(ProviderStateV3{
-				Name: "An existing contact group",
+				Name: "An existing maintenance window",
 			}).
-			UponReceiving("A request to update a contact group").
-			WithRequest(http.MethodPut, FromProviderState("/v1/contact-groups/${id}", "/v1/contact-groups/1")).
+			UponReceiving("A request to update a maintenance window").
+			WithRequest(http.MethodPut, FromProviderState("/v1/maintenance-windows/${id}", "/v1/maintenance-windows/1")).
 			WithHeaders(matchers.HeadersMatcher{
 				"Accept":        []Matcher{S("application/json")},
 				"Authorization": []Matcher{S("Bearer 123456789")},
 				"Content-Type":  []Matcher{S("application/x-www-form-urlencoded")},
 			}).
 			WithBody("application/x-www-form-urlencoded", []byte(
-				"email_addresses%5B%5D=&"+
-					"integrations%5B%5D=4&"+
-					"integrations%5B%5D=5&"+
-					"integrations%5B%5D=6&"+
-					"mobile_numbers%5B%5D=447891998195&"+
-					"name=Development+Team&"+
-					"ping_url=https%3A%2F%2Fpong.example.com",
+				"name=Weekly+Maintenance&"+
+					"repeat_interval=1w",
 			)).
 			WillRespondWith(http.StatusNoContent)
 
 		executeTest(t, func(c *statuscake.Client) error {
-			return c.UpdateContactGroup(context.Background(), "1").
-				Name("Development Team").
-				EmailAddresses([]string{}).
-				Integrations([]string{
-					"4",
-					"5",
-					"6",
-				}).
-				MobileNumbers([]string{
-					"447891998195",
-				}).
-				PingURL("https://pong.example.com").
+			return c.UpdateMaintenanceWindow(context.Background(), "1").
+				Name("Weekly Maintenance").
+				RepeatInterval(statuscake.MaintenanceWindowRepeatIntervalWeekly).
 				Execute()
 		})
 	})
@@ -371,54 +366,53 @@ func TestUpdateContactGroup(t *testing.T) {
 		mockProvider.
 			AddInteraction().
 			Given(ProviderStateV3{
-				Name: "An existing contact group",
+				Name: "An existing maintenance window",
 			}).
-			UponReceiving("A request to update an invalid contact group").
-			WithRequest(http.MethodPut, FromProviderState("/v1/contact-groups/${id}", "/v1/contact-groups/1")).
+			UponReceiving("A request to update an invalid maintenance window").
+			WithRequest(http.MethodPut, FromProviderState("/v1/maintenance-windows/${id}", "/v1/maintenance-windows/1")).
 			WithHeaders(matchers.HeadersMatcher{
 				"Accept":        []Matcher{S("application/json")},
 				"Authorization": []Matcher{S("Bearer 123456789")},
 				"Content-Type":  []Matcher{S("application/x-www-form-urlencoded")},
 			}).
 			WithBody("application/x-www-form-urlencoded", []byte(
-				"ping_url=this%2Cis%2Cnot%2Cvalid",
+				"tags%5B%5D=&"+
+					"tests%5B%5D=",
 			)).
 			WillRespondWith(http.StatusBadRequest).
 			WithHeader("Content-Type", S("application/json")).
 			WithJSONBody(Map{
-				"message": Like("The provided parameters are invalid. Check the errors output for detailed information."),
-				"errors": matchers.StructMatcher{
-					"ping_url": EachLike("Ping Url is not a valid URL", 1),
-				},
+				"message": Like("Both test and tags cannot be empty."),
+				"errors":  matchers.StructMatcher{},
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
-			err := c.UpdateContactGroup(context.Background(), "1").
-				PingURL("this,is,not,valid").
+			err := c.UpdateMaintenanceWindow(context.Background(), "1").
+				Tags([]string{}).
+				Tests([]string{}).
 				Execute()
 
 			return equal(err, statuscake.APIError{
 				Status:  http.StatusBadRequest,
-				Message: "The provided parameters are invalid. Check the errors output for detailed information.",
-				Errors: map[string][]string{
-					"ping_url": []string{"Ping Url is not a valid URL"},
-				},
+				Message: "Both test and tags cannot be empty.",
+				Errors:  map[string][]string{},
 			})
 		})
 	})
 
-	t.Run("returns an error when the contact group does not exist", func(t *testing.T) {
+	t.Run("returns an error when the maintenance window does not exist", func(t *testing.T) {
 		mockProvider.
 			AddInteraction().
-			UponReceiving("A request to update a contact group").
-			WithRequest(http.MethodPut, S("/v1/contact-groups/2")).
+			UponReceiving("A request to update a maintenance window").
+			WithRequest(http.MethodPut, S("/v1/maintenance-windows/2")).
 			WithHeaders(matchers.HeadersMatcher{
 				"Accept":        []Matcher{S("application/json")},
 				"Authorization": []Matcher{S("Bearer 123456789")},
 				"Content-Type":  []Matcher{S("application/x-www-form-urlencoded")},
 			}).
 			WithBody("application/x-www-form-urlencoded", []byte(
-				"name=Development+Team",
+				"name=Weekly+Maintenance&"+
+					"repeat_interval=1w",
 			)).
 			WillRespondWith(http.StatusNotFound).
 			WithHeader("Content-Type", S("application/json")).
@@ -428,8 +422,9 @@ func TestUpdateContactGroup(t *testing.T) {
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
-			err := c.UpdateContactGroup(context.Background(), "2").
-				Name("Development Team").
+			err := c.UpdateMaintenanceWindow(context.Background(), "2").
+				Name("Weekly Maintenance").
+				RepeatInterval(statuscake.MaintenanceWindowRepeatIntervalWeekly).
 				Execute()
 
 			return equal(err, statuscake.APIError{

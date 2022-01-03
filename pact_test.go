@@ -1,3 +1,5 @@
+// +build consumer
+
 /*
  * StatusCake API
  *
@@ -30,60 +32,59 @@
 package statuscake_test
 
 import (
+	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
-	"net/url"
+	"os"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/pact-foundation/pact-go/v2/consumer"
+	"github.com/pact-foundation/pact-go/v2/matchers"
 
 	"github.com/StatusCakeDev/statuscake-go"
+	"github.com/StatusCakeDev/statuscake-go/credentials"
 )
 
-func createTestEndpoint(h http.HandlerFunc) (*httptest.Server, *statuscake.Client) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		h.ServeHTTP(w, r)
-	}))
+var mockProvider *consumer.HTTPMockProviderV3
 
-	// Create a StatusCake client using the above server as the host.
-	client := statuscake.NewClient(
-		statuscake.WithHost(server.URL),
-		statuscake.WithHTTPClient(server.Client()),
-	)
-
-	return server, client
+func TestMain(m *testing.M) {
+	var err error
+	mockProvider, err = consumer.NewV3Pact(consumer.MockHTTPProviderConfig{
+		Consumer: "statuscake-go",
+		Provider: "statuscake",
+	})
+	if err != nil {
+		panic("failed to create mock provider")
+	}
+	os.Exit(m.Run())
 }
 
-func mustParse(t *testing.T, r *http.Request) url.Values {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		t.Fatal("failed to read request body")
-	}
+func executeTest(t *testing.T, integrationTest func(*statuscake.Client) error) {
+	err := mockProvider.ExecuteTest(t, func(cfg consumer.MockServerConfig) error {
+		bearer := credentials.NewBearerWithStaticToken("123456789")
+		client := statuscake.NewClient(
+			statuscake.WithRequestCredentials(bearer),
+			statuscake.WithHost(fmt.Sprintf("http://%s:%d", cfg.Host, cfg.Port)),
+		)
 
-	v, err := url.ParseQuery(string(body))
-	if err != nil {
-		t.Fatal("failed to parse request body")
-	}
+		return integrationTest(client)
+	})
 
-	return v
+	if err != nil {
+		t.Error(err)
+	}
 }
 
-func mustRead(t *testing.T, f string) []byte {
-	j, err := ioutil.ReadFile(f)
-	if err != nil {
-		t.Fatal("failed to read JSON file")
-	}
-	return j
-}
-
-// expectEqual is a wrapper around Google go-cmp which mitigates issues
-// surrounding equality when using `relfect.DeepEqual`.
-func expectEqual(t *testing.T, got, expected interface{}) {
+// equal is a wrapper around Google go-cmp which mitigates issues surrounding
+// equality when using `relfect.DeepEqual`.
+func equal(got, expected interface{}) error {
 	if diff := cmp.Diff(got, expected, cmp.AllowUnexported(statuscake.APIError{})); diff != "" {
-		fmt.Println(diff)
-		t.Fail()
+		return errors.New(diff)
 	}
+	return nil
+}
+
+// Status is a custom matcher for status fileds that can be either up or down.
+func Status() matchers.Matcher {
+	return matchers.Regex("up", "(up|down)")
 }

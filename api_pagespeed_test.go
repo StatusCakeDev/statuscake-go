@@ -1,3 +1,5 @@
+// +build consumer
+
 /*
  * StatusCake API
  *
@@ -32,362 +34,582 @@ package statuscake_test
 import (
 	"context"
 	"net/http"
-	"net/url"
 	"testing"
 	"time"
+
+	"github.com/pact-foundation/pact-go/v2/matchers"
+	. "github.com/pact-foundation/pact-go/v2/sugar"
 
 	"github.com/StatusCakeDev/statuscake-go"
 )
 
 func TestCreatePagespeedTest(t *testing.T) {
 	t.Run("returns a created status on success", func(t *testing.T) {
-		s, c := createTestEndpoint(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			expectEqual(t, mustParse(t, r), url.Values{
-				"alert_bigger":     []string{"200"},
-				"alert_slower":     []string{"300"},
-				"alert_smaller":    []string{"20"},
-				"check_rate":       []string{"3600"},
-				"contact_groups[]": []string{"123"},
-				"location_iso":     []string{"DE"},
-				"name":             []string{"statuscake.com"},
-				"paused":           []string{"false"},
-				"website_url":      []string{"https://www.statuscake.com"},
+		mockProvider.
+			AddInteraction().
+			Given(ProviderStateV3{
+				Name: "An existing contact group",
+				Parameters: map[string]interface{}{
+					"group_id": 123,
+				},
+			}).
+			UponReceiving("A request to create a valid pagespeed test").
+			WithRequest(http.MethodPost, S("/v1/pagespeed")).
+			WithHeaders(matchers.HeadersMatcher{
+				"Accept":        []Matcher{S("application/json")},
+				"Authorization": []Matcher{S("Bearer 123456789")},
+				"Content-Type":  []Matcher{S("application/x-www-form-urlencoded")},
+			}).
+			WithBody("application/x-www-form-urlencoded", []byte(
+				"alert_bigger=200&"+
+					"alert_slower=300&"+
+					"alert_smaller=20&"+
+					"check_rate=3600&"+
+					"contact_groups%5B%5D=123&"+
+					"name=statuscake.com&"+
+					"paused=true&"+
+					"region=UK&"+
+					"website_url=https%3A%2F%2Fwww.statuscake.com",
+			)).
+			WillRespondWith(http.StatusCreated).
+			WithHeader("Content-Type", S("application/json")).
+			WithJSONBody(Map{
+				"data": matchers.StructMatcher{
+					"new_id": Like("1"),
+				},
 			})
 
-			w.WriteHeader(http.StatusCreated)
-			w.Write(mustRead(t, "testdata/create-resource-success.json"))
-		}))
-		defer s.Close()
+		executeTest(t, func(c *statuscake.Client) error {
+			res, _ := c.CreatePagespeedTest(context.Background()).
+				Name("statuscake.com").
+				WebsiteURL("https://www.statuscake.com").
+				CheckRate(statuscake.PagespeedTestCheckRateOneHour).
+				AlertBigger(200).
+				AlertSlower(300).
+				AlertSmaller(20).
+				ContactGroups([]string{
+					"123",
+				}).
+				Paused(true).
+				Region(statuscake.PagespeedTestRegionUnitedKingdom).
+				Execute()
 
-		res, err := c.CreatePagespeedTest(context.Background()).
-			Name("statuscake.com").
-			WebsiteURL("https://www.statuscake.com").
-			CheckRate(statuscake.PagespeedTestCheckRateOneHour).
-			ContactGroups([]string{
-				"123",
-			}).
-			AlertBigger(200).
-			AlertSlower(300).
-			AlertSmaller(20).
-			LocationISO(statuscake.PagespeedTestLocationISOGermany).
-			Paused(false).
-			Execute()
-		if err != nil {
-			t.Fatal(err.Error())
-		}
-
-		expectEqual(t, res.Data.NewID, "2")
+			return equal(res.Data.NewID, "1")
+		})
 	})
 
 	t.Run("returns an error if the request fails", func(t *testing.T) {
-		s, c := createTestEndpoint(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write(mustRead(t, "testdata/invalid-website-url-error.json"))
-		}))
-		defer s.Close()
-
-		_, err := c.CreatePagespeedTest(context.Background()).
-			Name("statuscake.com").
-			WebsiteURL("this,is,not,valid").
-			CheckRate(statuscake.PagespeedTestCheckRateOneHour).
-			ContactGroups([]string{
-				"123",
+		mockProvider.
+			AddInteraction().
+			UponReceiving("A request to create an invalid pagespeed test").
+			WithRequest(http.MethodPost, S("/v1/pagespeed")).
+			WithHeaders(matchers.HeadersMatcher{
+				"Accept":        []Matcher{S("application/json")},
+				"Authorization": []Matcher{S("Bearer 123456789")},
+				"Content-Type":  []Matcher{S("application/x-www-form-urlencoded")},
 			}).
-			AlertBigger(200).
-			AlertSlower(300).
-			AlertSmaller(20).
-			LocationISO(statuscake.PagespeedTestLocationISOGermany).
-			Paused(false).
-			Execute()
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
+			WithBody("application/x-www-form-urlencoded", []byte(
+				"check_rate=3600&"+
+					"name=statuscake.com&"+
+					"region=UK&"+
+					"website_url=this%2Cis%2Cnot%2Cvalid",
+			)).
+			WillRespondWith(http.StatusBadRequest).
+			WithHeader("Content-Type", S("application/json")).
+			WithJSONBody(Map{
+				"message": Like("The provided parameters are invalid. Check the errors output for detailed information."),
+				"errors": matchers.StructMatcher{
+					"website_url": EachLike("Website Url is not a valid URL", 1),
+				},
+			})
 
-		expectEqual(t, err, statuscake.APIError{
-			Status:  http.StatusBadRequest,
-			Message: "The provided parameters are invalid. Check the errors output for details information.",
-			Errors: map[string][]string{
-				"website_url": []string{"Website Url is not a valid URL"},
-			},
+		executeTest(t, func(c *statuscake.Client) error {
+			_, err := c.CreatePagespeedTest(context.Background()).
+				Name("statuscake.com").
+				WebsiteURL("this,is,not,valid").
+				CheckRate(statuscake.PagespeedTestCheckRateOneHour).
+				Region(statuscake.PagespeedTestRegionUnitedKingdom).
+				Execute()
+
+			return equal(err, statuscake.APIError{
+				Status:  http.StatusBadRequest,
+				Message: "The provided parameters are invalid. Check the errors output for detailed information.",
+				Errors: map[string][]string{
+					"website_url": []string{"Website Url is not a valid URL"},
+				},
+			})
 		})
 	})
 }
 
 func TestDeletePagespeedTest(t *testing.T) {
 	t.Run("returns a no content status on success", func(t *testing.T) {
-		s, c := createTestEndpoint(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusNoContent)
-		}))
-		defer s.Close()
+		mockProvider.
+			AddInteraction().
+			Given(ProviderStateV3{
+				Name: "An existing pagespeed test",
+			}).
+			UponReceiving("A request to delete a pagespeed test").
+			WithRequest(http.MethodDelete, FromProviderState("/v1/pagespeed/${id}", "/v1/pagespeed/1")).
+			WithHeaders(matchers.HeadersMatcher{
+				"Accept":        []Matcher{S("application/json")},
+				"Authorization": []Matcher{S("Bearer 123456789")},
+			}).
+			WillRespondWith(http.StatusNoContent)
 
-		err := c.DeletePagespeedTest(context.Background(), "2").Execute()
-		if err != nil {
-			t.Fatal(err.Error())
-		}
+		executeTest(t, func(c *statuscake.Client) error {
+			return c.DeletePagespeedTest(context.Background(), "1").Execute()
+		})
 	})
 
-	t.Run("returns an error when the request fails", func(t *testing.T) {
-		s, c := createTestEndpoint(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write(mustRead(t, "testdata/fetch-resource-error.json"))
-		}))
-		defer s.Close()
+	t.Run("returns an error when the pagespeed test does not exist", func(t *testing.T) {
+		mockProvider.
+			AddInteraction().
+			UponReceiving("A request to delete a pagespeed test").
+			WithRequest(http.MethodDelete, S("/v1/pagespeed/2")).
+			WithHeaders(matchers.HeadersMatcher{
+				"Accept":        []Matcher{S("application/json")},
+				"Authorization": []Matcher{S("Bearer 123456789")},
+			}).
+			WillRespondWith(http.StatusNotFound).
+			WithHeader("Content-Type", S("application/json")).
+			WithJSONBody(Map{
+				"message": Like("No results found"),
+				"errors":  matchers.StructMatcher{},
+			})
 
-		err := c.DeletePagespeedTest(context.Background(), "3").Execute()
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
-
-		expectEqual(t, err, statuscake.APIError{
-			Status:  http.StatusNotFound,
-			Message: "No results found",
-			Errors:  map[string][]string{},
+		executeTest(t, func(c *statuscake.Client) error {
+			err := c.DeletePagespeedTest(context.Background(), "2").Execute()
+			return equal(err, statuscake.APIError{
+				Status:  http.StatusNotFound,
+				Message: "No results found",
+				Errors:  map[string][]string{},
+			})
 		})
 	})
 }
 
 func TestGetPagespeedTest(t *testing.T) {
 	t.Run("returns a pagespeed test on success", func(t *testing.T) {
-		s, c := createTestEndpoint(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Write(mustRead(t, "testdata/get-pagespeed-test-success.json"))
-		}))
-		defer s.Close()
+		mockProvider.
+			AddInteraction().
+			Given(ProviderStateV3{
+				Name: "An existing pagespeed test and contact group",
+			}).
+			UponReceiving("A request to get a pagespeed test").
+			WithRequest(http.MethodGet, FromProviderState("/v1/pagespeed/${id}", "/v1/pagespeed/1")).
+			WithHeaders(matchers.HeadersMatcher{
+				"Accept":        []Matcher{S("application/json")},
+				"Authorization": []Matcher{S("Bearer 123456789")},
+			}).
+			WillRespondWith(http.StatusOK).
+			WithHeader("Content-Type", S("application/json")).
+			WithJSONBody(Map{
+				"data": matchers.StructMatcher{
+					"id":             FromProviderState("${id}", "1"),
+					"name":           Like("statuscake.com"),
+					"website_url":    Like("https://www.statuscake.com"),
+					"check_rate":     Integer(3600),
+					"alert_bigger":   Integer(200),
+					"alert_slower":   Integer(300),
+					"alert_smaller":  Integer(20),
+					"contact_groups": EachLike("123", 1),
+					"latest_stats": matchers.StructMatcher{
+						"requests":     Integer(27),
+						"has_issue":    Like(true),
+						"latest_issue": Like("The Total Load Time of the Page (20216/ms) is larger than the alert threshold of 300/ms"),
+					},
+					"location": Like("PAGESPD-UK1"),
+					"paused":   Like(true),
+				},
+			})
 
-		test, err := c.GetPagespeedTest(context.Background(), "2").Execute()
-		if err != nil {
-			t.Fatal(err.Error())
-		}
-
-		expectEqual(t, test.Data, statuscake.PagespeedTest{
-			ID:         "2",
-			Name:       "statuscake.com",
-			Paused:     false,
-			WebsiteURL: "https://www.statuscake.com",
-			CheckRate:  statuscake.PagespeedTestCheckRateOneHour,
-			ContactGroups: []string{
-				"123",
-			},
-			AlertBigger:  200,
-			AlertSlower:  300,
-			AlertSmaller: 20,
-			Location:     "DE4.PAGESPEED.STATUSCAKE.NET",
-			LocationISO:  statuscake.PagespeedTestLocationISOGermany,
-			LatestStats: &statuscake.PagespeedTestStats{
-				Requests:    27,
-				HasIssue:    true,
-				LatestIssue: statuscake.PtrString("The Total Load Time of the Page (20216/ms) is larger than the alert threshold of 300/ms"),
-			},
+		executeTest(t, func(c *statuscake.Client) error {
+			test, _ := c.GetPagespeedTest(context.Background(), "1").Execute()
+			return equal(test.Data, statuscake.PagespeedTest{
+				ID:           "1",
+				Name:         "statuscake.com",
+				WebsiteURL:   "https://www.statuscake.com",
+				CheckRate:    statuscake.PagespeedTestCheckRateOneHour,
+				AlertBigger:  200,
+				AlertSlower:  300,
+				AlertSmaller: 20,
+				ContactGroups: []string{
+					"123",
+				},
+				LatestStats: &statuscake.PagespeedTestStats{
+					Requests:    27,
+					HasIssue:    true,
+					LatestIssue: statuscake.PtrString("The Total Load Time of the Page (20216/ms) is larger than the alert threshold of 300/ms"),
+				},
+				Location: "PAGESPD-UK1",
+				Paused:   true,
+			})
 		})
 	})
 
-	t.Run("returns an error when the request fails", func(t *testing.T) {
-		s, c := createTestEndpoint(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write(mustRead(t, "testdata/fetch-resource-error.json"))
-		}))
-		defer s.Close()
+	t.Run("returns an error when the pagespeed test does not exist", func(t *testing.T) {
+		mockProvider.
+			AddInteraction().
+			UponReceiving("A request to get a pagespeed test").
+			WithRequest(http.MethodGet, S("/v1/pagespeed/2")).
+			WithHeaders(matchers.HeadersMatcher{
+				"Accept":        []Matcher{S("application/json")},
+				"Authorization": []Matcher{S("Bearer 123456789")},
+			}).
+			WillRespondWith(http.StatusNotFound).
+			WithHeader("Content-Type", S("application/json")).
+			WithJSONBody(Map{
+				"message": Like("No results found"),
+				"errors":  matchers.StructMatcher{},
+			})
 
-		_, err := c.GetPagespeedTest(context.Background(), "3").Execute()
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
-
-		expectEqual(t, err, statuscake.APIError{
-			Status:  http.StatusNotFound,
-			Message: "No results found",
-			Errors:  map[string][]string{},
+		executeTest(t, func(c *statuscake.Client) error {
+			_, err := c.GetPagespeedTest(context.Background(), "2").Execute()
+			return equal(err, statuscake.APIError{
+				Status:  http.StatusNotFound,
+				Message: "No results found",
+				Errors:  map[string][]string{},
+			})
 		})
 	})
 }
 
 func TestListPagespeedTests(t *testing.T) {
 	t.Run("returns a list of pagespeed tests on success", func(t *testing.T) {
-		s, c := createTestEndpoint(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Write(mustRead(t, "testdata/list-pagespeed-tests-success.json"))
-		}))
-		defer s.Close()
+		mockProvider.
+			AddInteraction().
+			Given(ProviderStateV3{
+				Name: "Existing pagespeed tests and contact group",
+			}).
+			UponReceiving("A request to get a list of pagespeed tests").
+			WithRequest(http.MethodGet, S("/v1/pagespeed")).
+			WithHeaders(matchers.HeadersMatcher{
+				"Accept":        []Matcher{S("application/json")},
+				"Authorization": []Matcher{S("Bearer 123456789")},
+			}).
+			WillRespondWith(http.StatusOK).
+			WithHeader("Content-Type", S("application/json")).
+			WithJSONBody(Map{
+				"data": EachLike(
+					matchers.StructMatcher{
+						"id":             FromProviderState("${id}", "1"),
+						"name":           Like("statuscake.com"),
+						"website_url":    Like("https://www.statuscake.com"),
+						"check_rate":     Integer(3600),
+						"alert_bigger":   Integer(200),
+						"alert_slower":   Integer(300),
+						"alert_smaller":  Integer(20),
+						"contact_groups": EachLike("123", 1),
+						"latest_stats": matchers.StructMatcher{
+							"requests":     Integer(27),
+							"has_issue":    Like(true),
+							"latest_issue": Like("The Total Load Time of the Page (20216/ms) is larger than the alert threshold of 300/ms"),
+						},
+						"location": Like("PAGESPD-UK1"),
+						"paused":   Like(true),
+					}, 1,
+				),
+			})
 
-		tests, err := c.ListPagespeedTests(context.Background()).Execute()
-		if err != nil {
-			t.Fatal(err.Error())
-		}
-
-		expectEqual(t, tests.Data, []statuscake.PagespeedTest{
-			statuscake.PagespeedTest{
-				ID:            "1",
-				Name:          "google.com",
-				Paused:        false,
-				WebsiteURL:    "https://www.google.com",
-				CheckRate:     statuscake.PagespeedTestCheckRateFiveMinutes,
-				ContactGroups: []string{},
-				AlertBigger:   0,
-				AlertSlower:   0,
-				AlertSmaller:  0,
-				Location:      "PAGESPD-AU2",
-				LocationISO:   statuscake.PagespeedTestLocationISOAustralia,
-			},
-			statuscake.PagespeedTest{
-				ID:         "2",
-				Name:       "statuscake.com",
-				Paused:     false,
-				WebsiteURL: "https://www.statuscake.com",
-				CheckRate:  statuscake.PagespeedTestCheckRateOneHour,
-				ContactGroups: []string{
-					"123",
+		executeTest(t, func(c *statuscake.Client) error {
+			tests, _ := c.ListPagespeedTests(context.Background()).Execute()
+			return equal(tests.Data, []statuscake.PagespeedTest{
+				statuscake.PagespeedTest{
+					ID:           "1",
+					Name:         "statuscake.com",
+					WebsiteURL:   "https://www.statuscake.com",
+					CheckRate:    statuscake.PagespeedTestCheckRateOneHour,
+					AlertBigger:  200,
+					AlertSlower:  300,
+					AlertSmaller: 20,
+					ContactGroups: []string{
+						"123",
+					},
+					LatestStats: &statuscake.PagespeedTestStats{
+						Requests:    27,
+						HasIssue:    true,
+						LatestIssue: statuscake.PtrString("The Total Load Time of the Page (20216/ms) is larger than the alert threshold of 300/ms"),
+					},
+					Location: "PAGESPD-UK1",
+					Paused:   true,
 				},
-				AlertBigger:  200,
-				AlertSlower:  300,
-				AlertSmaller: 20,
-				Location:     "DE4.PAGESPEED.STATUSCAKE.NET",
-				LocationISO:  statuscake.PagespeedTestLocationISOGermany,
-				LatestStats: &statuscake.PagespeedTestStats{
-					Requests:    27,
-					HasIssue:    true,
-					LatestIssue: statuscake.PtrString("The Total Load Time of the Page (20216/ms) is larger than the alert threshold of 300/ms"),
-				},
-			},
+			})
 		})
 	})
 
-	t.Run("returns an error when the request fails", func(t *testing.T) {
-		s, c := createTestEndpoint(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write(mustRead(t, "testdata/fetch-resource-error.json"))
-		}))
-		defer s.Close()
+	t.Run("returns an empty list when there are no pagespeed tests", func(t *testing.T) {
+		mockProvider.
+			AddInteraction().
+			UponReceiving("A request to get a list of pagespeed tests").
+			WithRequest(http.MethodGet, S("/v1/pagespeed")).
+			WithHeaders(matchers.HeadersMatcher{
+				"Accept":        []Matcher{S("application/json")},
+				"Authorization": []Matcher{S("Bearer 123456789")},
+			}).
+			WillRespondWith(http.StatusOK).
+			WithHeader("Content-Type", S("application/json")).
+			WithJSONBody(Map{
+				"data": Like([]interface{}{}),
+			})
 
-		_, err := c.ListPagespeedTests(context.Background()).Execute()
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
-
-		expectEqual(t, err, statuscake.APIError{
-			Status:  http.StatusNotFound,
-			Message: "No results found",
-			Errors:  map[string][]string{},
+		executeTest(t, func(c *statuscake.Client) error {
+			tests, _ := c.ListPagespeedTests(context.Background()).Execute()
+			return equal(tests.Data, []statuscake.PagespeedTest{})
 		})
 	})
 }
 
 func TestListPagespeedTestHistory(t *testing.T) {
 	t.Run("returns a list of pagespeed test history results on success", func(t *testing.T) {
-		s, c := createTestEndpoint(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Write(mustRead(t, "testdata/list-pagespeed-test-history-success.json"))
-		}))
-		defer s.Close()
+		mockProvider.
+			AddInteraction().
+			Given(ProviderStateV3{
+				Name: "An existing pagespeed test with history results",
+			}).
+			UponReceiving("A request to get a list of pagespeed test history results").
+			WithRequest(http.MethodGet, FromProviderState("/v1/pagespeed/${id}/history", "/v1/pagespeed/1/history")).
+			WithQuery("days", Integer(10)).
+			WithHeaders(matchers.HeadersMatcher{
+				"Accept":        []Matcher{S("application/json")},
+				"Authorization": []Matcher{S("Bearer 123456789")},
+			}).
+			WillRespondWith(http.StatusOK).
+			WithHeader("Content-Type", S("application/json")).
+			WithJSONBody(Map{
+				"data": matchers.StructMatcher{
+					"aggregated": matchers.StructMatcher{
+						"filesize": matchers.StructMatcher{
+							"min": Decimal(0),
+							"max": Decimal(598.384),
+							"avg": Decimal(598.384),
+						},
+						"loadtime": matchers.StructMatcher{
+							"min": Integer(0),
+							"max": Integer(1490),
+							"avg": Decimal(1490),
+						},
+						"requests": matchers.StructMatcher{
+							"min": Integer(0),
+							"max": Integer(4),
+							"avg": Decimal(4),
+						},
+						"results": Integer(1),
+					},
+					"results": EachLike(
+						matchers.StructMatcher{
+							"created_at":   Timestamp(),
+							"loadtime":     Integer(1490),
+							"filesize":     Decimal(598.384),
+							"har_location": Like("https://16a0fd6b5b5bece1d29a-7aa19249e604542958e6a694f67d0bbf.ssl.cf5.rackcdn.com/53a6b075-3b93-4752-b707-93b08fe5ae44.json"),
+							"requests":     Integer(4),
+							"throttling":   Like("NONE"),
+						}, 1,
+					),
+				},
+			})
 
-		histroy, err := c.ListPagespeedTestHistory(context.Background(), "2").
-			Days(10).
-			Execute()
-		if err != nil {
-			t.Fatal(err.Error())
-		}
+		executeTest(t, func(c *statuscake.Client) error {
+			results, _ := c.ListPagespeedTestHistory(context.Background(), "1").
+				Days(10).
+				Execute()
 
-		expectEqual(t, histroy.Data, statuscake.PagespeedTestHistoryData{
-			Aggregated: statuscake.PagespeedTestHistoryDataAggregated{
-				Loadtime: statuscake.PagespeedTestHistoryDataAggregatedLoadtime{
-					Min: 0,
-					Max: 1490,
-					Avg: 1490,
+			return equal(results.Data, statuscake.PagespeedTestHistoryData{
+				Aggregated: statuscake.PagespeedTestHistoryDataAggregated{
+					Filesize: statuscake.PagespeedTestHistoryDataAggregatedFilesize{
+						Min: 0,
+						Max: 598.384,
+						Avg: 598.384,
+					},
+					Loadtime: statuscake.PagespeedTestHistoryDataAggregatedLoadtime{
+						Min: 0,
+						Max: 1490,
+						Avg: 1490,
+					},
+					Requests: statuscake.PagespeedTestHistoryDataAggregatedRequests{
+						Min: 0,
+						Max: 4,
+						Avg: 4,
+					},
+					Results: 1,
 				},
-				Filesize: statuscake.PagespeedTestHistoryDataAggregatedFilesize{
-					Min: 0,
-					Max: 598.384,
-					Avg: 598.384,
+				Results: []statuscake.PagespeedTestHistoryResult{
+					statuscake.PagespeedTestHistoryResult{
+						Created:     time.Date(2000, 2, 1, 12, 30, 0, 0, time.UTC),
+						Filesize:    598.384,
+						HARLocation: "https://16a0fd6b5b5bece1d29a-7aa19249e604542958e6a694f67d0bbf.ssl.cf5.rackcdn.com/53a6b075-3b93-4752-b707-93b08fe5ae44.json",
+						Loadtime:    1490,
+						Requests:    4,
+						Throttling:  statuscake.PagespeedTestThrottlingNone,
+					},
 				},
-				Requests: statuscake.PagespeedTestHistoryDataAggregatedRequests{
-					Min: 0,
-					Max: 4,
-					Avg: 4,
-				},
-				Results: 1,
-			},
-			Results: map[string]statuscake.PagespeedTestHistoryResult{
-				"1611241767": statuscake.PagespeedTestHistoryResult{
-					Created:     time.Date(2021, 1, 21, 15, 9, 27, 0, time.UTC),
-					Loadtime:    1490,
-					Requests:    4,
-					Filesize:    598.384,
-					Throttling:  statuscake.PagespeedTestThrottlingNone,
-					HARLocation: "https://16a0fd6b5b5bece1d29a-7aa19249e604542958e6a694f67d0bbf.ssl.cf5.rackcdn.com/53a6b075-3b93-4752-b707-93b08fe5ae44.json",
-				},
-			},
+			})
 		})
 	})
 
-	t.Run("returns an error when the request fails", func(t *testing.T) {
-		s, c := createTestEndpoint(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write(mustRead(t, "testdata/fetch-resource-error.json"))
-		}))
-		defer s.Close()
+	t.Run("returns an error when the pagespeed test does not exist", func(t *testing.T) {
+		mockProvider.
+			AddInteraction().
+			UponReceiving("A request to get a list of pagespeed test history results").
+			WithRequest(http.MethodGet, S("/v1/pagespeed/2/history")).
+			WithQuery("days", Integer(10)).
+			WithHeaders(matchers.HeadersMatcher{
+				"Accept":        []Matcher{S("application/json")},
+				"Authorization": []Matcher{S("Bearer 123456789")},
+			}).
+			WillRespondWith(http.StatusNotFound).
+			WithHeader("Content-Type", S("application/json")).
+			WithJSONBody(Map{
+				"message": Like("No results found"),
+				"errors":  matchers.StructMatcher{},
+			})
 
-		_, err := c.ListPagespeedTestHistory(context.Background(), "3").
-			Days(10).
-			Execute()
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
+		executeTest(t, func(c *statuscake.Client) error {
+			_, err := c.ListPagespeedTestHistory(context.Background(), "2").
+				Days(10).
+				Execute()
 
-		expectEqual(t, err, statuscake.APIError{
-			Status:  http.StatusNotFound,
-			Message: "No results found",
-			Errors:  map[string][]string{},
+			return equal(err, statuscake.APIError{
+				Status:  http.StatusNotFound,
+				Message: "No results found",
+				Errors:  map[string][]string{},
+			})
+		})
+	})
+
+	t.Run("returns an empty result set when there are no pagespeed test history results", func(t *testing.T) {
+		mockProvider.
+			AddInteraction().
+			Given(ProviderStateV3{
+				Name: "An existing pagespeed test",
+			}).
+			UponReceiving("A request to get a list of pagespeed test history results").
+			WithRequest(http.MethodGet, FromProviderState("/v1/pagespeed/${id}/history", "/v1/pagespeed/1/history")).
+			WithQuery("days", Integer(10)).
+			WithHeaders(matchers.HeadersMatcher{
+				"Accept":        []Matcher{S("application/json")},
+				"Authorization": []Matcher{S("Bearer 123456789")},
+			}).
+			WillRespondWith(http.StatusOK).
+			WithHeader("Content-Type", S("application/json")).
+			WithJSONBody(Map{
+				"data": matchers.StructMatcher{},
+			})
+
+		executeTest(t, func(c *statuscake.Client) error {
+			results, _ := c.ListPagespeedTestHistory(context.Background(), "1").
+				Days(10).
+				Execute()
+
+			return equal(results.Data, statuscake.PagespeedTestHistoryData{})
 		})
 	})
 }
 
 func TestUpdatePagespeedTest(t *testing.T) {
 	t.Run("returns a no content status on success", func(t *testing.T) {
-		s, c := createTestEndpoint(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			expectEqual(t, mustParse(t, r), url.Values{
-				"alert_bigger":     []string{"10"},
-				"alert_slower":     []string{"100"},
-				"alert_smaller":    []string{"1"},
-				"check_rate":       []string{"1800"},
-				"contact_groups[]": []string{""},
-				"location_iso":     []string{"UK"},
-				"name":             []string{"example.com"},
-				"paused":           []string{"true"},
-			})
+		mockProvider.
+			AddInteraction().
+			Given(ProviderStateV3{
+				Name: "An existing pagespeed test",
+			}).
+			UponReceiving("A request to update a pagespeed test").
+			WithRequest(http.MethodPut, FromProviderState("/v1/pagespeed/${id}", "/v1/pagespeed/1")).
+			WithHeaders(matchers.HeadersMatcher{
+				"Accept":        []Matcher{S("application/json")},
+				"Authorization": []Matcher{S("Bearer 123456789")},
+				"Content-Type":  []Matcher{S("application/x-www-form-urlencoded")},
+			}).
+			WithBody("application/x-www-form-urlencoded", []byte(
+				"alert_bigger=10&"+
+					"alert_slower=100&"+
+					"alert_smaller=1&"+
+					"check_rate=1800&"+
+					"contact_groups%5B%5D=&"+
+					"name=example.com&"+
+					"paused=false",
+			)).
+			WillRespondWith(http.StatusNoContent)
 
-			w.WriteHeader(http.StatusNoContent)
-		}))
-		defer s.Close()
-
-		err := c.UpdatePagespeedTest(context.Background(), "2").
-			Name("example.com").
-			Paused(true).
-			CheckRate(statuscake.PagespeedTestCheckRateThirtyMinutes).
-			ContactGroups([]string{}).
-			AlertBigger(10).
-			AlertSlower(100).
-			AlertSmaller(1).
-			LocationISO(statuscake.PagespeedTestLocationISOUnitedKingdom).
-			Execute()
-		if err != nil {
-			t.Fatal(err.Error())
-		}
+		executeTest(t, func(c *statuscake.Client) error {
+			return c.UpdatePagespeedTest(context.Background(), "1").
+				Name("example.com").
+				CheckRate(statuscake.PagespeedTestCheckRateThirtyMinutes).
+				AlertBigger(10).
+				AlertSlower(100).
+				AlertSmaller(1).
+				ContactGroups([]string{}).
+				Paused(false).
+				Execute()
+		})
 	})
 
 	t.Run("returns an error if the request fails", func(t *testing.T) {
-		s, c := createTestEndpoint(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write(mustRead(t, "testdata/fetch-resource-error.json"))
-		}))
-		defer s.Close()
+		mockProvider.
+			AddInteraction().
+			Given(ProviderStateV3{
+				Name: "An existing pagespeed test",
+			}).
+			UponReceiving("A request to update an invalid pagespeed test").
+			WithRequest(http.MethodPut, FromProviderState("/v1/pagespeed/${id}", "/v1/pagespeed/1")).
+			WithHeaders(matchers.HeadersMatcher{
+				"Accept":        []Matcher{S("application/json")},
+				"Authorization": []Matcher{S("Bearer 123456789")},
+				"Content-Type":  []Matcher{S("application/x-www-form-urlencoded")},
+			}).
+			WithBody("application/x-www-form-urlencoded", []byte(
+				"region=DE",
+			)).
+			WillRespondWith(http.StatusBadRequest).
+			WithHeader("Content-Type", S("application/json")).
+			WithJSONBody(Map{
+				"message": Like("No server available for ISO 'DE'. Please select a different ISO or contact support."),
+				"errors":  matchers.StructMatcher{},
+			})
 
-		err := c.UpdatePagespeedTest(context.Background(), "3").
-			Name("example.com").
-			Execute()
-		if err == nil {
-			t.Fatal("expected error, got nil")
-		}
+		executeTest(t, func(c *statuscake.Client) error {
+			err := c.UpdatePagespeedTest(context.Background(), "1").
+				Region(statuscake.PagespeedTestRegionGermany).
+				Execute()
 
-		expectEqual(t, err, statuscake.APIError{
-			Status:  http.StatusNotFound,
-			Message: "No results found",
-			Errors:  map[string][]string{},
+			return equal(err, statuscake.APIError{
+				Status:  http.StatusBadRequest,
+				Message: "No server available for ISO 'DE'. Please select a different ISO or contact support.",
+				Errors:  map[string][]string{},
+			})
+		})
+	})
+
+	t.Run("returns an error when the pagespeed test does not exist", func(t *testing.T) {
+		mockProvider.
+			AddInteraction().
+			UponReceiving("A request to update a pagespeed test").
+			WithRequest(http.MethodPut, S("/v1/pagespeed/2")).
+			WithHeaders(matchers.HeadersMatcher{
+				"Accept":        []Matcher{S("application/json")},
+				"Authorization": []Matcher{S("Bearer 123456789")},
+				"Content-Type":  []Matcher{S("application/x-www-form-urlencoded")},
+			}).
+			WithBody("application/x-www-form-urlencoded", []byte(
+				"paused=false",
+			)).
+			WillRespondWith(http.StatusNotFound).
+			WithHeader("Content-Type", S("application/json")).
+			WithJSONBody(Map{
+				"message": Like("No results found"),
+				"errors":  matchers.StructMatcher{},
+			})
+
+		executeTest(t, func(c *statuscake.Client) error {
+			err := c.UpdatePagespeedTest(context.Background(), "2").
+				Paused(false).
+				Execute()
+
+			return equal(err, statuscake.APIError{
+				Status:  http.StatusNotFound,
+				Message: "No results found",
+				Errors:  map[string][]string{},
+			})
 		})
 	})
 }
