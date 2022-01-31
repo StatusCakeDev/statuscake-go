@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/StatusCakeDev/statuscake-go"
+	"github.com/StatusCakeDev/statuscake-go/credentials"
 )
 
 func main() {
@@ -15,24 +16,25 @@ func main() {
 		panic("STATUSCAKE_API_TOKEN not set in environment")
 	}
 
-	client := statuscake.NewAPIClient(apiToken)
+	bearer := credentials.NewBearerWithStaticToken(apiToken)
+	client := statuscake.NewClient(statuscake.WithRequestCredentials(bearer))
 
 	res, err := client.CreateContactGroup(context.Background()).
 		Name("Operations Team").
-		PingURL("https://ping.example.com").
 		EmailAddresses([]string{
 			"johnsmith@example.com",
 			"janesmith@example.com",
-		}).
-		MobileNumbers([]string{
-			"447712345678",
-			"447987462344",
 		}).
 		Integrations([]string{
 			"1",
 			"2",
 			"3",
 		}).
+		MobileNumbers([]string{
+			"447712345678",
+			"447987462344",
+		}).
+		PingURL("https://ping.example.com").
 		Execute()
 	if err != nil {
 		printError(err)
@@ -51,16 +53,16 @@ func main() {
 
 	err = client.UpdateContactGroup(context.Background(), groupID).
 		Name("Development Team").
-		PingURL("https://ping.example.com/groups").
 		EmailAddresses([]string{}). // Remove all email addresses.
-		MobileNumbers([]string{
-			"447891998195",
-		}).
 		Integrations([]string{
 			"4",
 			"5",
 			"6",
 		}).
+		MobileNumbers([]string{
+			"447891998195",
+		}).
+		PingURL("https://ping.example.com/groups").
 		Execute()
 	if err != nil {
 		printError(err)

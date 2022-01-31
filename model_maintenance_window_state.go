@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -46,6 +46,7 @@ const (
 	MaintenanceWindowStatePending MaintenanceWindowState = "pending"
 )
 
+// Unmarshal JSON data into any of the pointers in the type.
 func (v *MaintenanceWindowState) UnmarshalJSON(src []byte) error {
 	var value string
 	if err := json.Unmarshal(src, &value); err != nil {
@@ -66,7 +67,7 @@ func (v MaintenanceWindowState) Valid() bool {
 	return v == MaintenanceWindowStateActive || v == MaintenanceWindowStatePaused || v == MaintenanceWindowStatePending
 }
 
-// MaintenanceWindowStateValues returns the values of MaintenanceWindowState
+// MaintenanceWindowStateValues returns the values of MaintenanceWindowState.
 func MaintenanceWindowStateValues() []string {
 	return []string{
 		"active",

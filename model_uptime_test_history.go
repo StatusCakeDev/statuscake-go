@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -35,19 +35,21 @@ import (
 
 // UptimeTestHistory struct for UptimeTestHistory
 type UptimeTestHistory struct {
-	Data map[string]UptimeTestHistoryResult `json:"data"`
+	// List of uptime check history results
+	Data []UptimeTestHistoryResult `json:"data"`
 }
 
 // NewUptimeTestHistory instantiates a new UptimeTestHistory object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewUptimeTestHistory(data map[string]UptimeTestHistoryResult) *UptimeTestHistory {
+func NewUptimeTestHistory(data []UptimeTestHistoryResult) *UptimeTestHistory {
 	return &UptimeTestHistory{
 		Data: data,
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o UptimeTestHistory) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {

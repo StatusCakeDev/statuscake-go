@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -52,6 +52,7 @@ const (
 	PagespeedTestThrottlingGPRS PagespeedTestThrottling = "GPRS"
 )
 
+// Unmarshal JSON data into any of the pointers in the type.
 func (v *PagespeedTestThrottling) UnmarshalJSON(src []byte) error {
 	var value string
 	if err := json.Unmarshal(src, &value); err != nil {
@@ -72,7 +73,7 @@ func (v PagespeedTestThrottling) Valid() bool {
 	return v == PagespeedTestThrottlingNone || v == PagespeedTestThrottlingFast3G || v == PagespeedTestThrottlingSlow3G || v == PagespeedTestThrottling4G || v == PagespeedTestThrottlingEDGE || v == PagespeedTestThrottlingGPRS
 }
 
-// PagespeedTestThrottlingValues returns the values of PagespeedTestThrottling
+// PagespeedTestThrottlingValues returns the values of PagespeedTestThrottling.
 func PagespeedTestThrottlingValues() []string {
 	return []string{
 		"NONE",

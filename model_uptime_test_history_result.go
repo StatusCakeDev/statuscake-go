@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -36,14 +36,14 @@ import (
 
 // UptimeTestHistoryResult struct for UptimeTestHistoryResult
 type UptimeTestHistoryResult struct {
-	// Uptime test status code
-	StatusCode *int32 `json:"status_code,omitempty"`
-	// The server location the test ran
+	// Creation time of the result (RFC3339 format)
+	Created time.Time `json:"created_at"`
+	// The server location the check ran
 	Location *string `json:"location,omitempty"`
 	// Recorded loadtime (ms)
 	Performance *int64 `json:"performance,omitempty"`
-	// Creation time of the result (RFC3339 format)
-	Created time.Time `json:"created_at"`
+	// Uptime check status code
+	StatusCode *int32 `json:"status_code,omitempty"`
 }
 
 // NewUptimeTestHistoryResult instantiates a new UptimeTestHistoryResult object.
@@ -56,10 +56,11 @@ func NewUptimeTestHistoryResult(createdAt time.Time) *UptimeTestHistoryResult {
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o UptimeTestHistoryResult) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.StatusCode != nil {
-		toSerialize["status_code"] = o.StatusCode
+	if true {
+		toSerialize["created_at"] = o.Created
 	}
 	if o.Location != nil {
 		toSerialize["location"] = o.Location
@@ -67,8 +68,8 @@ func (o UptimeTestHistoryResult) MarshalJSON() ([]byte, error) {
 	if o.Performance != nil {
 		toSerialize["performance"] = o.Performance
 	}
-	if true {
-		toSerialize["created_at"] = o.Created
+	if o.StatusCode != nil {
+		toSerialize["status_code"] = o.StatusCode
 	}
 	return json.Marshal(toSerialize)
 }

@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -35,45 +35,49 @@ import (
 
 // SSLTestFlags struct for SSLTestFlags
 type SSLTestFlags struct {
-	// Whether the SSL certificate has Extended Validation (EV)
-	IsExtended bool `json:"is_extended"`
+	// Wherher follow redirects has been enabled for the SSL check
+	FollowRedirects bool `json:"follow_redirects"`
+	// Whether the requested page has mixed content
+	HasMixed bool `json:"has_mixed"`
 	// Whether the SSL certificate has Perfect Forward Security enabled
 	HasPFS bool `json:"has_pfs"`
 	// Whether the SSL certificate has errors
 	IsBroken bool `json:"is_broken"`
 	// Whether the SSL certificate has expired
 	IsExpired bool `json:"is_expired"`
+	// Whether the SSL certificate has Extended Validation (EV)
+	IsExtended bool `json:"is_extended"`
 	// Whether the SSL certificate is missing
 	IsMissing bool `json:"is_missing"`
 	// Whether the SSL certificate has been revoked by the certificate authority
 	IsRevoked bool `json:"is_revoked"`
-	// Whether the requested page has mixed content
-	HasMixed bool `json:"has_mixed"`
-	// Wherher follow redirects has been enabled for the SSL test
-	FollowRedirects bool `json:"follow_redirects"`
 }
 
 // NewSSLTestFlags instantiates a new SSLTestFlags object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewSSLTestFlags(isExtended bool, hasPfs bool, isBroken bool, isExpired bool, isMissing bool, isRevoked bool, hasMixed bool, followRedirects bool) *SSLTestFlags {
+func NewSSLTestFlags(followRedirects bool, hasMixed bool, hasPfs bool, isBroken bool, isExpired bool, isExtended bool, isMissing bool, isRevoked bool) *SSLTestFlags {
 	return &SSLTestFlags{
-		IsExtended:      isExtended,
+		FollowRedirects: followRedirects,
+		HasMixed:        hasMixed,
 		HasPFS:          hasPfs,
 		IsBroken:        isBroken,
 		IsExpired:       isExpired,
+		IsExtended:      isExtended,
 		IsMissing:       isMissing,
 		IsRevoked:       isRevoked,
-		HasMixed:        hasMixed,
-		FollowRedirects: followRedirects,
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o SSLTestFlags) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
-		toSerialize["is_extended"] = o.IsExtended
+		toSerialize["follow_redirects"] = o.FollowRedirects
+	}
+	if true {
+		toSerialize["has_mixed"] = o.HasMixed
 	}
 	if true {
 		toSerialize["has_pfs"] = o.HasPFS
@@ -85,16 +89,13 @@ func (o SSLTestFlags) MarshalJSON() ([]byte, error) {
 		toSerialize["is_expired"] = o.IsExpired
 	}
 	if true {
+		toSerialize["is_extended"] = o.IsExtended
+	}
+	if true {
 		toSerialize["is_missing"] = o.IsMissing
 	}
 	if true {
 		toSerialize["is_revoked"] = o.IsRevoked
-	}
-	if true {
-		toSerialize["has_mixed"] = o.HasMixed
-	}
-	if true {
-		toSerialize["follow_redirects"] = o.FollowRedirects
 	}
 	return json.Marshal(toSerialize)
 }

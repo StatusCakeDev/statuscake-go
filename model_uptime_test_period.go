@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -36,45 +36,40 @@ import (
 
 // UptimeTestPeriod struct for UptimeTestPeriod
 type UptimeTestPeriod struct {
-	// Uptime test ID
-	ID     string           `json:"id"`
-	Status UptimeTestStatus `json:"status"`
 	// When the status period was created (RFC3339 format)
 	Created time.Time `json:"created_at"`
-	// When the status period ended (RFC3339 format)
-	Ended *time.Time `json:"ended_at,omitempty"`
 	// Status period duration (ms)
 	Duration *int64 `json:"duration,omitempty"`
+	// When the status period ended (RFC3339 format)
+	Ended  *time.Time       `json:"ended_at,omitempty"`
+	Status UptimeTestStatus `json:"status"`
 }
 
 // NewUptimeTestPeriod instantiates a new UptimeTestPeriod object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewUptimeTestPeriod(id string, status UptimeTestStatus, createdAt time.Time) *UptimeTestPeriod {
+func NewUptimeTestPeriod(createdAt time.Time, status UptimeTestStatus) *UptimeTestPeriod {
 	return &UptimeTestPeriod{
-		ID:      id,
-		Status:  status,
 		Created: createdAt,
+		Status:  status,
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o UptimeTestPeriod) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
-		toSerialize["id"] = o.ID
-	}
-	if true {
-		toSerialize["status"] = o.Status
-	}
-	if true {
 		toSerialize["created_at"] = o.Created
+	}
+	if o.Duration != nil {
+		toSerialize["duration"] = o.Duration
 	}
 	if o.Ended != nil {
 		toSerialize["ended_at"] = o.Ended
 	}
-	if o.Duration != nil {
-		toSerialize["duration"] = o.Duration
+	if true {
+		toSerialize["status"] = o.Status
 	}
 	return json.Marshal(toSerialize)
 }

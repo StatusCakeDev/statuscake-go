@@ -13,6 +13,9 @@ jobs:
         - "1.16"
         - "1.15"
         - "1.14"
+        include:
+        - go: "1.16"
+          publish: true
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-go@v1
@@ -26,4 +29,19 @@ jobs:
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
         restore-keys: |
           ${{ runner.os }}-go-
-    - run: go test -v ./...
+    - name: actions/setup-pact
+      run: |
+        sudo go run github.com/pact-foundation/pact-go/v2 -l DEBUG install
+        sudo chmod 755 /usr/local/lib/libpact_ffi.so
+    - run: go test -v -tags=consumer ./...
+    - if: ${{ matrix.publish }}
+      uses: docker://pactfoundation/pact-cli
+      with:
+        # GitHub actions messes with the HOME environment variable and this
+        # causes the step to fail. Here we're bypassing the default entrypoint
+        # and calling pact directly.
+        entrypoint: bundle
+        args: exec /pact/bin/pact publish pacts --consumer-app-version ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }} --tag ${{ github.event_name == 'pull_request' && github.head_ref || 'master' }}
+      env:
+        PACT_BROKER_BASE_URL: "https://statuscake.pact.dius.com.au"
+        PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}

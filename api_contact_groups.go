@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -44,6 +44,7 @@ var _ context.Context
 // ContactGroupsAPI describes the necessary methods to adhere to this interface.
 type ContactGroupsAPI interface {
 	CreateContactGroup(ctx context.Context) APICreateContactGroupRequest
+	CreateContactGroupWithData(ctx context.Context, m map[string]interface{}) APICreateContactGroupRequest
 	CreateContactGroupExecute(r APICreateContactGroupRequest) (APIResponse, error)
 	DeleteContactGroup(ctx context.Context, groupId string) APIDeleteContactGroupRequest
 	DeleteContactGroupExecute(r APIDeleteContactGroupRequest) error
@@ -52,6 +53,7 @@ type ContactGroupsAPI interface {
 	ListContactGroups(ctx context.Context) APIListContactGroupsRequest
 	ListContactGroupsExecute(r APIListContactGroupsRequest) (ContactGroups, error)
 	UpdateContactGroup(ctx context.Context, groupId string) APIUpdateContactGroupRequest
+	UpdateContactGroupWithData(ctx context.Context, groupId string, m map[string]interface{}) APIUpdateContactGroupRequest
 	UpdateContactGroupExecute(r APIUpdateContactGroupRequest) error
 }
 
@@ -63,10 +65,13 @@ type APICreateContactGroupRequest struct {
 	ctx               context.Context
 	APIService        ContactGroupsAPI
 	name              *string
-	pingUrl           *string
+	emailAddresses    *[]string
 	emailAddressesCsv *string
-	mobileNumbersCsv  *string
+	integrations      *[]string
 	integrationsCsv   *string
+	mobileNumbers     *[]string
+	mobileNumbersCsv  *string
+	pingUrl           *string
 }
 
 // Name sets name on the request type.
@@ -75,27 +80,45 @@ func (r APICreateContactGroupRequest) Name(name string) APICreateContactGroupReq
 	return r
 }
 
+// EmailAddresses sets emailAddresses on the request type.
+func (r APICreateContactGroupRequest) EmailAddresses(emailAddresses []string) APICreateContactGroupRequest {
+	r.emailAddresses = &emailAddresses
+	return r
+}
+
+// EmailAddressesCsv sets emailAddressesCsv on the request type.
+func (r APICreateContactGroupRequest) EmailAddressesCsv(emailAddressesCsv string) APICreateContactGroupRequest {
+	r.emailAddressesCsv = &emailAddressesCsv
+	return r
+}
+
+// Integrations sets integrations on the request type.
+func (r APICreateContactGroupRequest) Integrations(integrations []string) APICreateContactGroupRequest {
+	r.integrations = &integrations
+	return r
+}
+
+// IntegrationsCsv sets integrationsCsv on the request type.
+func (r APICreateContactGroupRequest) IntegrationsCsv(integrationsCsv string) APICreateContactGroupRequest {
+	r.integrationsCsv = &integrationsCsv
+	return r
+}
+
+// MobileNumbers sets mobileNumbers on the request type.
+func (r APICreateContactGroupRequest) MobileNumbers(mobileNumbers []string) APICreateContactGroupRequest {
+	r.mobileNumbers = &mobileNumbers
+	return r
+}
+
+// MobileNumbersCsv sets mobileNumbersCsv on the request type.
+func (r APICreateContactGroupRequest) MobileNumbersCsv(mobileNumbersCsv string) APICreateContactGroupRequest {
+	r.mobileNumbersCsv = &mobileNumbersCsv
+	return r
+}
+
 // PingURL sets pingUrl on the request type.
 func (r APICreateContactGroupRequest) PingURL(pingUrl string) APICreateContactGroupRequest {
 	r.pingUrl = &pingUrl
-	return r
-}
-
-// EmailAddresses sets emailAddressesCsv on the request type.
-func (r APICreateContactGroupRequest) EmailAddresses(emailAddressesCsv []string) APICreateContactGroupRequest {
-	r.emailAddressesCsv = PtrString(strings.Join(emailAddressesCsv, ","))
-	return r
-}
-
-// MobileNumbers sets mobileNumbersCsv on the request type.
-func (r APICreateContactGroupRequest) MobileNumbers(mobileNumbersCsv []string) APICreateContactGroupRequest {
-	r.mobileNumbersCsv = PtrString(strings.Join(mobileNumbersCsv, ","))
-	return r
-}
-
-// Integrations sets integrationsCsv on the request type.
-func (r APICreateContactGroupRequest) Integrations(integrationsCsv []string) APICreateContactGroupRequest {
-	r.integrationsCsv = PtrString(strings.Join(integrationsCsv, ","))
 	return r
 }
 
@@ -112,6 +135,47 @@ func (a *ContactGroupsService) CreateContactGroup(ctx context.Context) APICreate
 	}
 }
 
+// CreateContactGroupWithData Create a contact group.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *ContactGroupsService) CreateContactGroupWithData(ctx context.Context, m map[string]interface{}) APICreateContactGroupRequest {
+	r := a.CreateContactGroup(ctx)
+
+	if prop, ok := m["name"].(string); ok {
+		r.name = &prop
+	}
+
+	if prop, ok := m["email_addresses"].([]string); ok {
+		r.emailAddresses = &prop
+	}
+
+	if prop, ok := m["email_addresses_csv"].(string); ok {
+		r.emailAddressesCsv = &prop
+	}
+
+	if prop, ok := m["integrations"].([]string); ok {
+		r.integrations = &prop
+	}
+
+	if prop, ok := m["integrations_csv"].(string); ok {
+		r.integrationsCsv = &prop
+	}
+
+	if prop, ok := m["mobile_numbers"].([]string); ok {
+		r.mobileNumbers = &prop
+	}
+
+	if prop, ok := m["mobile_numbers_csv"].(string); ok {
+		r.mobileNumbersCsv = &prop
+	}
+
+	if prop, ok := m["ping_url"].(string); ok {
+		r.pingUrl = &prop
+	}
+
+	return r
+}
+
 // Execute executes the request.
 func (a *ContactGroupsService) CreateContactGroupExecute(r APICreateContactGroupRequest) (APIResponse, error) {
 	var (
@@ -122,7 +186,7 @@ func (a *ContactGroupsService) CreateContactGroupExecute(r APICreateContactGroup
 		returnValue          APIResponse
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ContactGroupsService.CreateContactGroup")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "ContactGroupsService.CreateContactGroup")
 	if err != nil {
 		return returnValue, err
 	}
@@ -157,20 +221,53 @@ func (a *ContactGroupsService) CreateContactGroupExecute(r APICreateContactGroup
 
 	formParams.Add("name", parameterToString(*r.name))
 
-	if r.pingUrl != nil {
-		formParams.Add("ping_url", parameterToString(*r.pingUrl))
+	if r.emailAddresses != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.emailAddresses) == 0 {
+			formParams.Add("email_addresses[]", "")
+		}
+		for _, val := range *r.emailAddresses {
+			formParams.Add("email_addresses[]", parameterToString(val))
+		}
 	}
 
 	if r.emailAddressesCsv != nil {
 		formParams.Add("email_addresses_csv", parameterToString(*r.emailAddressesCsv))
 	}
 
-	if r.mobileNumbersCsv != nil {
-		formParams.Add("mobile_numbers_csv", parameterToString(*r.mobileNumbersCsv))
+	if r.integrations != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.integrations) == 0 {
+			formParams.Add("integrations[]", "")
+		}
+		for _, val := range *r.integrations {
+			formParams.Add("integrations[]", parameterToString(val))
+		}
 	}
 
 	if r.integrationsCsv != nil {
 		formParams.Add("integrations_csv", parameterToString(*r.integrationsCsv))
+	}
+
+	if r.mobileNumbers != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.mobileNumbers) == 0 {
+			formParams.Add("mobile_numbers[]", "")
+		}
+		for _, val := range *r.mobileNumbers {
+			formParams.Add("mobile_numbers[]", parameterToString(val))
+		}
+	}
+
+	if r.mobileNumbersCsv != nil {
+		formParams.Add("mobile_numbers_csv", parameterToString(*r.mobileNumbersCsv))
+	}
+
+	if r.pingUrl != nil {
+		formParams.Add("ping_url", parameterToString(*r.pingUrl))
 	}
 	req, err := a.client.prepareRequest(r.ctx, requestPath, http.MethodPost, requestBody, headerParams, queryParams, formParams, requestFormFieldName, requestFileName, requestFileBytes)
 	if err != nil {
@@ -236,6 +333,14 @@ func (a *ContactGroupsService) DeleteContactGroup(ctx context.Context, groupId s
 	}
 }
 
+// DeleteContactGroupWithData Delete a contact group.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *ContactGroupsService) DeleteContactGroupWithData(ctx context.Context, groupId string, m map[string]interface{}) APIDeleteContactGroupRequest {
+	r := a.DeleteContactGroup(ctx, groupId)
+	return r
+}
+
 // Execute executes the request.
 func (a *ContactGroupsService) DeleteContactGroupExecute(r APIDeleteContactGroupRequest) error {
 	var (
@@ -245,7 +350,7 @@ func (a *ContactGroupsService) DeleteContactGroupExecute(r APIDeleteContactGroup
 		requestFileBytes     []byte
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ContactGroupsService.DeleteContactGroup")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "ContactGroupsService.DeleteContactGroup")
 	if err != nil {
 		return err
 	}
@@ -331,6 +436,14 @@ func (a *ContactGroupsService) GetContactGroup(ctx context.Context, groupId stri
 	}
 }
 
+// GetContactGroupWithData Retrieve a contact group.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *ContactGroupsService) GetContactGroupWithData(ctx context.Context, groupId string, m map[string]interface{}) APIGetContactGroupRequest {
+	r := a.GetContactGroup(ctx, groupId)
+	return r
+}
+
 // Execute executes the request.
 func (a *ContactGroupsService) GetContactGroupExecute(r APIGetContactGroupRequest) (ContactGroupResponse, error) {
 	var (
@@ -341,7 +454,7 @@ func (a *ContactGroupsService) GetContactGroupExecute(r APIGetContactGroupReques
 		returnValue          ContactGroupResponse
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ContactGroupsService.GetContactGroup")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "ContactGroupsService.GetContactGroup")
 	if err != nil {
 		return returnValue, err
 	}
@@ -433,6 +546,14 @@ func (a *ContactGroupsService) ListContactGroups(ctx context.Context) APIListCon
 	}
 }
 
+// ListContactGroupsWithData Get all contact groups.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *ContactGroupsService) ListContactGroupsWithData(ctx context.Context, m map[string]interface{}) APIListContactGroupsRequest {
+	r := a.ListContactGroups(ctx)
+	return r
+}
+
 // Execute executes the request.
 func (a *ContactGroupsService) ListContactGroupsExecute(r APIListContactGroupsRequest) (ContactGroups, error) {
 	var (
@@ -443,7 +564,7 @@ func (a *ContactGroupsService) ListContactGroupsExecute(r APIListContactGroupsRe
 		returnValue          ContactGroups
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ContactGroupsService.ListContactGroups")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "ContactGroupsService.ListContactGroups")
 	if err != nil {
 		return returnValue, err
 	}
@@ -521,10 +642,13 @@ type APIUpdateContactGroupRequest struct {
 	APIService        ContactGroupsAPI
 	groupId           string
 	name              *string
-	pingUrl           *string
+	emailAddresses    *[]string
 	emailAddressesCsv *string
-	mobileNumbersCsv  *string
+	integrations      *[]string
 	integrationsCsv   *string
+	mobileNumbers     *[]string
+	mobileNumbersCsv  *string
+	pingUrl           *string
 }
 
 // Name sets name on the request type.
@@ -533,27 +657,45 @@ func (r APIUpdateContactGroupRequest) Name(name string) APIUpdateContactGroupReq
 	return r
 }
 
+// EmailAddresses sets emailAddresses on the request type.
+func (r APIUpdateContactGroupRequest) EmailAddresses(emailAddresses []string) APIUpdateContactGroupRequest {
+	r.emailAddresses = &emailAddresses
+	return r
+}
+
+// EmailAddressesCsv sets emailAddressesCsv on the request type.
+func (r APIUpdateContactGroupRequest) EmailAddressesCsv(emailAddressesCsv string) APIUpdateContactGroupRequest {
+	r.emailAddressesCsv = &emailAddressesCsv
+	return r
+}
+
+// Integrations sets integrations on the request type.
+func (r APIUpdateContactGroupRequest) Integrations(integrations []string) APIUpdateContactGroupRequest {
+	r.integrations = &integrations
+	return r
+}
+
+// IntegrationsCsv sets integrationsCsv on the request type.
+func (r APIUpdateContactGroupRequest) IntegrationsCsv(integrationsCsv string) APIUpdateContactGroupRequest {
+	r.integrationsCsv = &integrationsCsv
+	return r
+}
+
+// MobileNumbers sets mobileNumbers on the request type.
+func (r APIUpdateContactGroupRequest) MobileNumbers(mobileNumbers []string) APIUpdateContactGroupRequest {
+	r.mobileNumbers = &mobileNumbers
+	return r
+}
+
+// MobileNumbersCsv sets mobileNumbersCsv on the request type.
+func (r APIUpdateContactGroupRequest) MobileNumbersCsv(mobileNumbersCsv string) APIUpdateContactGroupRequest {
+	r.mobileNumbersCsv = &mobileNumbersCsv
+	return r
+}
+
 // PingURL sets pingUrl on the request type.
 func (r APIUpdateContactGroupRequest) PingURL(pingUrl string) APIUpdateContactGroupRequest {
 	r.pingUrl = &pingUrl
-	return r
-}
-
-// EmailAddresses sets emailAddressesCsv on the request type.
-func (r APIUpdateContactGroupRequest) EmailAddresses(emailAddressesCsv []string) APIUpdateContactGroupRequest {
-	r.emailAddressesCsv = PtrString(strings.Join(emailAddressesCsv, ","))
-	return r
-}
-
-// MobileNumbers sets mobileNumbersCsv on the request type.
-func (r APIUpdateContactGroupRequest) MobileNumbers(mobileNumbersCsv []string) APIUpdateContactGroupRequest {
-	r.mobileNumbersCsv = PtrString(strings.Join(mobileNumbersCsv, ","))
-	return r
-}
-
-// Integrations sets integrationsCsv on the request type.
-func (r APIUpdateContactGroupRequest) Integrations(integrationsCsv []string) APIUpdateContactGroupRequest {
-	r.integrationsCsv = PtrString(strings.Join(integrationsCsv, ","))
 	return r
 }
 
@@ -571,6 +713,47 @@ func (a *ContactGroupsService) UpdateContactGroup(ctx context.Context, groupId s
 	}
 }
 
+// UpdateContactGroupWithData Update a contact group.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *ContactGroupsService) UpdateContactGroupWithData(ctx context.Context, groupId string, m map[string]interface{}) APIUpdateContactGroupRequest {
+	r := a.UpdateContactGroup(ctx, groupId)
+
+	if prop, ok := m["name"].(string); ok {
+		r.name = &prop
+	}
+
+	if prop, ok := m["email_addresses"].([]string); ok {
+		r.emailAddresses = &prop
+	}
+
+	if prop, ok := m["email_addresses_csv"].(string); ok {
+		r.emailAddressesCsv = &prop
+	}
+
+	if prop, ok := m["integrations"].([]string); ok {
+		r.integrations = &prop
+	}
+
+	if prop, ok := m["integrations_csv"].(string); ok {
+		r.integrationsCsv = &prop
+	}
+
+	if prop, ok := m["mobile_numbers"].([]string); ok {
+		r.mobileNumbers = &prop
+	}
+
+	if prop, ok := m["mobile_numbers_csv"].(string); ok {
+		r.mobileNumbersCsv = &prop
+	}
+
+	if prop, ok := m["ping_url"].(string); ok {
+		r.pingUrl = &prop
+	}
+
+	return r
+}
+
 // Execute executes the request.
 func (a *ContactGroupsService) UpdateContactGroupExecute(r APIUpdateContactGroupRequest) error {
 	var (
@@ -580,7 +763,7 @@ func (a *ContactGroupsService) UpdateContactGroupExecute(r APIUpdateContactGroup
 		requestFileBytes     []byte
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ContactGroupsService.UpdateContactGroup")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "ContactGroupsService.UpdateContactGroup")
 	if err != nil {
 		return err
 	}
@@ -614,20 +797,53 @@ func (a *ContactGroupsService) UpdateContactGroupExecute(r APIUpdateContactGroup
 		formParams.Add("name", parameterToString(*r.name))
 	}
 
-	if r.pingUrl != nil {
-		formParams.Add("ping_url", parameterToString(*r.pingUrl))
+	if r.emailAddresses != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.emailAddresses) == 0 {
+			formParams.Add("email_addresses[]", "")
+		}
+		for _, val := range *r.emailAddresses {
+			formParams.Add("email_addresses[]", parameterToString(val))
+		}
 	}
 
 	if r.emailAddressesCsv != nil {
 		formParams.Add("email_addresses_csv", parameterToString(*r.emailAddressesCsv))
 	}
 
-	if r.mobileNumbersCsv != nil {
-		formParams.Add("mobile_numbers_csv", parameterToString(*r.mobileNumbersCsv))
+	if r.integrations != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.integrations) == 0 {
+			formParams.Add("integrations[]", "")
+		}
+		for _, val := range *r.integrations {
+			formParams.Add("integrations[]", parameterToString(val))
+		}
 	}
 
 	if r.integrationsCsv != nil {
 		formParams.Add("integrations_csv", parameterToString(*r.integrationsCsv))
+	}
+
+	if r.mobileNumbers != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.mobileNumbers) == 0 {
+			formParams.Add("mobile_numbers[]", "")
+		}
+		for _, val := range *r.mobileNumbers {
+			formParams.Add("mobile_numbers[]", parameterToString(val))
+		}
+	}
+
+	if r.mobileNumbersCsv != nil {
+		formParams.Add("mobile_numbers_csv", parameterToString(*r.mobileNumbersCsv))
+	}
+
+	if r.pingUrl != nil {
+		formParams.Add("ping_url", parameterToString(*r.pingUrl))
 	}
 	req, err := a.client.prepareRequest(r.ctx, requestPath, http.MethodPut, requestBody, headerParams, queryParams, formParams, requestFormFieldName, requestFileName, requestFileBytes)
 	if err != nil {

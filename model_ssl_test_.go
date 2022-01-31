@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -36,82 +36,80 @@ import (
 
 // SSLTest struct for SSLTest
 type SSLTest struct {
-	// SSL test ID
+	// SSL check ID
 	ID string `json:"id"`
-	// Whether the test should be run
-	Paused bool `json:"paused"`
-	// URL of the website under test
+	// URL of the server under test
 	WebsiteURL string           `json:"website_url"`
 	CheckRate  SSLTestCheckRate `json:"check_rate"`
-	// Issuer of the SSL certificate
-	IssuerCommonName *string `json:"issuer_common_name,omitempty"`
-	// SSL/TLS cipher suite belonging to the SSL certificate
-	Cipher *string `json:"cipher,omitempty"`
-	// SSL certificate cipher strength (%)
-	CipherScore *int32 `json:"cipher_score,omitempty"`
+	// List representing when alerts should be sent (days).
+	AlertAt []int32 `json:"alert_at"`
+	// Whether to enable alerts when SSL certificate issues are found
+	AlertBroken bool `json:"alert_broken"`
+	// Whether to enable alerts when the SSL certificate is to expire
+	AlertExpiry bool `json:"alert_expiry"`
+	// Whether to enable alerts when mixed content is found
+	AlertMixed bool `json:"alert_mixed"`
+	// Whether to enable alert reminders
+	AlertReminder bool `json:"alert_reminder"`
 	// SSL certificate score (%)
 	CertificateScore *int32 `json:"certificate_score,omitempty"`
 	// SSL certificate status
 	CertificateStatus *string `json:"certificate_status,omitempty"`
+	// SSL/TLS cipher suite belonging to the SSL certificate
+	Cipher *string `json:"cipher,omitempty"`
+	// SSL certificate cipher strength (%)
+	CipherScore *int32 `json:"cipher_score,omitempty"`
+	// List of contact group IDs
+	ContactGroups []string `json:"contact_groups"`
+	// Issuer of the SSL certificate
+	IssuerCommonName *string       `json:"issuer_common_name,omitempty"`
+	Flags            *SSLTestFlags `json:"flags,omitempty"`
+	// Whether to follow redirects when testing. Disabled by default
+	FollowRedirects bool `json:"follow_redirects"`
+	// Hostname of the server under test
+	Hostname *string `json:"hostname,omitempty"`
+	// The last reminder to have been sent (days)
+	LastReminder *int32 `json:"last_reminder,omitempty"`
+	// List of mixed content resources
+	MixedContent []SSLTestMixedContent `json:"mixed_content"`
+	// Whether the check should be run
+	Paused bool `json:"paused"`
+	// When the SSL certificate was last updated (RFC3339 format)
+	Updated *time.Time `json:"updated_at,omitempty"`
+	// Custom user agent string set when testing
+	UserAgent *string `json:"user_agent,omitempty"`
 	// SSL certificate validity start (RFC3339 format)
 	ValidFrom *time.Time `json:"valid_from,omitempty"`
 	// SSL certificate validity end (RFC3339 format)
 	ValidUntil *time.Time `json:"valid_until,omitempty"`
-	// List of mixed content resources
-	MixedContent []SSLTestMixedContent `json:"mixed_content"`
-	Flags        *SSLTestFlags         `json:"flags,omitempty"`
-	// List of contact group IDs
-	ContactGroups []string `json:"contact_groups"`
-	// List representing when alerts should be sent (days).
-	AlertAt []int32 `json:"alert_at"`
-	// The last reminder to have been sent (days)
-	LastReminder *int32 `json:"last_reminder,omitempty"`
-	// Whether to enable alert reminders
-	AlertReminder bool `json:"alert_reminder"`
-	// Whether to enable alerts when the SSL certificate is to expire
-	AlertExpiry bool `json:"alert_expiry"`
-	// Whether to enable alerts when SSL certificate issues are found
-	AlertBroken bool `json:"alert_broken"`
-	// Whether to enable alerts when mixed content is found
-	AlertMixed bool `json:"alert_mixed"`
-	// Whether to follow redirects when testing. Disabled by default
-	FollowRedirects bool `json:"follow_redirects"`
-	// When the SSL certificate was last updated (RFC3339 format)
-	Updated *time.Time `json:"updated_at,omitempty"`
-	// Hostname of the server under test
-	Hostname *string `json:"hostname,omitempty"`
-	// Custom user agent string set when testing
-	UserAgent *string `json:"user_agent,omitempty"`
 }
 
 // NewSSLTest instantiates a new SSLTest object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewSSLTest(id string, paused bool, websiteUrl string, checkRate SSLTestCheckRate, mixedContent []SSLTestMixedContent, contactGroups []string, alertAt []int32, alertReminder bool, alertExpiry bool, alertBroken bool, alertMixed bool, followRedirects bool) *SSLTest {
+func NewSSLTest(id string, websiteUrl string, checkRate SSLTestCheckRate, alertAt []int32, alertBroken bool, alertExpiry bool, alertMixed bool, alertReminder bool, contactGroups []string, followRedirects bool, mixedContent []SSLTestMixedContent, paused bool) *SSLTest {
 	return &SSLTest{
 		ID:              id,
-		Paused:          paused,
 		WebsiteURL:      websiteUrl,
 		CheckRate:       checkRate,
-		MixedContent:    mixedContent,
-		ContactGroups:   contactGroups,
 		AlertAt:         alertAt,
-		AlertReminder:   alertReminder,
-		AlertExpiry:     alertExpiry,
 		AlertBroken:     alertBroken,
+		AlertExpiry:     alertExpiry,
 		AlertMixed:      alertMixed,
+		AlertReminder:   alertReminder,
+		ContactGroups:   contactGroups,
 		FollowRedirects: followRedirects,
+		MixedContent:    mixedContent,
+		Paused:          paused,
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o SSLTest) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
 		toSerialize["id"] = o.ID
-	}
-	if true {
-		toSerialize["paused"] = o.Paused
 	}
 	if true {
 		toSerialize["website_url"] = o.WebsiteURL
@@ -119,14 +117,20 @@ func (o SSLTest) MarshalJSON() ([]byte, error) {
 	if true {
 		toSerialize["check_rate"] = o.CheckRate
 	}
-	if o.IssuerCommonName != nil {
-		toSerialize["issuer_common_name"] = o.IssuerCommonName
+	if true {
+		toSerialize["alert_at"] = o.AlertAt
 	}
-	if o.Cipher != nil {
-		toSerialize["cipher"] = o.Cipher
+	if true {
+		toSerialize["alert_broken"] = o.AlertBroken
 	}
-	if o.CipherScore != nil {
-		toSerialize["cipher_score"] = o.CipherScore
+	if true {
+		toSerialize["alert_expiry"] = o.AlertExpiry
+	}
+	if true {
+		toSerialize["alert_mixed"] = o.AlertMixed
+	}
+	if true {
+		toSerialize["alert_reminder"] = o.AlertReminder
 	}
 	if o.CertificateScore != nil {
 		toSerialize["certificate_score"] = o.CertificateScore
@@ -134,50 +138,47 @@ func (o SSLTest) MarshalJSON() ([]byte, error) {
 	if o.CertificateStatus != nil {
 		toSerialize["certificate_status"] = o.CertificateStatus
 	}
-	if o.ValidFrom != nil {
-		toSerialize["valid_from"] = o.ValidFrom
+	if o.Cipher != nil {
+		toSerialize["cipher"] = o.Cipher
 	}
-	if o.ValidUntil != nil {
-		toSerialize["valid_until"] = o.ValidUntil
+	if o.CipherScore != nil {
+		toSerialize["cipher_score"] = o.CipherScore
 	}
 	if true {
-		toSerialize["mixed_content"] = o.MixedContent
+		toSerialize["contact_groups"] = o.ContactGroups
+	}
+	if o.IssuerCommonName != nil {
+		toSerialize["issuer_common_name"] = o.IssuerCommonName
 	}
 	if o.Flags != nil {
 		toSerialize["flags"] = o.Flags
 	}
 	if true {
-		toSerialize["contact_groups"] = o.ContactGroups
+		toSerialize["follow_redirects"] = o.FollowRedirects
 	}
-	if true {
-		toSerialize["alert_at"] = o.AlertAt
+	if o.Hostname != nil {
+		toSerialize["hostname"] = o.Hostname
 	}
 	if o.LastReminder != nil {
 		toSerialize["last_reminder"] = o.LastReminder
 	}
 	if true {
-		toSerialize["alert_reminder"] = o.AlertReminder
+		toSerialize["mixed_content"] = o.MixedContent
 	}
 	if true {
-		toSerialize["alert_expiry"] = o.AlertExpiry
-	}
-	if true {
-		toSerialize["alert_broken"] = o.AlertBroken
-	}
-	if true {
-		toSerialize["alert_mixed"] = o.AlertMixed
-	}
-	if true {
-		toSerialize["follow_redirects"] = o.FollowRedirects
+		toSerialize["paused"] = o.Paused
 	}
 	if o.Updated != nil {
 		toSerialize["updated_at"] = o.Updated
 	}
-	if o.Hostname != nil {
-		toSerialize["hostname"] = o.Hostname
-	}
 	if o.UserAgent != nil {
 		toSerialize["user_agent"] = o.UserAgent
+	}
+	if o.ValidFrom != nil {
+		toSerialize["valid_from"] = o.ValidFrom
+	}
+	if o.ValidUntil != nil {
+		toSerialize["valid_until"] = o.ValidUntil
 	}
 	return json.Marshal(toSerialize)
 }

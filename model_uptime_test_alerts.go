@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -35,7 +35,7 @@ import (
 
 // UptimeTestAlerts struct for UptimeTestAlerts
 type UptimeTestAlerts struct {
-	// List of uptime test alerts
+	// List of uptime check alerts
 	Data []UptimeTestAlert `json:"data"`
 }
 
@@ -49,6 +49,7 @@ func NewUptimeTestAlerts(data []UptimeTestAlert) *UptimeTestAlerts {
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o UptimeTestAlerts) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {

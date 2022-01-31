@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -35,7 +35,7 @@ import (
 
 // UptimeTestPeriods struct for UptimeTestPeriods
 type UptimeTestPeriods struct {
-	// List of uptime test periods
+	// List of uptime check periods
 	Data []UptimeTestPeriod `json:"data"`
 }
 
@@ -49,6 +49,7 @@ func NewUptimeTestPeriods(data []UptimeTestPeriod) *UptimeTestPeriods {
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o UptimeTestPeriods) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {

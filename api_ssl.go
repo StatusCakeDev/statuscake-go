@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -44,6 +44,7 @@ var _ context.Context
 // SslAPI describes the necessary methods to adhere to this interface.
 type SslAPI interface {
 	CreateSslTest(ctx context.Context) APICreateSslTestRequest
+	CreateSslTestWithData(ctx context.Context, m map[string]interface{}) APICreateSslTestRequest
 	CreateSslTestExecute(r APICreateSslTestRequest) (APIResponse, error)
 	DeleteSslTest(ctx context.Context, testId string) APIDeleteSslTestRequest
 	DeleteSslTestExecute(r APIDeleteSslTestRequest) error
@@ -52,6 +53,7 @@ type SslAPI interface {
 	ListSslTests(ctx context.Context) APIListSslTestsRequest
 	ListSslTestsExecute(r APIListSslTestsRequest) (SSLTests, error)
 	UpdateSslTest(ctx context.Context, testId string) APIUpdateSslTestRequest
+	UpdateSslTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIUpdateSslTestRequest
 	UpdateSslTestExecute(r APIUpdateSslTestRequest) error
 }
 
@@ -64,15 +66,17 @@ type APICreateSslTestRequest struct {
 	APIService       SslAPI
 	websiteUrl       *string
 	checkRate        *SSLTestCheckRate
+	alertAt          *[]int32
 	alertAtCsv       *string
-	alertReminder    *bool
-	alertExpiry      *bool
 	alertBroken      *bool
+	alertExpiry      *bool
 	alertMixed       *bool
+	alertReminder    *bool
+	contactGroups    *[]string
 	contactGroupsCsv *string
 	followRedirects  *bool
-	paused           *bool
 	hostname         *string
+	paused           *bool
 	userAgent        *string
 }
 
@@ -88,21 +92,15 @@ func (r APICreateSslTestRequest) CheckRate(checkRate SSLTestCheckRate) APICreate
 	return r
 }
 
-// AlertAt sets alertAtCsv on the request type.
-func (r APICreateSslTestRequest) AlertAt(alertAtCsv []string) APICreateSslTestRequest {
-	r.alertAtCsv = PtrString(strings.Join(alertAtCsv, ","))
+// AlertAt sets alertAt on the request type.
+func (r APICreateSslTestRequest) AlertAt(alertAt []int32) APICreateSslTestRequest {
+	r.alertAt = &alertAt
 	return r
 }
 
-// AlertReminder sets alertReminder on the request type.
-func (r APICreateSslTestRequest) AlertReminder(alertReminder bool) APICreateSslTestRequest {
-	r.alertReminder = &alertReminder
-	return r
-}
-
-// AlertExpiry sets alertExpiry on the request type.
-func (r APICreateSslTestRequest) AlertExpiry(alertExpiry bool) APICreateSslTestRequest {
-	r.alertExpiry = &alertExpiry
+// AlertAtCsv sets alertAtCsv on the request type.
+func (r APICreateSslTestRequest) AlertAtCsv(alertAtCsv string) APICreateSslTestRequest {
+	r.alertAtCsv = &alertAtCsv
 	return r
 }
 
@@ -112,15 +110,33 @@ func (r APICreateSslTestRequest) AlertBroken(alertBroken bool) APICreateSslTestR
 	return r
 }
 
+// AlertExpiry sets alertExpiry on the request type.
+func (r APICreateSslTestRequest) AlertExpiry(alertExpiry bool) APICreateSslTestRequest {
+	r.alertExpiry = &alertExpiry
+	return r
+}
+
 // AlertMixed sets alertMixed on the request type.
 func (r APICreateSslTestRequest) AlertMixed(alertMixed bool) APICreateSslTestRequest {
 	r.alertMixed = &alertMixed
 	return r
 }
 
-// ContactGroups sets contactGroupsCsv on the request type.
-func (r APICreateSslTestRequest) ContactGroups(contactGroupsCsv []string) APICreateSslTestRequest {
-	r.contactGroupsCsv = PtrString(strings.Join(contactGroupsCsv, ","))
+// AlertReminder sets alertReminder on the request type.
+func (r APICreateSslTestRequest) AlertReminder(alertReminder bool) APICreateSslTestRequest {
+	r.alertReminder = &alertReminder
+	return r
+}
+
+// ContactGroups sets contactGroups on the request type.
+func (r APICreateSslTestRequest) ContactGroups(contactGroups []string) APICreateSslTestRequest {
+	r.contactGroups = &contactGroups
+	return r
+}
+
+// ContactGroupsCsv sets contactGroupsCsv on the request type.
+func (r APICreateSslTestRequest) ContactGroupsCsv(contactGroupsCsv string) APICreateSslTestRequest {
+	r.contactGroupsCsv = &contactGroupsCsv
 	return r
 }
 
@@ -130,15 +146,15 @@ func (r APICreateSslTestRequest) FollowRedirects(followRedirects bool) APICreate
 	return r
 }
 
-// Paused sets paused on the request type.
-func (r APICreateSslTestRequest) Paused(paused bool) APICreateSslTestRequest {
-	r.paused = &paused
-	return r
-}
-
 // Hostname sets hostname on the request type.
 func (r APICreateSslTestRequest) Hostname(hostname string) APICreateSslTestRequest {
 	r.hostname = &hostname
+	return r
+}
+
+// Paused sets paused on the request type.
+func (r APICreateSslTestRequest) Paused(paused bool) APICreateSslTestRequest {
+	r.paused = &paused
 	return r
 }
 
@@ -153,12 +169,77 @@ func (r APICreateSslTestRequest) Execute() (APIResponse, error) {
 	return r.APIService.CreateSslTestExecute(r)
 }
 
-// CreateSslTest Create a SSL test.
+// CreateSslTest Create an SSL check.
 func (a *SslService) CreateSslTest(ctx context.Context) APICreateSslTestRequest {
 	return APICreateSslTestRequest{
 		ctx:        ctx,
 		APIService: a,
 	}
+}
+
+// CreateSslTestWithData Create an SSL check.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *SslService) CreateSslTestWithData(ctx context.Context, m map[string]interface{}) APICreateSslTestRequest {
+	r := a.CreateSslTest(ctx)
+
+	if prop, ok := m["website_url"].(string); ok {
+		r.websiteUrl = &prop
+	}
+
+	if prop, ok := m["check_rate"].(SSLTestCheckRate); ok {
+		r.checkRate = &prop
+	}
+
+	if prop, ok := m["alert_at"].([]int32); ok {
+		r.alertAt = &prop
+	}
+
+	if prop, ok := m["alert_at_csv"].(string); ok {
+		r.alertAtCsv = &prop
+	}
+
+	if prop, ok := m["alert_broken"].(bool); ok {
+		r.alertBroken = &prop
+	}
+
+	if prop, ok := m["alert_expiry"].(bool); ok {
+		r.alertExpiry = &prop
+	}
+
+	if prop, ok := m["alert_mixed"].(bool); ok {
+		r.alertMixed = &prop
+	}
+
+	if prop, ok := m["alert_reminder"].(bool); ok {
+		r.alertReminder = &prop
+	}
+
+	if prop, ok := m["contact_groups"].([]string); ok {
+		r.contactGroups = &prop
+	}
+
+	if prop, ok := m["contact_groups_csv"].(string); ok {
+		r.contactGroupsCsv = &prop
+	}
+
+	if prop, ok := m["follow_redirects"].(bool); ok {
+		r.followRedirects = &prop
+	}
+
+	if prop, ok := m["hostname"].(string); ok {
+		r.hostname = &prop
+	}
+
+	if prop, ok := m["paused"].(bool); ok {
+		r.paused = &prop
+	}
+
+	if prop, ok := m["user_agent"].(string); ok {
+		r.userAgent = &prop
+	}
+
+	return r
 }
 
 // Execute executes the request.
@@ -171,7 +252,7 @@ func (a *SslService) CreateSslTestExecute(r APICreateSslTestRequest) (APIRespons
 		returnValue          APIResponse
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SslService.CreateSslTest")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "SslService.CreateSslTest")
 	if err != nil {
 		return returnValue, err
 	}
@@ -188,26 +269,6 @@ func (a *SslService) CreateSslTestExecute(r APICreateSslTestRequest) (APIRespons
 
 	if r.checkRate == nil {
 		return returnValue, errorf("checkRate is required and must be specified")
-	}
-
-	if r.alertAtCsv == nil {
-		return returnValue, errorf("alertAtCsv is required and must be specified")
-	}
-
-	if r.alertReminder == nil {
-		return returnValue, errorf("alertReminder is required and must be specified")
-	}
-
-	if r.alertExpiry == nil {
-		return returnValue, errorf("alertExpiry is required and must be specified")
-	}
-
-	if r.alertBroken == nil {
-		return returnValue, errorf("alertBroken is required and must be specified")
-	}
-
-	if r.alertMixed == nil {
-		return returnValue, errorf("alertMixed is required and must be specified")
 	}
 
 	// Determine the Content-Type header.
@@ -231,25 +292,62 @@ func (a *SslService) CreateSslTestExecute(r APICreateSslTestRequest) (APIRespons
 	formParams.Add("website_url", parameterToString(*r.websiteUrl))
 	formParams.Add("check_rate", parameterToString(*r.checkRate))
 
+	if r.alertAt != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.alertAt) == 0 {
+			formParams.Add("alert_at[]", "")
+		}
+		for _, val := range *r.alertAt {
+			formParams.Add("alert_at[]", parameterToString(val))
+		}
+	}
+
+	if r.alertAtCsv != nil {
+		formParams.Add("alert_at_csv", parameterToString(*r.alertAtCsv))
+	}
+
+	if r.alertBroken != nil {
+		formParams.Add("alert_broken", parameterToString(*r.alertBroken))
+	}
+
+	if r.alertExpiry != nil {
+		formParams.Add("alert_expiry", parameterToString(*r.alertExpiry))
+	}
+
+	if r.alertMixed != nil {
+		formParams.Add("alert_mixed", parameterToString(*r.alertMixed))
+	}
+
+	if r.alertReminder != nil {
+		formParams.Add("alert_reminder", parameterToString(*r.alertReminder))
+	}
+
+	if r.contactGroups != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.contactGroups) == 0 {
+			formParams.Add("contact_groups[]", "")
+		}
+		for _, val := range *r.contactGroups {
+			formParams.Add("contact_groups[]", parameterToString(val))
+		}
+	}
+
 	if r.contactGroupsCsv != nil {
 		formParams.Add("contact_groups_csv", parameterToString(*r.contactGroupsCsv))
 	}
-	formParams.Add("alert_at_csv", parameterToString(*r.alertAtCsv))
-	formParams.Add("alert_reminder", parameterToString(*r.alertReminder))
-	formParams.Add("alert_expiry", parameterToString(*r.alertExpiry))
-	formParams.Add("alert_broken", parameterToString(*r.alertBroken))
-	formParams.Add("alert_mixed", parameterToString(*r.alertMixed))
 
 	if r.followRedirects != nil {
 		formParams.Add("follow_redirects", parameterToString(*r.followRedirects))
 	}
 
-	if r.paused != nil {
-		formParams.Add("paused", parameterToString(*r.paused))
-	}
-
 	if r.hostname != nil {
 		formParams.Add("hostname", parameterToString(*r.hostname))
+	}
+
+	if r.paused != nil {
+		formParams.Add("paused", parameterToString(*r.paused))
 	}
 
 	if r.userAgent != nil {
@@ -310,13 +408,21 @@ func (r APIDeleteSslTestRequest) Execute() error {
 	return r.APIService.DeleteSslTestExecute(r)
 }
 
-// DeleteSslTest Delete a SSL test.
+// DeleteSslTest Delete an SSL check.
 func (a *SslService) DeleteSslTest(ctx context.Context, testId string) APIDeleteSslTestRequest {
 	return APIDeleteSslTestRequest{
 		ctx:        ctx,
 		APIService: a,
 		testId:     testId,
 	}
+}
+
+// DeleteSslTestWithData Delete an SSL check.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *SslService) DeleteSslTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIDeleteSslTestRequest {
+	r := a.DeleteSslTest(ctx, testId)
+	return r
 }
 
 // Execute executes the request.
@@ -328,7 +434,7 @@ func (a *SslService) DeleteSslTestExecute(r APIDeleteSslTestRequest) error {
 		requestFileBytes     []byte
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SslService.DeleteSslTest")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "SslService.DeleteSslTest")
 	if err != nil {
 		return err
 	}
@@ -405,13 +511,21 @@ func (r APIGetSslTestRequest) Execute() (SSLTestResponse, error) {
 	return r.APIService.GetSslTestExecute(r)
 }
 
-// GetSslTest Retrieve an SSL test.
+// GetSslTest Retrieve an SSL check.
 func (a *SslService) GetSslTest(ctx context.Context, testId string) APIGetSslTestRequest {
 	return APIGetSslTestRequest{
 		ctx:        ctx,
 		APIService: a,
 		testId:     testId,
 	}
+}
+
+// GetSslTestWithData Retrieve an SSL check.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *SslService) GetSslTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIGetSslTestRequest {
+	r := a.GetSslTest(ctx, testId)
+	return r
 }
 
 // Execute executes the request.
@@ -424,7 +538,7 @@ func (a *SslService) GetSslTestExecute(r APIGetSslTestRequest) (SSLTestResponse,
 		returnValue          SSLTestResponse
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SslService.GetSslTest")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "SslService.GetSslTest")
 	if err != nil {
 		return returnValue, err
 	}
@@ -508,12 +622,20 @@ func (r APIListSslTestsRequest) Execute() (SSLTests, error) {
 	return r.APIService.ListSslTestsExecute(r)
 }
 
-// ListSslTests Get all SSL tests.
+// ListSslTests Get all SSL checks.
 func (a *SslService) ListSslTests(ctx context.Context) APIListSslTestsRequest {
 	return APIListSslTestsRequest{
 		ctx:        ctx,
 		APIService: a,
 	}
+}
+
+// ListSslTestsWithData Get all SSL checks.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *SslService) ListSslTestsWithData(ctx context.Context, m map[string]interface{}) APIListSslTestsRequest {
+	r := a.ListSslTests(ctx)
+	return r
 }
 
 // Execute executes the request.
@@ -526,7 +648,7 @@ func (a *SslService) ListSslTestsExecute(r APIListSslTestsRequest) (SSLTests, er
 		returnValue          SSLTests
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SslService.ListSslTests")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "SslService.ListSslTests")
 	if err != nil {
 		return returnValue, err
 	}
@@ -604,15 +726,17 @@ type APIUpdateSslTestRequest struct {
 	APIService       SslAPI
 	testId           string
 	checkRate        *SSLTestCheckRate
-	contactGroupsCsv *string
+	alertAt          *[]int32
 	alertAtCsv       *string
-	alertReminder    *bool
-	alertExpiry      *bool
 	alertBroken      *bool
+	alertExpiry      *bool
 	alertMixed       *bool
+	alertReminder    *bool
+	contactGroups    *[]string
+	contactGroupsCsv *string
 	followRedirects  *bool
-	paused           *bool
 	hostname         *string
+	paused           *bool
 	userAgent        *string
 }
 
@@ -622,27 +746,15 @@ func (r APIUpdateSslTestRequest) CheckRate(checkRate SSLTestCheckRate) APIUpdate
 	return r
 }
 
-// ContactGroups sets contactGroupsCsv on the request type.
-func (r APIUpdateSslTestRequest) ContactGroups(contactGroupsCsv []string) APIUpdateSslTestRequest {
-	r.contactGroupsCsv = PtrString(strings.Join(contactGroupsCsv, ","))
+// AlertAt sets alertAt on the request type.
+func (r APIUpdateSslTestRequest) AlertAt(alertAt []int32) APIUpdateSslTestRequest {
+	r.alertAt = &alertAt
 	return r
 }
 
-// AlertAt sets alertAtCsv on the request type.
-func (r APIUpdateSslTestRequest) AlertAt(alertAtCsv []string) APIUpdateSslTestRequest {
-	r.alertAtCsv = PtrString(strings.Join(alertAtCsv, ","))
-	return r
-}
-
-// AlertReminder sets alertReminder on the request type.
-func (r APIUpdateSslTestRequest) AlertReminder(alertReminder bool) APIUpdateSslTestRequest {
-	r.alertReminder = &alertReminder
-	return r
-}
-
-// AlertExpiry sets alertExpiry on the request type.
-func (r APIUpdateSslTestRequest) AlertExpiry(alertExpiry bool) APIUpdateSslTestRequest {
-	r.alertExpiry = &alertExpiry
+// AlertAtCsv sets alertAtCsv on the request type.
+func (r APIUpdateSslTestRequest) AlertAtCsv(alertAtCsv string) APIUpdateSslTestRequest {
+	r.alertAtCsv = &alertAtCsv
 	return r
 }
 
@@ -652,9 +764,33 @@ func (r APIUpdateSslTestRequest) AlertBroken(alertBroken bool) APIUpdateSslTestR
 	return r
 }
 
+// AlertExpiry sets alertExpiry on the request type.
+func (r APIUpdateSslTestRequest) AlertExpiry(alertExpiry bool) APIUpdateSslTestRequest {
+	r.alertExpiry = &alertExpiry
+	return r
+}
+
 // AlertMixed sets alertMixed on the request type.
 func (r APIUpdateSslTestRequest) AlertMixed(alertMixed bool) APIUpdateSslTestRequest {
 	r.alertMixed = &alertMixed
+	return r
+}
+
+// AlertReminder sets alertReminder on the request type.
+func (r APIUpdateSslTestRequest) AlertReminder(alertReminder bool) APIUpdateSslTestRequest {
+	r.alertReminder = &alertReminder
+	return r
+}
+
+// ContactGroups sets contactGroups on the request type.
+func (r APIUpdateSslTestRequest) ContactGroups(contactGroups []string) APIUpdateSslTestRequest {
+	r.contactGroups = &contactGroups
+	return r
+}
+
+// ContactGroupsCsv sets contactGroupsCsv on the request type.
+func (r APIUpdateSslTestRequest) ContactGroupsCsv(contactGroupsCsv string) APIUpdateSslTestRequest {
+	r.contactGroupsCsv = &contactGroupsCsv
 	return r
 }
 
@@ -664,15 +800,15 @@ func (r APIUpdateSslTestRequest) FollowRedirects(followRedirects bool) APIUpdate
 	return r
 }
 
-// Paused sets paused on the request type.
-func (r APIUpdateSslTestRequest) Paused(paused bool) APIUpdateSslTestRequest {
-	r.paused = &paused
-	return r
-}
-
 // Hostname sets hostname on the request type.
 func (r APIUpdateSslTestRequest) Hostname(hostname string) APIUpdateSslTestRequest {
 	r.hostname = &hostname
+	return r
+}
+
+// Paused sets paused on the request type.
+func (r APIUpdateSslTestRequest) Paused(paused bool) APIUpdateSslTestRequest {
+	r.paused = &paused
 	return r
 }
 
@@ -687,13 +823,74 @@ func (r APIUpdateSslTestRequest) Execute() error {
 	return r.APIService.UpdateSslTestExecute(r)
 }
 
-// UpdateSslTest Update a SSL test.
+// UpdateSslTest Update an SSL check.
 func (a *SslService) UpdateSslTest(ctx context.Context, testId string) APIUpdateSslTestRequest {
 	return APIUpdateSslTestRequest{
 		ctx:        ctx,
 		APIService: a,
 		testId:     testId,
 	}
+}
+
+// UpdateSslTestWithData Update an SSL check.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *SslService) UpdateSslTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIUpdateSslTestRequest {
+	r := a.UpdateSslTest(ctx, testId)
+
+	if prop, ok := m["check_rate"].(SSLTestCheckRate); ok {
+		r.checkRate = &prop
+	}
+
+	if prop, ok := m["alert_at"].([]int32); ok {
+		r.alertAt = &prop
+	}
+
+	if prop, ok := m["alert_at_csv"].(string); ok {
+		r.alertAtCsv = &prop
+	}
+
+	if prop, ok := m["alert_broken"].(bool); ok {
+		r.alertBroken = &prop
+	}
+
+	if prop, ok := m["alert_expiry"].(bool); ok {
+		r.alertExpiry = &prop
+	}
+
+	if prop, ok := m["alert_mixed"].(bool); ok {
+		r.alertMixed = &prop
+	}
+
+	if prop, ok := m["alert_reminder"].(bool); ok {
+		r.alertReminder = &prop
+	}
+
+	if prop, ok := m["contact_groups"].([]string); ok {
+		r.contactGroups = &prop
+	}
+
+	if prop, ok := m["contact_groups_csv"].(string); ok {
+		r.contactGroupsCsv = &prop
+	}
+
+	if prop, ok := m["follow_redirects"].(bool); ok {
+		r.followRedirects = &prop
+	}
+
+	if prop, ok := m["hostname"].(string); ok {
+		r.hostname = &prop
+	}
+
+	if prop, ok := m["paused"].(bool); ok {
+		r.paused = &prop
+	}
+
+	if prop, ok := m["user_agent"].(string); ok {
+		r.userAgent = &prop
+	}
+
+	return r
 }
 
 // Execute executes the request.
@@ -705,7 +902,7 @@ func (a *SslService) UpdateSslTestExecute(r APIUpdateSslTestRequest) error {
 		requestFileBytes     []byte
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SslService.UpdateSslTest")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "SslService.UpdateSslTest")
 	if err != nil {
 		return err
 	}
@@ -739,40 +936,62 @@ func (a *SslService) UpdateSslTestExecute(r APIUpdateSslTestRequest) error {
 		formParams.Add("check_rate", parameterToString(*r.checkRate))
 	}
 
-	if r.contactGroupsCsv != nil {
-		formParams.Add("contact_groups_csv", parameterToString(*r.contactGroupsCsv))
+	if r.alertAt != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.alertAt) == 0 {
+			formParams.Add("alert_at[]", "")
+		}
+		for _, val := range *r.alertAt {
+			formParams.Add("alert_at[]", parameterToString(val))
+		}
 	}
 
 	if r.alertAtCsv != nil {
 		formParams.Add("alert_at_csv", parameterToString(*r.alertAtCsv))
 	}
 
-	if r.alertReminder != nil {
-		formParams.Add("alert_reminder", parameterToString(*r.alertReminder))
+	if r.alertBroken != nil {
+		formParams.Add("alert_broken", parameterToString(*r.alertBroken))
 	}
 
 	if r.alertExpiry != nil {
 		formParams.Add("alert_expiry", parameterToString(*r.alertExpiry))
 	}
 
-	if r.alertBroken != nil {
-		formParams.Add("alert_broken", parameterToString(*r.alertBroken))
-	}
-
 	if r.alertMixed != nil {
 		formParams.Add("alert_mixed", parameterToString(*r.alertMixed))
+	}
+
+	if r.alertReminder != nil {
+		formParams.Add("alert_reminder", parameterToString(*r.alertReminder))
+	}
+
+	if r.contactGroups != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.contactGroups) == 0 {
+			formParams.Add("contact_groups[]", "")
+		}
+		for _, val := range *r.contactGroups {
+			formParams.Add("contact_groups[]", parameterToString(val))
+		}
+	}
+
+	if r.contactGroupsCsv != nil {
+		formParams.Add("contact_groups_csv", parameterToString(*r.contactGroupsCsv))
 	}
 
 	if r.followRedirects != nil {
 		formParams.Add("follow_redirects", parameterToString(*r.followRedirects))
 	}
 
-	if r.paused != nil {
-		formParams.Add("paused", parameterToString(*r.paused))
-	}
-
 	if r.hostname != nil {
 		formParams.Add("hostname", parameterToString(*r.hostname))
+	}
+
+	if r.paused != nil {
+		formParams.Add("paused", parameterToString(*r.paused))
 	}
 
 	if r.userAgent != nil {

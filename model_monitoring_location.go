@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -37,12 +37,12 @@ import (
 type MonitoringLocation struct {
 	// Server description
 	Description string `json:"description"`
-	// Server region
-	Region string `json:"region"`
 	// Server IPv4 address
 	IPv4 *string `json:"ipv4,omitempty"`
 	// Server IPv6 address
 	IPv6 *string `json:"ipv6,omitempty"`
+	// Server region
+	Region string `json:"region"`
 	// Server region code
 	RegionCode string                   `json:"region_code"`
 	Status     MonitoringLocationStatus `json:"status"`
@@ -61,19 +61,20 @@ func NewMonitoringLocation(description string, region string, regionCode string,
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o MonitoringLocation) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
 		toSerialize["description"] = o.Description
-	}
-	if true {
-		toSerialize["region"] = o.Region
 	}
 	if o.IPv4 != nil {
 		toSerialize["ipv4"] = o.IPv4
 	}
 	if o.IPv6 != nil {
 		toSerialize["ipv6"] = o.IPv6
+	}
+	if true {
+		toSerialize["region"] = o.Region
 	}
 	if true {
 		toSerialize["region_code"] = o.RegionCode

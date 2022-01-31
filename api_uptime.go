@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -36,7 +36,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 )
 
 // Linger please
@@ -44,218 +43,28 @@ var _ context.Context
 
 // UptimeAPI describes the necessary methods to adhere to this interface.
 type UptimeAPI interface {
-	CreateMaintenanceWindow(ctx context.Context) APICreateMaintenanceWindowRequest
-	CreateMaintenanceWindowExecute(r APICreateMaintenanceWindowRequest) (APIResponse, error)
 	CreateUptimeTest(ctx context.Context) APICreateUptimeTestRequest
+	CreateUptimeTestWithData(ctx context.Context, m map[string]interface{}) APICreateUptimeTestRequest
 	CreateUptimeTestExecute(r APICreateUptimeTestRequest) (APIResponse, error)
-	DeleteMaintenanceWindow(ctx context.Context, windowId string) APIDeleteMaintenanceWindowRequest
-	DeleteMaintenanceWindowExecute(r APIDeleteMaintenanceWindowRequest) error
 	DeleteUptimeTest(ctx context.Context, testId string) APIDeleteUptimeTestRequest
 	DeleteUptimeTestExecute(r APIDeleteUptimeTestRequest) error
-	GetMaintenanceWindow(ctx context.Context, windowId string) APIGetMaintenanceWindowRequest
-	GetMaintenanceWindowExecute(r APIGetMaintenanceWindowRequest) (MaintenanceWindowResponse, error)
 	GetUptimeTest(ctx context.Context, testId string) APIGetUptimeTestRequest
 	GetUptimeTestExecute(r APIGetUptimeTestRequest) (UptimeTestResponse, error)
-	ListMaintenanceWindows(ctx context.Context) APIListMaintenanceWindowsRequest
-	ListMaintenanceWindowsExecute(r APIListMaintenanceWindowsRequest) (MaintenanceWindows, error)
-	ListSentAlerts(ctx context.Context, testId string) APIListSentAlertsRequest
-	ListSentAlertsExecute(r APIListSentAlertsRequest) (UptimeTestAlerts, error)
+	ListUptimeTestAlerts(ctx context.Context, testId string) APIListUptimeTestAlertsRequest
+	ListUptimeTestAlertsExecute(r APIListUptimeTestAlertsRequest) (UptimeTestAlerts, error)
 	ListUptimeTestHistory(ctx context.Context, testId string) APIListUptimeTestHistoryRequest
 	ListUptimeTestHistoryExecute(r APIListUptimeTestHistoryRequest) (UptimeTestHistory, error)
 	ListUptimeTestPeriods(ctx context.Context, testId string) APIListUptimeTestPeriodsRequest
 	ListUptimeTestPeriodsExecute(r APIListUptimeTestPeriodsRequest) (UptimeTestPeriods, error)
 	ListUptimeTests(ctx context.Context) APIListUptimeTestsRequest
 	ListUptimeTestsExecute(r APIListUptimeTestsRequest) (UptimeTests, error)
-	UpdateMaintenanceWindow(ctx context.Context, windowId string) APIUpdateMaintenanceWindowRequest
-	UpdateMaintenanceWindowExecute(r APIUpdateMaintenanceWindowRequest) error
 	UpdateUptimeTest(ctx context.Context, testId string) APIUpdateUptimeTestRequest
+	UpdateUptimeTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIUpdateUptimeTestRequest
 	UpdateUptimeTestExecute(r APIUpdateUptimeTestRequest) error
 }
 
 // UptimeService Uptime service.
 type UptimeService service
-
-// APICreateMaintenanceWindowRequest represents a request type.
-type APICreateMaintenanceWindowRequest struct {
-	ctx            context.Context
-	APIService     UptimeAPI
-	name           *string
-	startAt        *time.Time
-	endAt          *time.Time
-	timezone       *string
-	repeatInterval *MaintenanceWindowRepeatInterval
-	testsCsv       *string
-	tagsCsv        *string
-}
-
-// Name sets name on the request type.
-func (r APICreateMaintenanceWindowRequest) Name(name string) APICreateMaintenanceWindowRequest {
-	r.name = &name
-	return r
-}
-
-// Start sets startAt on the request type.
-func (r APICreateMaintenanceWindowRequest) Start(startAt time.Time) APICreateMaintenanceWindowRequest {
-	r.startAt = &startAt
-	return r
-}
-
-// End sets endAt on the request type.
-func (r APICreateMaintenanceWindowRequest) End(endAt time.Time) APICreateMaintenanceWindowRequest {
-	r.endAt = &endAt
-	return r
-}
-
-// Timezone sets timezone on the request type.
-func (r APICreateMaintenanceWindowRequest) Timezone(timezone string) APICreateMaintenanceWindowRequest {
-	r.timezone = &timezone
-	return r
-}
-
-// RepeatInterval sets repeatInterval on the request type.
-func (r APICreateMaintenanceWindowRequest) RepeatInterval(repeatInterval MaintenanceWindowRepeatInterval) APICreateMaintenanceWindowRequest {
-	r.repeatInterval = &repeatInterval
-	return r
-}
-
-// Tests sets testsCsv on the request type.
-func (r APICreateMaintenanceWindowRequest) Tests(testsCsv []string) APICreateMaintenanceWindowRequest {
-	r.testsCsv = PtrString(strings.Join(testsCsv, ","))
-	return r
-}
-
-// Tags sets tagsCsv on the request type.
-func (r APICreateMaintenanceWindowRequest) Tags(tagsCsv []string) APICreateMaintenanceWindowRequest {
-	r.tagsCsv = PtrString(strings.Join(tagsCsv, ","))
-	return r
-}
-
-// Execute executes the request.
-func (r APICreateMaintenanceWindowRequest) Execute() (APIResponse, error) {
-	return r.APIService.CreateMaintenanceWindowExecute(r)
-}
-
-// CreateMaintenanceWindow Create a maintenance window.
-func (a *UptimeService) CreateMaintenanceWindow(ctx context.Context) APICreateMaintenanceWindowRequest {
-	return APICreateMaintenanceWindowRequest{
-		ctx:        ctx,
-		APIService: a,
-	}
-}
-
-// Execute executes the request.
-func (a *UptimeService) CreateMaintenanceWindowExecute(r APICreateMaintenanceWindowRequest) (APIResponse, error) {
-	var (
-		requestBody          interface{}
-		requestFormFieldName string
-		requestFileName      string
-		requestFileBytes     []byte
-		returnValue          APIResponse
-	)
-
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UptimeService.CreateMaintenanceWindow")
-	if err != nil {
-		return returnValue, err
-	}
-
-	requestPath := basePath + "/maintenance-windows"
-
-	headerParams := make(map[string]string)
-	queryParams := url.Values{}
-	formParams := url.Values{}
-
-	if r.name == nil {
-		return returnValue, errorf("name is required and must be specified")
-	}
-
-	if r.startAt == nil {
-		return returnValue, errorf("startAt is required and must be specified")
-	}
-
-	if r.endAt == nil {
-		return returnValue, errorf("endAt is required and must be specified")
-	}
-
-	if r.timezone == nil {
-		return returnValue, errorf("timezone is required and must be specified")
-	}
-
-	// Determine the Content-Type header.
-	contentTypes := []string{"application/x-www-form-urlencoded"}
-
-	// Set Content-Type header
-	requestContentTypeHeader := selectHeaderContentType(contentTypes)
-	if requestContentTypeHeader != "" {
-		headerParams["Content-Type"] = requestContentTypeHeader
-	}
-
-	// Determine the Accept header.
-	accepts := []string{"application/json"}
-
-	// Set Accept header.
-	requestAcceptHeader := selectHeaderAccept(accepts)
-	if requestAcceptHeader != "" {
-		headerParams["Accept"] = requestAcceptHeader
-	}
-
-	formParams.Add("name", parameterToString(*r.name))
-	formParams.Add("start_at", parameterToString(*r.startAt))
-	formParams.Add("end_at", parameterToString(*r.endAt))
-
-	if r.repeatInterval != nil {
-		formParams.Add("repeat_interval", parameterToString(*r.repeatInterval))
-	}
-
-	if r.testsCsv != nil {
-		formParams.Add("tests_csv", parameterToString(*r.testsCsv))
-	}
-
-	if r.tagsCsv != nil {
-		formParams.Add("tags_csv", parameterToString(*r.tagsCsv))
-	}
-	formParams.Add("timezone", parameterToString(*r.timezone))
-	req, err := a.client.prepareRequest(r.ctx, requestPath, http.MethodPost, requestBody, headerParams, queryParams, formParams, requestFormFieldName, requestFileName, requestFileBytes)
-	if err != nil {
-		return returnValue, err
-	}
-
-	res, err := a.client.callAPI(req)
-	if err != nil || res == nil {
-		return returnValue, err
-	}
-
-	responseBody, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
-	if err != nil {
-		return returnValue, err
-	}
-
-	responseContentType := res.Header.Get("Content-Type")
-
-	if res.StatusCode >= 300 {
-		var v APIError
-		if err := a.client.decode(&v, responseBody, responseContentType); err != nil {
-			return returnValue, APIError{
-				Status:  res.StatusCode,
-				Message: "failed to deserialise error response",
-				parent:  err,
-			}
-		}
-		v.Status = res.StatusCode
-		return returnValue, v
-	}
-
-	if err := a.client.decode(&returnValue, responseBody, responseContentType); err != nil {
-		return returnValue, APIError{
-			Status:  res.StatusCode,
-			Message: "failed to deserialise response body",
-			parent:  err,
-		}
-	}
-
-	return returnValue, nil
-}
 
 // APICreateUptimeTestRequest represents a request type.
 type APICreateUptimeTestRequest struct {
@@ -265,13 +74,15 @@ type APICreateUptimeTestRequest struct {
 	testType         *UptimeTestType
 	websiteUrl       *string
 	checkRate        *UptimeTestCheckRate
-	basicUser        *string
-	basicPass        *string
+	basicUsername    *string
+	basicPassword    *string
 	confirmation     *int32
+	contactGroups    *[]string
 	contactGroupsCsv *string
 	customHeader     *string
 	doNotFind        *bool
-	dnsIpCsv         *string
+	dnsIps           *[]string
+	dnsIpsCsv        *string
 	dnsServer        *string
 	enableSslAlert   *bool
 	finalEndpoint    *string
@@ -285,6 +96,7 @@ type APICreateUptimeTestRequest struct {
 	postRaw          *string
 	regions          *[]string
 	statusCodesCsv   *string
+	tags             *[]string
 	tagsCsv          *string
 	timeout          *int32
 	triggerRate      *int32
@@ -316,15 +128,15 @@ func (r APICreateUptimeTestRequest) CheckRate(checkRate UptimeTestCheckRate) API
 	return r
 }
 
-// BasicUser sets basicUser on the request type.
-func (r APICreateUptimeTestRequest) BasicUser(basicUser string) APICreateUptimeTestRequest {
-	r.basicUser = &basicUser
+// BasicUsername sets basicUsername on the request type.
+func (r APICreateUptimeTestRequest) BasicUsername(basicUsername string) APICreateUptimeTestRequest {
+	r.basicUsername = &basicUsername
 	return r
 }
 
-// BasicPass sets basicPass on the request type.
-func (r APICreateUptimeTestRequest) BasicPass(basicPass string) APICreateUptimeTestRequest {
-	r.basicPass = &basicPass
+// BasicPassword sets basicPassword on the request type.
+func (r APICreateUptimeTestRequest) BasicPassword(basicPassword string) APICreateUptimeTestRequest {
+	r.basicPassword = &basicPassword
 	return r
 }
 
@@ -334,9 +146,15 @@ func (r APICreateUptimeTestRequest) Confirmation(confirmation int32) APICreateUp
 	return r
 }
 
-// ContactGroups sets contactGroupsCsv on the request type.
-func (r APICreateUptimeTestRequest) ContactGroups(contactGroupsCsv []string) APICreateUptimeTestRequest {
-	r.contactGroupsCsv = PtrString(strings.Join(contactGroupsCsv, ","))
+// ContactGroups sets contactGroups on the request type.
+func (r APICreateUptimeTestRequest) ContactGroups(contactGroups []string) APICreateUptimeTestRequest {
+	r.contactGroups = &contactGroups
+	return r
+}
+
+// ContactGroupsCsv sets contactGroupsCsv on the request type.
+func (r APICreateUptimeTestRequest) ContactGroupsCsv(contactGroupsCsv string) APICreateUptimeTestRequest {
+	r.contactGroupsCsv = &contactGroupsCsv
 	return r
 }
 
@@ -352,9 +170,15 @@ func (r APICreateUptimeTestRequest) DoNotFind(doNotFind bool) APICreateUptimeTes
 	return r
 }
 
-// DNSIPs sets dnsIpCsv on the request type.
-func (r APICreateUptimeTestRequest) DNSIPs(dnsIpCsv []string) APICreateUptimeTestRequest {
-	r.dnsIpCsv = PtrString(strings.Join(dnsIpCsv, ","))
+// DNSIPs sets dnsIps on the request type.
+func (r APICreateUptimeTestRequest) DNSIPs(dnsIps []string) APICreateUptimeTestRequest {
+	r.dnsIps = &dnsIps
+	return r
+}
+
+// DnsIpsCsv sets dnsIpsCsv on the request type.
+func (r APICreateUptimeTestRequest) DnsIpsCsv(dnsIpsCsv string) APICreateUptimeTestRequest {
+	r.dnsIpsCsv = &dnsIpsCsv
 	return r
 }
 
@@ -436,9 +260,15 @@ func (r APICreateUptimeTestRequest) StatusCodes(statusCodesCsv []string) APICrea
 	return r
 }
 
-// Tags sets tagsCsv on the request type.
-func (r APICreateUptimeTestRequest) Tags(tagsCsv []string) APICreateUptimeTestRequest {
-	r.tagsCsv = PtrString(strings.Join(tagsCsv, ","))
+// Tags sets tags on the request type.
+func (r APICreateUptimeTestRequest) Tags(tags []string) APICreateUptimeTestRequest {
+	r.tags = &tags
+	return r
+}
+
+// TagsCsv sets tagsCsv on the request type.
+func (r APICreateUptimeTestRequest) TagsCsv(tagsCsv string) APICreateUptimeTestRequest {
+	r.tagsCsv = &tagsCsv
 	return r
 }
 
@@ -471,12 +301,149 @@ func (r APICreateUptimeTestRequest) Execute() (APIResponse, error) {
 	return r.APIService.CreateUptimeTestExecute(r)
 }
 
-// CreateUptimeTest Create an uptime test.
+// CreateUptimeTest Create an uptime check.
 func (a *UptimeService) CreateUptimeTest(ctx context.Context) APICreateUptimeTestRequest {
 	return APICreateUptimeTestRequest{
 		ctx:        ctx,
 		APIService: a,
 	}
+}
+
+// CreateUptimeTestWithData Create an uptime check.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *UptimeService) CreateUptimeTestWithData(ctx context.Context, m map[string]interface{}) APICreateUptimeTestRequest {
+	r := a.CreateUptimeTest(ctx)
+
+	if prop, ok := m["name"].(string); ok {
+		r.name = &prop
+	}
+
+	if prop, ok := m["test_type"].(UptimeTestType); ok {
+		r.testType = &prop
+	}
+
+	if prop, ok := m["website_url"].(string); ok {
+		r.websiteUrl = &prop
+	}
+
+	if prop, ok := m["check_rate"].(UptimeTestCheckRate); ok {
+		r.checkRate = &prop
+	}
+
+	if prop, ok := m["basic_username"].(string); ok {
+		r.basicUsername = &prop
+	}
+
+	if prop, ok := m["basic_password"].(string); ok {
+		r.basicPassword = &prop
+	}
+
+	if prop, ok := m["confirmation"].(int32); ok {
+		r.confirmation = &prop
+	}
+
+	if prop, ok := m["contact_groups"].([]string); ok {
+		r.contactGroups = &prop
+	}
+
+	if prop, ok := m["contact_groups_csv"].(string); ok {
+		r.contactGroupsCsv = &prop
+	}
+
+	if prop, ok := m["custom_header"].(string); ok {
+		r.customHeader = &prop
+	}
+
+	if prop, ok := m["do_not_find"].(bool); ok {
+		r.doNotFind = &prop
+	}
+
+	if prop, ok := m["dns_ips"].([]string); ok {
+		r.dnsIps = &prop
+	}
+
+	if prop, ok := m["dns_ips_csv"].(string); ok {
+		r.dnsIpsCsv = &prop
+	}
+
+	if prop, ok := m["dns_server"].(string); ok {
+		r.dnsServer = &prop
+	}
+
+	if prop, ok := m["enable_ssl_alert"].(bool); ok {
+		r.enableSslAlert = &prop
+	}
+
+	if prop, ok := m["final_endpoint"].(string); ok {
+		r.finalEndpoint = &prop
+	}
+
+	if prop, ok := m["find_string"].(string); ok {
+		r.findString = &prop
+	}
+
+	if prop, ok := m["follow_redirects"].(bool); ok {
+		r.followRedirects = &prop
+	}
+
+	if prop, ok := m["host"].(string); ok {
+		r.host = &prop
+	}
+
+	if prop, ok := m["include_header"].(bool); ok {
+		r.includeHeader = &prop
+	}
+
+	if prop, ok := m["paused"].(bool); ok {
+		r.paused = &prop
+	}
+
+	if prop, ok := m["port"].(int32); ok {
+		r.port = &prop
+	}
+
+	if prop, ok := m["post_body"].(string); ok {
+		r.postBody = &prop
+	}
+
+	if prop, ok := m["post_raw"].(string); ok {
+		r.postRaw = &prop
+	}
+
+	if prop, ok := m["regions"].([]string); ok {
+		r.regions = &prop
+	}
+
+	if prop, ok := m["status_codes_csv"].(string); ok {
+		r.statusCodesCsv = &prop
+	}
+
+	if prop, ok := m["tags"].([]string); ok {
+		r.tags = &prop
+	}
+
+	if prop, ok := m["tags_csv"].(string); ok {
+		r.tagsCsv = &prop
+	}
+
+	if prop, ok := m["timeout"].(int32); ok {
+		r.timeout = &prop
+	}
+
+	if prop, ok := m["trigger_rate"].(int32); ok {
+		r.triggerRate = &prop
+	}
+
+	if prop, ok := m["use_jar"].(bool); ok {
+		r.useJar = &prop
+	}
+
+	if prop, ok := m["user_agent"].(string); ok {
+		r.userAgent = &prop
+	}
+
+	return r
 }
 
 // Execute executes the request.
@@ -489,7 +456,7 @@ func (a *UptimeService) CreateUptimeTestExecute(r APICreateUptimeTestRequest) (A
 		returnValue          APIResponse
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UptimeService.CreateUptimeTest")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "UptimeService.CreateUptimeTest")
 	if err != nil {
 		return returnValue, err
 	}
@@ -539,16 +506,27 @@ func (a *UptimeService) CreateUptimeTestExecute(r APICreateUptimeTestRequest) (A
 	formParams.Add("website_url", parameterToString(*r.websiteUrl))
 	formParams.Add("check_rate", parameterToString(*r.checkRate))
 
-	if r.basicUser != nil {
-		formParams.Add("basic_user", parameterToString(*r.basicUser))
+	if r.basicUsername != nil {
+		formParams.Add("basic_username", parameterToString(*r.basicUsername))
 	}
 
-	if r.basicPass != nil {
-		formParams.Add("basic_pass", parameterToString(*r.basicPass))
+	if r.basicPassword != nil {
+		formParams.Add("basic_password", parameterToString(*r.basicPassword))
 	}
 
 	if r.confirmation != nil {
 		formParams.Add("confirmation", parameterToString(*r.confirmation))
+	}
+
+	if r.contactGroups != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.contactGroups) == 0 {
+			formParams.Add("contact_groups[]", "")
+		}
+		for _, val := range *r.contactGroups {
+			formParams.Add("contact_groups[]", parameterToString(val))
+		}
 	}
 
 	if r.contactGroupsCsv != nil {
@@ -563,8 +541,19 @@ func (a *UptimeService) CreateUptimeTestExecute(r APICreateUptimeTestRequest) (A
 		formParams.Add("do_not_find", parameterToString(*r.doNotFind))
 	}
 
-	if r.dnsIpCsv != nil {
-		formParams.Add("dns_ip_csv", parameterToString(*r.dnsIpCsv))
+	if r.dnsIps != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.dnsIps) == 0 {
+			formParams.Add("dns_ips[]", "")
+		}
+		for _, val := range *r.dnsIps {
+			formParams.Add("dns_ips[]", parameterToString(val))
+		}
+	}
+
+	if r.dnsIpsCsv != nil {
+		formParams.Add("dns_ips_csv", parameterToString(*r.dnsIpsCsv))
 	}
 
 	if r.dnsServer != nil {
@@ -612,6 +601,11 @@ func (a *UptimeService) CreateUptimeTestExecute(r APICreateUptimeTestRequest) (A
 	}
 
 	if r.regions != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.regions) == 0 {
+			formParams.Add("regions[]", "")
+		}
 		for _, val := range *r.regions {
 			formParams.Add("regions[]", parameterToString(val))
 		}
@@ -619,6 +613,17 @@ func (a *UptimeService) CreateUptimeTestExecute(r APICreateUptimeTestRequest) (A
 
 	if r.statusCodesCsv != nil {
 		formParams.Add("status_codes_csv", parameterToString(*r.statusCodesCsv))
+	}
+
+	if r.tags != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.tags) == 0 {
+			formParams.Add("tags[]", "")
+		}
+		for _, val := range *r.tags {
+			formParams.Add("tags[]", parameterToString(val))
+		}
 	}
 
 	if r.tagsCsv != nil {
@@ -683,101 +688,6 @@ func (a *UptimeService) CreateUptimeTestExecute(r APICreateUptimeTestRequest) (A
 	return returnValue, nil
 }
 
-// APIDeleteMaintenanceWindowRequest represents a request type.
-type APIDeleteMaintenanceWindowRequest struct {
-	ctx        context.Context
-	APIService UptimeAPI
-	windowId   string
-}
-
-// Execute executes the request.
-func (r APIDeleteMaintenanceWindowRequest) Execute() error {
-	return r.APIService.DeleteMaintenanceWindowExecute(r)
-}
-
-// DeleteMaintenanceWindow Delete a maintenance window.
-func (a *UptimeService) DeleteMaintenanceWindow(ctx context.Context, windowId string) APIDeleteMaintenanceWindowRequest {
-	return APIDeleteMaintenanceWindowRequest{
-		ctx:        ctx,
-		APIService: a,
-		windowId:   windowId,
-	}
-}
-
-// Execute executes the request.
-func (a *UptimeService) DeleteMaintenanceWindowExecute(r APIDeleteMaintenanceWindowRequest) error {
-	var (
-		requestBody          interface{}
-		requestFormFieldName string
-		requestFileName      string
-		requestFileBytes     []byte
-	)
-
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UptimeService.DeleteMaintenanceWindow")
-	if err != nil {
-		return err
-	}
-
-	requestPath := basePath + "/maintenance-windows/{window_id}"
-	requestPath = strings.Replace(requestPath, "{"+"window_id"+"}", url.PathEscape(parameterToString(r.windowId)), -1)
-
-	headerParams := make(map[string]string)
-	queryParams := url.Values{}
-	formParams := url.Values{}
-
-	// Determine the Content-Type header.
-	contentTypes := []string{}
-
-	// Set Content-Type header
-	requestContentTypeHeader := selectHeaderContentType(contentTypes)
-	if requestContentTypeHeader != "" {
-		headerParams["Content-Type"] = requestContentTypeHeader
-	}
-
-	// Determine the Accept header.
-	accepts := []string{"application/json"}
-
-	// Set Accept header.
-	requestAcceptHeader := selectHeaderAccept(accepts)
-	if requestAcceptHeader != "" {
-		headerParams["Accept"] = requestAcceptHeader
-	}
-
-	req, err := a.client.prepareRequest(r.ctx, requestPath, http.MethodDelete, requestBody, headerParams, queryParams, formParams, requestFormFieldName, requestFileName, requestFileBytes)
-	if err != nil {
-		return err
-	}
-
-	res, err := a.client.callAPI(req)
-	if err != nil || res == nil {
-		return err
-	}
-
-	responseBody, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
-	if err != nil {
-		return err
-	}
-
-	responseContentType := res.Header.Get("Content-Type")
-
-	if res.StatusCode >= 300 {
-		var v APIError
-		if err := a.client.decode(&v, responseBody, responseContentType); err != nil {
-			return APIError{
-				Status:  res.StatusCode,
-				Message: "failed to deserialise error response",
-				parent:  err,
-			}
-		}
-		v.Status = res.StatusCode
-		return v
-	}
-
-	return nil
-}
-
 // APIDeleteUptimeTestRequest represents a request type.
 type APIDeleteUptimeTestRequest struct {
 	ctx        context.Context
@@ -790,13 +700,21 @@ func (r APIDeleteUptimeTestRequest) Execute() error {
 	return r.APIService.DeleteUptimeTestExecute(r)
 }
 
-// DeleteUptimeTest Delete an uptime test.
+// DeleteUptimeTest Delete an uptime check.
 func (a *UptimeService) DeleteUptimeTest(ctx context.Context, testId string) APIDeleteUptimeTestRequest {
 	return APIDeleteUptimeTestRequest{
 		ctx:        ctx,
 		APIService: a,
 		testId:     testId,
 	}
+}
+
+// DeleteUptimeTestWithData Delete an uptime check.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *UptimeService) DeleteUptimeTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIDeleteUptimeTestRequest {
+	r := a.DeleteUptimeTest(ctx, testId)
+	return r
 }
 
 // Execute executes the request.
@@ -808,7 +726,7 @@ func (a *UptimeService) DeleteUptimeTestExecute(r APIDeleteUptimeTestRequest) er
 		requestFileBytes     []byte
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UptimeService.DeleteUptimeTest")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "UptimeService.DeleteUptimeTest")
 	if err != nil {
 		return err
 	}
@@ -871,110 +789,6 @@ func (a *UptimeService) DeleteUptimeTestExecute(r APIDeleteUptimeTestRequest) er
 	}
 
 	return nil
-}
-
-// APIGetMaintenanceWindowRequest represents a request type.
-type APIGetMaintenanceWindowRequest struct {
-	ctx        context.Context
-	APIService UptimeAPI
-	windowId   string
-}
-
-// Execute executes the request.
-func (r APIGetMaintenanceWindowRequest) Execute() (MaintenanceWindowResponse, error) {
-	return r.APIService.GetMaintenanceWindowExecute(r)
-}
-
-// GetMaintenanceWindow Retrieve a maintenance window.
-func (a *UptimeService) GetMaintenanceWindow(ctx context.Context, windowId string) APIGetMaintenanceWindowRequest {
-	return APIGetMaintenanceWindowRequest{
-		ctx:        ctx,
-		APIService: a,
-		windowId:   windowId,
-	}
-}
-
-// Execute executes the request.
-func (a *UptimeService) GetMaintenanceWindowExecute(r APIGetMaintenanceWindowRequest) (MaintenanceWindowResponse, error) {
-	var (
-		requestBody          interface{}
-		requestFormFieldName string
-		requestFileName      string
-		requestFileBytes     []byte
-		returnValue          MaintenanceWindowResponse
-	)
-
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UptimeService.GetMaintenanceWindow")
-	if err != nil {
-		return returnValue, err
-	}
-
-	requestPath := basePath + "/maintenance-windows/{window_id}"
-	requestPath = strings.Replace(requestPath, "{"+"window_id"+"}", url.PathEscape(parameterToString(r.windowId)), -1)
-
-	headerParams := make(map[string]string)
-	queryParams := url.Values{}
-	formParams := url.Values{}
-
-	// Determine the Content-Type header.
-	contentTypes := []string{}
-
-	// Set Content-Type header
-	requestContentTypeHeader := selectHeaderContentType(contentTypes)
-	if requestContentTypeHeader != "" {
-		headerParams["Content-Type"] = requestContentTypeHeader
-	}
-
-	// Determine the Accept header.
-	accepts := []string{"application/json"}
-
-	// Set Accept header.
-	requestAcceptHeader := selectHeaderAccept(accepts)
-	if requestAcceptHeader != "" {
-		headerParams["Accept"] = requestAcceptHeader
-	}
-
-	req, err := a.client.prepareRequest(r.ctx, requestPath, http.MethodGet, requestBody, headerParams, queryParams, formParams, requestFormFieldName, requestFileName, requestFileBytes)
-	if err != nil {
-		return returnValue, err
-	}
-
-	res, err := a.client.callAPI(req)
-	if err != nil || res == nil {
-		return returnValue, err
-	}
-
-	responseBody, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
-	if err != nil {
-		return returnValue, err
-	}
-
-	responseContentType := res.Header.Get("Content-Type")
-
-	if res.StatusCode >= 300 {
-		var v APIError
-		if err := a.client.decode(&v, responseBody, responseContentType); err != nil {
-			return returnValue, APIError{
-				Status:  res.StatusCode,
-				Message: "failed to deserialise error response",
-				parent:  err,
-			}
-		}
-		v.Status = res.StatusCode
-		return returnValue, v
-	}
-
-	if err := a.client.decode(&returnValue, responseBody, responseContentType); err != nil {
-		return returnValue, APIError{
-			Status:  res.StatusCode,
-			Message: "failed to deserialise response body",
-			parent:  err,
-		}
-	}
-
-	return returnValue, nil
 }
 
 // APIGetUptimeTestRequest represents a request type.
@@ -989,13 +803,21 @@ func (r APIGetUptimeTestRequest) Execute() (UptimeTestResponse, error) {
 	return r.APIService.GetUptimeTestExecute(r)
 }
 
-// GetUptimeTest Retrieve an uptime test.
+// GetUptimeTest Retrieve an uptime check.
 func (a *UptimeService) GetUptimeTest(ctx context.Context, testId string) APIGetUptimeTestRequest {
 	return APIGetUptimeTestRequest{
 		ctx:        ctx,
 		APIService: a,
 		testId:     testId,
 	}
+}
+
+// GetUptimeTestWithData Retrieve an uptime check.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *UptimeService) GetUptimeTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIGetUptimeTestRequest {
+	r := a.GetUptimeTest(ctx, testId)
+	return r
 }
 
 // Execute executes the request.
@@ -1008,7 +830,7 @@ func (a *UptimeService) GetUptimeTestExecute(r APIGetUptimeTestRequest) (UptimeT
 		returnValue          UptimeTestResponse
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UptimeService.GetUptimeTest")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "UptimeService.GetUptimeTest")
 	if err != nil {
 		return returnValue, err
 	}
@@ -1081,119 +903,8 @@ func (a *UptimeService) GetUptimeTestExecute(r APIGetUptimeTestRequest) (UptimeT
 	return returnValue, nil
 }
 
-// APIListMaintenanceWindowsRequest represents a request type.
-type APIListMaintenanceWindowsRequest struct {
-	ctx        context.Context
-	APIService UptimeAPI
-	state      *string
-}
-
-// State sets state on the request type.
-func (r APIListMaintenanceWindowsRequest) State(state string) APIListMaintenanceWindowsRequest {
-	r.state = &state
-	return r
-}
-
-// Execute executes the request.
-func (r APIListMaintenanceWindowsRequest) Execute() (MaintenanceWindows, error) {
-	return r.APIService.ListMaintenanceWindowsExecute(r)
-}
-
-// ListMaintenanceWindows Get all maintenance windows.
-func (a *UptimeService) ListMaintenanceWindows(ctx context.Context) APIListMaintenanceWindowsRequest {
-	return APIListMaintenanceWindowsRequest{
-		ctx:        ctx,
-		APIService: a,
-	}
-}
-
-// Execute executes the request.
-func (a *UptimeService) ListMaintenanceWindowsExecute(r APIListMaintenanceWindowsRequest) (MaintenanceWindows, error) {
-	var (
-		requestBody          interface{}
-		requestFormFieldName string
-		requestFileName      string
-		requestFileBytes     []byte
-		returnValue          MaintenanceWindows
-	)
-
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UptimeService.ListMaintenanceWindows")
-	if err != nil {
-		return returnValue, err
-	}
-
-	requestPath := basePath + "/maintenance-windows"
-
-	headerParams := make(map[string]string)
-	queryParams := url.Values{}
-	formParams := url.Values{}
-
-	if r.state != nil {
-		queryParams.Add("state", parameterToString(*r.state))
-	}
-	// Determine the Content-Type header.
-	contentTypes := []string{}
-
-	// Set Content-Type header
-	requestContentTypeHeader := selectHeaderContentType(contentTypes)
-	if requestContentTypeHeader != "" {
-		headerParams["Content-Type"] = requestContentTypeHeader
-	}
-
-	// Determine the Accept header.
-	accepts := []string{"application/json"}
-
-	// Set Accept header.
-	requestAcceptHeader := selectHeaderAccept(accepts)
-	if requestAcceptHeader != "" {
-		headerParams["Accept"] = requestAcceptHeader
-	}
-
-	req, err := a.client.prepareRequest(r.ctx, requestPath, http.MethodGet, requestBody, headerParams, queryParams, formParams, requestFormFieldName, requestFileName, requestFileBytes)
-	if err != nil {
-		return returnValue, err
-	}
-
-	res, err := a.client.callAPI(req)
-	if err != nil || res == nil {
-		return returnValue, err
-	}
-
-	responseBody, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
-	if err != nil {
-		return returnValue, err
-	}
-
-	responseContentType := res.Header.Get("Content-Type")
-
-	if res.StatusCode >= 300 {
-		var v APIError
-		if err := a.client.decode(&v, responseBody, responseContentType); err != nil {
-			return returnValue, APIError{
-				Status:  res.StatusCode,
-				Message: "failed to deserialise error response",
-				parent:  err,
-			}
-		}
-		v.Status = res.StatusCode
-		return returnValue, v
-	}
-
-	if err := a.client.decode(&returnValue, responseBody, responseContentType); err != nil {
-		return returnValue, APIError{
-			Status:  res.StatusCode,
-			Message: "failed to deserialise response body",
-			parent:  err,
-		}
-	}
-
-	return returnValue, nil
-}
-
-// APIListSentAlertsRequest represents a request type.
-type APIListSentAlertsRequest struct {
+// APIListUptimeTestAlertsRequest represents a request type.
+type APIListUptimeTestAlertsRequest struct {
 	ctx        context.Context
 	APIService UptimeAPI
 	testId     string
@@ -1202,33 +913,41 @@ type APIListSentAlertsRequest struct {
 }
 
 // Start sets start on the request type.
-func (r APIListSentAlertsRequest) Start(start int64) APIListSentAlertsRequest {
+func (r APIListUptimeTestAlertsRequest) Start(start int64) APIListUptimeTestAlertsRequest {
 	r.start = &start
 	return r
 }
 
 // Limit sets limit on the request type.
-func (r APIListSentAlertsRequest) Limit(limit int32) APIListSentAlertsRequest {
+func (r APIListUptimeTestAlertsRequest) Limit(limit int32) APIListUptimeTestAlertsRequest {
 	r.limit = &limit
 	return r
 }
 
 // Execute executes the request.
-func (r APIListSentAlertsRequest) Execute() (UptimeTestAlerts, error) {
-	return r.APIService.ListSentAlertsExecute(r)
+func (r APIListUptimeTestAlertsRequest) Execute() (UptimeTestAlerts, error) {
+	return r.APIService.ListUptimeTestAlertsExecute(r)
 }
 
-// ListSentAlerts Get all sent uptime alerts.
-func (a *UptimeService) ListSentAlerts(ctx context.Context, testId string) APIListSentAlertsRequest {
-	return APIListSentAlertsRequest{
+// ListUptimeTestAlerts Get all uptime check alerts.
+func (a *UptimeService) ListUptimeTestAlerts(ctx context.Context, testId string) APIListUptimeTestAlertsRequest {
+	return APIListUptimeTestAlertsRequest{
 		ctx:        ctx,
 		APIService: a,
 		testId:     testId,
 	}
 }
 
+// ListUptimeTestAlertsWithData Get all uptime check alerts.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *UptimeService) ListUptimeTestAlertsWithData(ctx context.Context, testId string, m map[string]interface{}) APIListUptimeTestAlertsRequest {
+	r := a.ListUptimeTestAlerts(ctx, testId)
+	return r
+}
+
 // Execute executes the request.
-func (a *UptimeService) ListSentAlertsExecute(r APIListSentAlertsRequest) (UptimeTestAlerts, error) {
+func (a *UptimeService) ListUptimeTestAlertsExecute(r APIListUptimeTestAlertsRequest) (UptimeTestAlerts, error) {
 	var (
 		requestBody          interface{}
 		requestFormFieldName string
@@ -1237,7 +956,7 @@ func (a *UptimeService) ListSentAlertsExecute(r APIListSentAlertsRequest) (Uptim
 		returnValue          UptimeTestAlerts
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UptimeService.ListSentAlerts")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "UptimeService.ListUptimeTestAlerts")
 	if err != nil {
 		return returnValue, err
 	}
@@ -1349,13 +1068,21 @@ func (r APIListUptimeTestHistoryRequest) Execute() (UptimeTestHistory, error) {
 	return r.APIService.ListUptimeTestHistoryExecute(r)
 }
 
-// ListUptimeTestHistory Get all uptime test history.
+// ListUptimeTestHistory Get all uptime check history.
 func (a *UptimeService) ListUptimeTestHistory(ctx context.Context, testId string) APIListUptimeTestHistoryRequest {
 	return APIListUptimeTestHistoryRequest{
 		ctx:        ctx,
 		APIService: a,
 		testId:     testId,
 	}
+}
+
+// ListUptimeTestHistoryWithData Get all uptime check history.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *UptimeService) ListUptimeTestHistoryWithData(ctx context.Context, testId string, m map[string]interface{}) APIListUptimeTestHistoryRequest {
+	r := a.ListUptimeTestHistory(ctx, testId)
+	return r
 }
 
 // Execute executes the request.
@@ -1368,7 +1095,7 @@ func (a *UptimeService) ListUptimeTestHistoryExecute(r APIListUptimeTestHistoryR
 		returnValue          UptimeTestHistory
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UptimeService.ListUptimeTestHistory")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "UptimeService.ListUptimeTestHistory")
 	if err != nil {
 		return returnValue, err
 	}
@@ -1462,13 +1189,21 @@ func (r APIListUptimeTestPeriodsRequest) Execute() (UptimeTestPeriods, error) {
 	return r.APIService.ListUptimeTestPeriodsExecute(r)
 }
 
-// ListUptimeTestPeriods Get all uptime test periods.
+// ListUptimeTestPeriods Get all uptime check periods.
 func (a *UptimeService) ListUptimeTestPeriods(ctx context.Context, testId string) APIListUptimeTestPeriodsRequest {
 	return APIListUptimeTestPeriodsRequest{
 		ctx:        ctx,
 		APIService: a,
 		testId:     testId,
 	}
+}
+
+// ListUptimeTestPeriodsWithData Get all uptime check periods.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *UptimeService) ListUptimeTestPeriodsWithData(ctx context.Context, testId string, m map[string]interface{}) APIListUptimeTestPeriodsRequest {
+	r := a.ListUptimeTestPeriods(ctx, testId)
+	return r
 }
 
 // Execute executes the request.
@@ -1481,7 +1216,7 @@ func (a *UptimeService) ListUptimeTestPeriodsExecute(r APIListUptimeTestPeriodsR
 		returnValue          UptimeTestPeriods
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UptimeService.ListUptimeTestPeriods")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "UptimeService.ListUptimeTestPeriods")
 	if err != nil {
 		return returnValue, err
 	}
@@ -1607,12 +1342,20 @@ func (r APIListUptimeTestsRequest) Execute() (UptimeTests, error) {
 	return r.APIService.ListUptimeTestsExecute(r)
 }
 
-// ListUptimeTests Get all uptime tests.
+// ListUptimeTests Get all uptime checks.
 func (a *UptimeService) ListUptimeTests(ctx context.Context) APIListUptimeTestsRequest {
 	return APIListUptimeTestsRequest{
 		ctx:        ctx,
 		APIService: a,
 	}
+}
+
+// ListUptimeTestsWithData Get all uptime checks.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *UptimeService) ListUptimeTestsWithData(ctx context.Context, m map[string]interface{}) APIListUptimeTestsRequest {
+	r := a.ListUptimeTests(ctx)
+	return r
 }
 
 // Execute executes the request.
@@ -1625,7 +1368,7 @@ func (a *UptimeService) ListUptimeTestsExecute(r APIListUptimeTestsRequest) (Upt
 		returnValue          UptimeTests
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UptimeService.ListUptimeTests")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "UptimeService.ListUptimeTests")
 	if err != nil {
 		return returnValue, err
 	}
@@ -1715,190 +1458,22 @@ func (a *UptimeService) ListUptimeTestsExecute(r APIListUptimeTestsRequest) (Upt
 	return returnValue, nil
 }
 
-// APIUpdateMaintenanceWindowRequest represents a request type.
-type APIUpdateMaintenanceWindowRequest struct {
-	ctx            context.Context
-	APIService     UptimeAPI
-	windowId       string
-	name           *string
-	startAt        *time.Time
-	endAt          *time.Time
-	repeatInterval *MaintenanceWindowRepeatInterval
-	testsCsv       *string
-	tagsCsv        *string
-	timezone       *string
-}
-
-// Name sets name on the request type.
-func (r APIUpdateMaintenanceWindowRequest) Name(name string) APIUpdateMaintenanceWindowRequest {
-	r.name = &name
-	return r
-}
-
-// Start sets startAt on the request type.
-func (r APIUpdateMaintenanceWindowRequest) Start(startAt time.Time) APIUpdateMaintenanceWindowRequest {
-	r.startAt = &startAt
-	return r
-}
-
-// End sets endAt on the request type.
-func (r APIUpdateMaintenanceWindowRequest) End(endAt time.Time) APIUpdateMaintenanceWindowRequest {
-	r.endAt = &endAt
-	return r
-}
-
-// RepeatInterval sets repeatInterval on the request type.
-func (r APIUpdateMaintenanceWindowRequest) RepeatInterval(repeatInterval MaintenanceWindowRepeatInterval) APIUpdateMaintenanceWindowRequest {
-	r.repeatInterval = &repeatInterval
-	return r
-}
-
-// Tests sets testsCsv on the request type.
-func (r APIUpdateMaintenanceWindowRequest) Tests(testsCsv []string) APIUpdateMaintenanceWindowRequest {
-	r.testsCsv = PtrString(strings.Join(testsCsv, ","))
-	return r
-}
-
-// Tags sets tagsCsv on the request type.
-func (r APIUpdateMaintenanceWindowRequest) Tags(tagsCsv []string) APIUpdateMaintenanceWindowRequest {
-	r.tagsCsv = PtrString(strings.Join(tagsCsv, ","))
-	return r
-}
-
-// Timezone sets timezone on the request type.
-func (r APIUpdateMaintenanceWindowRequest) Timezone(timezone string) APIUpdateMaintenanceWindowRequest {
-	r.timezone = &timezone
-	return r
-}
-
-// Execute executes the request.
-func (r APIUpdateMaintenanceWindowRequest) Execute() error {
-	return r.APIService.UpdateMaintenanceWindowExecute(r)
-}
-
-// UpdateMaintenanceWindow Update a maintenance window.
-func (a *UptimeService) UpdateMaintenanceWindow(ctx context.Context, windowId string) APIUpdateMaintenanceWindowRequest {
-	return APIUpdateMaintenanceWindowRequest{
-		ctx:        ctx,
-		APIService: a,
-		windowId:   windowId,
-	}
-}
-
-// Execute executes the request.
-func (a *UptimeService) UpdateMaintenanceWindowExecute(r APIUpdateMaintenanceWindowRequest) error {
-	var (
-		requestBody          interface{}
-		requestFormFieldName string
-		requestFileName      string
-		requestFileBytes     []byte
-	)
-
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UptimeService.UpdateMaintenanceWindow")
-	if err != nil {
-		return err
-	}
-
-	requestPath := basePath + "/maintenance-windows/{window_id}"
-	requestPath = strings.Replace(requestPath, "{"+"window_id"+"}", url.PathEscape(parameterToString(r.windowId)), -1)
-
-	headerParams := make(map[string]string)
-	queryParams := url.Values{}
-	formParams := url.Values{}
-
-	// Determine the Content-Type header.
-	contentTypes := []string{"application/x-www-form-urlencoded"}
-
-	// Set Content-Type header
-	requestContentTypeHeader := selectHeaderContentType(contentTypes)
-	if requestContentTypeHeader != "" {
-		headerParams["Content-Type"] = requestContentTypeHeader
-	}
-
-	// Determine the Accept header.
-	accepts := []string{"application/json"}
-
-	// Set Accept header.
-	requestAcceptHeader := selectHeaderAccept(accepts)
-	if requestAcceptHeader != "" {
-		headerParams["Accept"] = requestAcceptHeader
-	}
-
-	if r.name != nil {
-		formParams.Add("name", parameterToString(*r.name))
-	}
-
-	if r.startAt != nil {
-		formParams.Add("start_at", parameterToString(*r.startAt))
-	}
-
-	if r.endAt != nil {
-		formParams.Add("end_at", parameterToString(*r.endAt))
-	}
-
-	if r.repeatInterval != nil {
-		formParams.Add("repeat_interval", parameterToString(*r.repeatInterval))
-	}
-
-	if r.testsCsv != nil {
-		formParams.Add("tests_csv", parameterToString(*r.testsCsv))
-	}
-
-	if r.tagsCsv != nil {
-		formParams.Add("tags_csv", parameterToString(*r.tagsCsv))
-	}
-
-	if r.timezone != nil {
-		formParams.Add("timezone", parameterToString(*r.timezone))
-	}
-	req, err := a.client.prepareRequest(r.ctx, requestPath, http.MethodPut, requestBody, headerParams, queryParams, formParams, requestFormFieldName, requestFileName, requestFileBytes)
-	if err != nil {
-		return err
-	}
-
-	res, err := a.client.callAPI(req)
-	if err != nil || res == nil {
-		return err
-	}
-
-	responseBody, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
-	if err != nil {
-		return err
-	}
-
-	responseContentType := res.Header.Get("Content-Type")
-
-	if res.StatusCode >= 300 {
-		var v APIError
-		if err := a.client.decode(&v, responseBody, responseContentType); err != nil {
-			return APIError{
-				Status:  res.StatusCode,
-				Message: "failed to deserialise error response",
-				parent:  err,
-			}
-		}
-		v.Status = res.StatusCode
-		return v
-	}
-
-	return nil
-}
-
 // APIUpdateUptimeTestRequest represents a request type.
 type APIUpdateUptimeTestRequest struct {
 	ctx              context.Context
 	APIService       UptimeAPI
 	testId           string
-	basicUser        *string
-	basicPass        *string
+	name             *string
 	checkRate        *UptimeTestCheckRate
+	basicUsername    *string
+	basicPassword    *string
 	confirmation     *int32
+	contactGroups    *[]string
 	contactGroupsCsv *string
 	customHeader     *string
 	doNotFind        *bool
-	dnsIpCsv         *string
+	dnsIps           *[]string
+	dnsIpsCsv        *string
 	dnsServer        *string
 	enableSslAlert   *bool
 	finalEndpoint    *string
@@ -1906,13 +1481,13 @@ type APIUpdateUptimeTestRequest struct {
 	followRedirects  *bool
 	host             *string
 	includeHeader    *bool
-	name             *string
 	paused           *bool
 	port             *int32
 	postBody         *string
 	postRaw          *string
 	regions          *[]string
 	statusCodesCsv   *string
+	tags             *[]string
 	tagsCsv          *string
 	timeout          *int32
 	triggerRate      *int32
@@ -1920,15 +1495,9 @@ type APIUpdateUptimeTestRequest struct {
 	userAgent        *string
 }
 
-// BasicUser sets basicUser on the request type.
-func (r APIUpdateUptimeTestRequest) BasicUser(basicUser string) APIUpdateUptimeTestRequest {
-	r.basicUser = &basicUser
-	return r
-}
-
-// BasicPass sets basicPass on the request type.
-func (r APIUpdateUptimeTestRequest) BasicPass(basicPass string) APIUpdateUptimeTestRequest {
-	r.basicPass = &basicPass
+// Name sets name on the request type.
+func (r APIUpdateUptimeTestRequest) Name(name string) APIUpdateUptimeTestRequest {
+	r.name = &name
 	return r
 }
 
@@ -1938,15 +1507,33 @@ func (r APIUpdateUptimeTestRequest) CheckRate(checkRate UptimeTestCheckRate) API
 	return r
 }
 
+// BasicUsername sets basicUsername on the request type.
+func (r APIUpdateUptimeTestRequest) BasicUsername(basicUsername string) APIUpdateUptimeTestRequest {
+	r.basicUsername = &basicUsername
+	return r
+}
+
+// BasicPassword sets basicPassword on the request type.
+func (r APIUpdateUptimeTestRequest) BasicPassword(basicPassword string) APIUpdateUptimeTestRequest {
+	r.basicPassword = &basicPassword
+	return r
+}
+
 // Confirmation sets confirmation on the request type.
 func (r APIUpdateUptimeTestRequest) Confirmation(confirmation int32) APIUpdateUptimeTestRequest {
 	r.confirmation = &confirmation
 	return r
 }
 
-// ContactGroups sets contactGroupsCsv on the request type.
-func (r APIUpdateUptimeTestRequest) ContactGroups(contactGroupsCsv []string) APIUpdateUptimeTestRequest {
-	r.contactGroupsCsv = PtrString(strings.Join(contactGroupsCsv, ","))
+// ContactGroups sets contactGroups on the request type.
+func (r APIUpdateUptimeTestRequest) ContactGroups(contactGroups []string) APIUpdateUptimeTestRequest {
+	r.contactGroups = &contactGroups
+	return r
+}
+
+// ContactGroupsCsv sets contactGroupsCsv on the request type.
+func (r APIUpdateUptimeTestRequest) ContactGroupsCsv(contactGroupsCsv string) APIUpdateUptimeTestRequest {
+	r.contactGroupsCsv = &contactGroupsCsv
 	return r
 }
 
@@ -1962,9 +1549,15 @@ func (r APIUpdateUptimeTestRequest) DoNotFind(doNotFind bool) APIUpdateUptimeTes
 	return r
 }
 
-// DNSIPs sets dnsIpCsv on the request type.
-func (r APIUpdateUptimeTestRequest) DNSIPs(dnsIpCsv []string) APIUpdateUptimeTestRequest {
-	r.dnsIpCsv = PtrString(strings.Join(dnsIpCsv, ","))
+// DNSIPs sets dnsIps on the request type.
+func (r APIUpdateUptimeTestRequest) DNSIPs(dnsIps []string) APIUpdateUptimeTestRequest {
+	r.dnsIps = &dnsIps
+	return r
+}
+
+// DnsIpsCsv sets dnsIpsCsv on the request type.
+func (r APIUpdateUptimeTestRequest) DnsIpsCsv(dnsIpsCsv string) APIUpdateUptimeTestRequest {
+	r.dnsIpsCsv = &dnsIpsCsv
 	return r
 }
 
@@ -2010,12 +1603,6 @@ func (r APIUpdateUptimeTestRequest) IncludeHeader(includeHeader bool) APIUpdateU
 	return r
 }
 
-// Name sets name on the request type.
-func (r APIUpdateUptimeTestRequest) Name(name string) APIUpdateUptimeTestRequest {
-	r.name = &name
-	return r
-}
-
 // Paused sets paused on the request type.
 func (r APIUpdateUptimeTestRequest) Paused(paused bool) APIUpdateUptimeTestRequest {
 	r.paused = &paused
@@ -2052,9 +1639,15 @@ func (r APIUpdateUptimeTestRequest) StatusCodes(statusCodesCsv []string) APIUpda
 	return r
 }
 
-// Tags sets tagsCsv on the request type.
-func (r APIUpdateUptimeTestRequest) Tags(tagsCsv []string) APIUpdateUptimeTestRequest {
-	r.tagsCsv = PtrString(strings.Join(tagsCsv, ","))
+// Tags sets tags on the request type.
+func (r APIUpdateUptimeTestRequest) Tags(tags []string) APIUpdateUptimeTestRequest {
+	r.tags = &tags
+	return r
+}
+
+// TagsCsv sets tagsCsv on the request type.
+func (r APIUpdateUptimeTestRequest) TagsCsv(tagsCsv string) APIUpdateUptimeTestRequest {
+	r.tagsCsv = &tagsCsv
 	return r
 }
 
@@ -2087,13 +1680,142 @@ func (r APIUpdateUptimeTestRequest) Execute() error {
 	return r.APIService.UpdateUptimeTestExecute(r)
 }
 
-// UpdateUptimeTest Update an uptime test.
+// UpdateUptimeTest Update an uptime check.
 func (a *UptimeService) UpdateUptimeTest(ctx context.Context, testId string) APIUpdateUptimeTestRequest {
 	return APIUpdateUptimeTestRequest{
 		ctx:        ctx,
 		APIService: a,
 		testId:     testId,
 	}
+}
+
+// UpdateUptimeTestWithData Update an uptime check.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *UptimeService) UpdateUptimeTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIUpdateUptimeTestRequest {
+	r := a.UpdateUptimeTest(ctx, testId)
+
+	if prop, ok := m["name"].(string); ok {
+		r.name = &prop
+	}
+
+	if prop, ok := m["check_rate"].(UptimeTestCheckRate); ok {
+		r.checkRate = &prop
+	}
+
+	if prop, ok := m["basic_username"].(string); ok {
+		r.basicUsername = &prop
+	}
+
+	if prop, ok := m["basic_password"].(string); ok {
+		r.basicPassword = &prop
+	}
+
+	if prop, ok := m["confirmation"].(int32); ok {
+		r.confirmation = &prop
+	}
+
+	if prop, ok := m["contact_groups"].([]string); ok {
+		r.contactGroups = &prop
+	}
+
+	if prop, ok := m["contact_groups_csv"].(string); ok {
+		r.contactGroupsCsv = &prop
+	}
+
+	if prop, ok := m["custom_header"].(string); ok {
+		r.customHeader = &prop
+	}
+
+	if prop, ok := m["do_not_find"].(bool); ok {
+		r.doNotFind = &prop
+	}
+
+	if prop, ok := m["dns_ips"].([]string); ok {
+		r.dnsIps = &prop
+	}
+
+	if prop, ok := m["dns_ips_csv"].(string); ok {
+		r.dnsIpsCsv = &prop
+	}
+
+	if prop, ok := m["dns_server"].(string); ok {
+		r.dnsServer = &prop
+	}
+
+	if prop, ok := m["enable_ssl_alert"].(bool); ok {
+		r.enableSslAlert = &prop
+	}
+
+	if prop, ok := m["final_endpoint"].(string); ok {
+		r.finalEndpoint = &prop
+	}
+
+	if prop, ok := m["find_string"].(string); ok {
+		r.findString = &prop
+	}
+
+	if prop, ok := m["follow_redirects"].(bool); ok {
+		r.followRedirects = &prop
+	}
+
+	if prop, ok := m["host"].(string); ok {
+		r.host = &prop
+	}
+
+	if prop, ok := m["include_header"].(bool); ok {
+		r.includeHeader = &prop
+	}
+
+	if prop, ok := m["paused"].(bool); ok {
+		r.paused = &prop
+	}
+
+	if prop, ok := m["port"].(int32); ok {
+		r.port = &prop
+	}
+
+	if prop, ok := m["post_body"].(string); ok {
+		r.postBody = &prop
+	}
+
+	if prop, ok := m["post_raw"].(string); ok {
+		r.postRaw = &prop
+	}
+
+	if prop, ok := m["regions"].([]string); ok {
+		r.regions = &prop
+	}
+
+	if prop, ok := m["status_codes_csv"].(string); ok {
+		r.statusCodesCsv = &prop
+	}
+
+	if prop, ok := m["tags"].([]string); ok {
+		r.tags = &prop
+	}
+
+	if prop, ok := m["tags_csv"].(string); ok {
+		r.tagsCsv = &prop
+	}
+
+	if prop, ok := m["timeout"].(int32); ok {
+		r.timeout = &prop
+	}
+
+	if prop, ok := m["trigger_rate"].(int32); ok {
+		r.triggerRate = &prop
+	}
+
+	if prop, ok := m["use_jar"].(bool); ok {
+		r.useJar = &prop
+	}
+
+	if prop, ok := m["user_agent"].(string); ok {
+		r.userAgent = &prop
+	}
+
+	return r
 }
 
 // Execute executes the request.
@@ -2105,7 +1827,7 @@ func (a *UptimeService) UpdateUptimeTestExecute(r APIUpdateUptimeTestRequest) er
 		requestFileBytes     []byte
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "UptimeService.UpdateUptimeTest")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "UptimeService.UpdateUptimeTest")
 	if err != nil {
 		return err
 	}
@@ -2135,20 +1857,35 @@ func (a *UptimeService) UpdateUptimeTestExecute(r APIUpdateUptimeTestRequest) er
 		headerParams["Accept"] = requestAcceptHeader
 	}
 
-	if r.basicUser != nil {
-		formParams.Add("basic_user", parameterToString(*r.basicUser))
-	}
-
-	if r.basicPass != nil {
-		formParams.Add("basic_pass", parameterToString(*r.basicPass))
+	if r.name != nil {
+		formParams.Add("name", parameterToString(*r.name))
 	}
 
 	if r.checkRate != nil {
 		formParams.Add("check_rate", parameterToString(*r.checkRate))
 	}
 
+	if r.basicUsername != nil {
+		formParams.Add("basic_username", parameterToString(*r.basicUsername))
+	}
+
+	if r.basicPassword != nil {
+		formParams.Add("basic_password", parameterToString(*r.basicPassword))
+	}
+
 	if r.confirmation != nil {
 		formParams.Add("confirmation", parameterToString(*r.confirmation))
+	}
+
+	if r.contactGroups != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.contactGroups) == 0 {
+			formParams.Add("contact_groups[]", "")
+		}
+		for _, val := range *r.contactGroups {
+			formParams.Add("contact_groups[]", parameterToString(val))
+		}
 	}
 
 	if r.contactGroupsCsv != nil {
@@ -2163,8 +1900,19 @@ func (a *UptimeService) UpdateUptimeTestExecute(r APIUpdateUptimeTestRequest) er
 		formParams.Add("do_not_find", parameterToString(*r.doNotFind))
 	}
 
-	if r.dnsIpCsv != nil {
-		formParams.Add("dns_ip_csv", parameterToString(*r.dnsIpCsv))
+	if r.dnsIps != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.dnsIps) == 0 {
+			formParams.Add("dns_ips[]", "")
+		}
+		for _, val := range *r.dnsIps {
+			formParams.Add("dns_ips[]", parameterToString(val))
+		}
+	}
+
+	if r.dnsIpsCsv != nil {
+		formParams.Add("dns_ips_csv", parameterToString(*r.dnsIpsCsv))
 	}
 
 	if r.dnsServer != nil {
@@ -2195,10 +1943,6 @@ func (a *UptimeService) UpdateUptimeTestExecute(r APIUpdateUptimeTestRequest) er
 		formParams.Add("include_header", parameterToString(*r.includeHeader))
 	}
 
-	if r.name != nil {
-		formParams.Add("name", parameterToString(*r.name))
-	}
-
 	if r.paused != nil {
 		formParams.Add("paused", parameterToString(*r.paused))
 	}
@@ -2216,6 +1960,11 @@ func (a *UptimeService) UpdateUptimeTestExecute(r APIUpdateUptimeTestRequest) er
 	}
 
 	if r.regions != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.regions) == 0 {
+			formParams.Add("regions[]", "")
+		}
 		for _, val := range *r.regions {
 			formParams.Add("regions[]", parameterToString(val))
 		}
@@ -2223,6 +1972,17 @@ func (a *UptimeService) UpdateUptimeTestExecute(r APIUpdateUptimeTestRequest) er
 
 	if r.statusCodesCsv != nil {
 		formParams.Add("status_codes_csv", parameterToString(*r.statusCodesCsv))
+	}
+
+	if r.tags != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.tags) == 0 {
+			formParams.Add("tags[]", "")
+		}
+		for _, val := range *r.tags {
+			formParams.Add("tags[]", parameterToString(val))
+		}
 	}
 
 	if r.tagsCsv != nil {

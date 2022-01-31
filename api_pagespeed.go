@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -44,6 +44,7 @@ var _ context.Context
 // PagespeedAPI describes the necessary methods to adhere to this interface.
 type PagespeedAPI interface {
 	CreatePagespeedTest(ctx context.Context) APICreatePagespeedTestRequest
+	CreatePagespeedTestWithData(ctx context.Context, m map[string]interface{}) APICreatePagespeedTestRequest
 	CreatePagespeedTestExecute(r APICreatePagespeedTestRequest) (APIResponse, error)
 	DeletePagespeedTest(ctx context.Context, testId string) APIDeletePagespeedTestRequest
 	DeletePagespeedTestExecute(r APIDeletePagespeedTestRequest) error
@@ -54,6 +55,7 @@ type PagespeedAPI interface {
 	ListPagespeedTests(ctx context.Context) APIListPagespeedTestsRequest
 	ListPagespeedTestsExecute(r APIListPagespeedTestsRequest) (PagespeedTests, error)
 	UpdatePagespeedTest(ctx context.Context, testId string) APIUpdatePagespeedTestRequest
+	UpdatePagespeedTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIUpdatePagespeedTestRequest
 	UpdatePagespeedTestExecute(r APIUpdatePagespeedTestRequest) error
 }
 
@@ -66,11 +68,12 @@ type APICreatePagespeedTestRequest struct {
 	APIService       PagespeedAPI
 	name             *string
 	websiteUrl       *string
-	locationIso      *PagespeedTestLocationISO
 	checkRate        *PagespeedTestCheckRate
+	region           *PagespeedTestRegion
 	alertBigger      *int32
 	alertSlower      *int64
 	alertSmaller     *int32
+	contactGroups    *[]string
 	contactGroupsCsv *string
 	paused           *bool
 }
@@ -87,15 +90,15 @@ func (r APICreatePagespeedTestRequest) WebsiteURL(websiteUrl string) APICreatePa
 	return r
 }
 
-// LocationISO sets locationIso on the request type.
-func (r APICreatePagespeedTestRequest) LocationISO(locationIso PagespeedTestLocationISO) APICreatePagespeedTestRequest {
-	r.locationIso = &locationIso
-	return r
-}
-
 // CheckRate sets checkRate on the request type.
 func (r APICreatePagespeedTestRequest) CheckRate(checkRate PagespeedTestCheckRate) APICreatePagespeedTestRequest {
 	r.checkRate = &checkRate
+	return r
+}
+
+// Region sets region on the request type.
+func (r APICreatePagespeedTestRequest) Region(region PagespeedTestRegion) APICreatePagespeedTestRequest {
+	r.region = &region
 	return r
 }
 
@@ -117,9 +120,15 @@ func (r APICreatePagespeedTestRequest) AlertSmaller(alertSmaller int32) APICreat
 	return r
 }
 
-// ContactGroups sets contactGroupsCsv on the request type.
-func (r APICreatePagespeedTestRequest) ContactGroups(contactGroupsCsv []string) APICreatePagespeedTestRequest {
-	r.contactGroupsCsv = PtrString(strings.Join(contactGroupsCsv, ","))
+// ContactGroups sets contactGroups on the request type.
+func (r APICreatePagespeedTestRequest) ContactGroups(contactGroups []string) APICreatePagespeedTestRequest {
+	r.contactGroups = &contactGroups
+	return r
+}
+
+// ContactGroupsCsv sets contactGroupsCsv on the request type.
+func (r APICreatePagespeedTestRequest) ContactGroupsCsv(contactGroupsCsv string) APICreatePagespeedTestRequest {
+	r.contactGroupsCsv = &contactGroupsCsv
 	return r
 }
 
@@ -134,12 +143,61 @@ func (r APICreatePagespeedTestRequest) Execute() (APIResponse, error) {
 	return r.APIService.CreatePagespeedTestExecute(r)
 }
 
-// CreatePagespeedTest Create a pagespeed test.
+// CreatePagespeedTest Create a pagespeed check.
 func (a *PagespeedService) CreatePagespeedTest(ctx context.Context) APICreatePagespeedTestRequest {
 	return APICreatePagespeedTestRequest{
 		ctx:        ctx,
 		APIService: a,
 	}
+}
+
+// CreatePagespeedTestWithData Create a pagespeed check.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *PagespeedService) CreatePagespeedTestWithData(ctx context.Context, m map[string]interface{}) APICreatePagespeedTestRequest {
+	r := a.CreatePagespeedTest(ctx)
+
+	if prop, ok := m["name"].(string); ok {
+		r.name = &prop
+	}
+
+	if prop, ok := m["website_url"].(string); ok {
+		r.websiteUrl = &prop
+	}
+
+	if prop, ok := m["check_rate"].(PagespeedTestCheckRate); ok {
+		r.checkRate = &prop
+	}
+
+	if prop, ok := m["alert_bigger"].(int32); ok {
+		r.alertBigger = &prop
+	}
+
+	if prop, ok := m["alert_slower"].(int64); ok {
+		r.alertSlower = &prop
+	}
+
+	if prop, ok := m["alert_smaller"].(int32); ok {
+		r.alertSmaller = &prop
+	}
+
+	if prop, ok := m["contact_groups"].([]string); ok {
+		r.contactGroups = &prop
+	}
+
+	if prop, ok := m["contact_groups_csv"].(string); ok {
+		r.contactGroupsCsv = &prop
+	}
+
+	if prop, ok := m["paused"].(bool); ok {
+		r.paused = &prop
+	}
+
+	if prop, ok := m["region"].(PagespeedTestRegion); ok {
+		r.region = &prop
+	}
+
+	return r
 }
 
 // Execute executes the request.
@@ -152,7 +210,7 @@ func (a *PagespeedService) CreatePagespeedTestExecute(r APICreatePagespeedTestRe
 		returnValue          APIResponse
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "PagespeedService.CreatePagespeedTest")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "PagespeedService.CreatePagespeedTest")
 	if err != nil {
 		return returnValue, err
 	}
@@ -171,12 +229,12 @@ func (a *PagespeedService) CreatePagespeedTestExecute(r APICreatePagespeedTestRe
 		return returnValue, errorf("websiteUrl is required and must be specified")
 	}
 
-	if r.locationIso == nil {
-		return returnValue, errorf("locationIso is required and must be specified")
-	}
-
 	if r.checkRate == nil {
 		return returnValue, errorf("checkRate is required and must be specified")
+	}
+
+	if r.region == nil {
+		return returnValue, errorf("region is required and must be specified")
 	}
 
 	// Determine the Content-Type header.
@@ -199,7 +257,6 @@ func (a *PagespeedService) CreatePagespeedTestExecute(r APICreatePagespeedTestRe
 
 	formParams.Add("name", parameterToString(*r.name))
 	formParams.Add("website_url", parameterToString(*r.websiteUrl))
-	formParams.Add("location_iso", parameterToString(*r.locationIso))
 	formParams.Add("check_rate", parameterToString(*r.checkRate))
 
 	if r.alertBigger != nil {
@@ -214,6 +271,17 @@ func (a *PagespeedService) CreatePagespeedTestExecute(r APICreatePagespeedTestRe
 		formParams.Add("alert_smaller", parameterToString(*r.alertSmaller))
 	}
 
+	if r.contactGroups != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.contactGroups) == 0 {
+			formParams.Add("contact_groups[]", "")
+		}
+		for _, val := range *r.contactGroups {
+			formParams.Add("contact_groups[]", parameterToString(val))
+		}
+	}
+
 	if r.contactGroupsCsv != nil {
 		formParams.Add("contact_groups_csv", parameterToString(*r.contactGroupsCsv))
 	}
@@ -221,6 +289,7 @@ func (a *PagespeedService) CreatePagespeedTestExecute(r APICreatePagespeedTestRe
 	if r.paused != nil {
 		formParams.Add("paused", parameterToString(*r.paused))
 	}
+	formParams.Add("region", parameterToString(*r.region))
 	req, err := a.client.prepareRequest(r.ctx, requestPath, http.MethodPost, requestBody, headerParams, queryParams, formParams, requestFormFieldName, requestFileName, requestFileBytes)
 	if err != nil {
 		return returnValue, err
@@ -276,13 +345,21 @@ func (r APIDeletePagespeedTestRequest) Execute() error {
 	return r.APIService.DeletePagespeedTestExecute(r)
 }
 
-// DeletePagespeedTest Delete a pagespeed test.
+// DeletePagespeedTest Delete a pagespeed check.
 func (a *PagespeedService) DeletePagespeedTest(ctx context.Context, testId string) APIDeletePagespeedTestRequest {
 	return APIDeletePagespeedTestRequest{
 		ctx:        ctx,
 		APIService: a,
 		testId:     testId,
 	}
+}
+
+// DeletePagespeedTestWithData Delete a pagespeed check.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *PagespeedService) DeletePagespeedTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIDeletePagespeedTestRequest {
+	r := a.DeletePagespeedTest(ctx, testId)
+	return r
 }
 
 // Execute executes the request.
@@ -294,7 +371,7 @@ func (a *PagespeedService) DeletePagespeedTestExecute(r APIDeletePagespeedTestRe
 		requestFileBytes     []byte
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "PagespeedService.DeletePagespeedTest")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "PagespeedService.DeletePagespeedTest")
 	if err != nil {
 		return err
 	}
@@ -371,13 +448,21 @@ func (r APIGetPagespeedTestRequest) Execute() (PagespeedTestResponse, error) {
 	return r.APIService.GetPagespeedTestExecute(r)
 }
 
-// GetPagespeedTest Retrieve a pagespeed test.
+// GetPagespeedTest Retrieve a pagespeed check.
 func (a *PagespeedService) GetPagespeedTest(ctx context.Context, testId string) APIGetPagespeedTestRequest {
 	return APIGetPagespeedTestRequest{
 		ctx:        ctx,
 		APIService: a,
 		testId:     testId,
 	}
+}
+
+// GetPagespeedTestWithData Retrieve a pagespeed check.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *PagespeedService) GetPagespeedTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIGetPagespeedTestRequest {
+	r := a.GetPagespeedTest(ctx, testId)
+	return r
 }
 
 // Execute executes the request.
@@ -390,7 +475,7 @@ func (a *PagespeedService) GetPagespeedTestExecute(r APIGetPagespeedTestRequest)
 		returnValue          PagespeedTestResponse
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "PagespeedService.GetPagespeedTest")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "PagespeedService.GetPagespeedTest")
 	if err != nil {
 		return returnValue, err
 	}
@@ -482,13 +567,21 @@ func (r APIListPagespeedTestHistoryRequest) Execute() (PagespeedTestHistory, err
 	return r.APIService.ListPagespeedTestHistoryExecute(r)
 }
 
-// ListPagespeedTestHistory Get all pagespeed test history.
+// ListPagespeedTestHistory Get all pagespeed check history.
 func (a *PagespeedService) ListPagespeedTestHistory(ctx context.Context, testId string) APIListPagespeedTestHistoryRequest {
 	return APIListPagespeedTestHistoryRequest{
 		ctx:        ctx,
 		APIService: a,
 		testId:     testId,
 	}
+}
+
+// ListPagespeedTestHistoryWithData Get all pagespeed check history.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *PagespeedService) ListPagespeedTestHistoryWithData(ctx context.Context, testId string, m map[string]interface{}) APIListPagespeedTestHistoryRequest {
+	r := a.ListPagespeedTestHistory(ctx, testId)
+	return r
 }
 
 // Execute executes the request.
@@ -501,7 +594,7 @@ func (a *PagespeedService) ListPagespeedTestHistoryExecute(r APIListPagespeedTes
 		returnValue          PagespeedTestHistory
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "PagespeedService.ListPagespeedTestHistory")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "PagespeedService.ListPagespeedTestHistory")
 	if err != nil {
 		return returnValue, err
 	}
@@ -588,12 +681,20 @@ func (r APIListPagespeedTestsRequest) Execute() (PagespeedTests, error) {
 	return r.APIService.ListPagespeedTestsExecute(r)
 }
 
-// ListPagespeedTests Get all pagespeed tests.
+// ListPagespeedTests Get all pagespeed checks.
 func (a *PagespeedService) ListPagespeedTests(ctx context.Context) APIListPagespeedTestsRequest {
 	return APIListPagespeedTestsRequest{
 		ctx:        ctx,
 		APIService: a,
 	}
+}
+
+// ListPagespeedTestsWithData Get all pagespeed checks.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *PagespeedService) ListPagespeedTestsWithData(ctx context.Context, m map[string]interface{}) APIListPagespeedTestsRequest {
+	r := a.ListPagespeedTests(ctx)
+	return r
 }
 
 // Execute executes the request.
@@ -606,7 +707,7 @@ func (a *PagespeedService) ListPagespeedTestsExecute(r APIListPagespeedTestsRequ
 		returnValue          PagespeedTests
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "PagespeedService.ListPagespeedTests")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "PagespeedService.ListPagespeedTests")
 	if err != nil {
 		return returnValue, err
 	}
@@ -684,24 +785,19 @@ type APIUpdatePagespeedTestRequest struct {
 	APIService       PagespeedAPI
 	testId           string
 	name             *string
-	locationIso      *PagespeedTestLocationISO
 	checkRate        *PagespeedTestCheckRate
 	alertBigger      *int32
 	alertSlower      *int64
 	alertSmaller     *int32
+	contactGroups    *[]string
 	contactGroupsCsv *string
 	paused           *bool
+	region           *PagespeedTestRegion
 }
 
 // Name sets name on the request type.
 func (r APIUpdatePagespeedTestRequest) Name(name string) APIUpdatePagespeedTestRequest {
 	r.name = &name
-	return r
-}
-
-// LocationISO sets locationIso on the request type.
-func (r APIUpdatePagespeedTestRequest) LocationISO(locationIso PagespeedTestLocationISO) APIUpdatePagespeedTestRequest {
-	r.locationIso = &locationIso
 	return r
 }
 
@@ -729,9 +825,15 @@ func (r APIUpdatePagespeedTestRequest) AlertSmaller(alertSmaller int32) APIUpdat
 	return r
 }
 
-// ContactGroups sets contactGroupsCsv on the request type.
-func (r APIUpdatePagespeedTestRequest) ContactGroups(contactGroupsCsv []string) APIUpdatePagespeedTestRequest {
-	r.contactGroupsCsv = PtrString(strings.Join(contactGroupsCsv, ","))
+// ContactGroups sets contactGroups on the request type.
+func (r APIUpdatePagespeedTestRequest) ContactGroups(contactGroups []string) APIUpdatePagespeedTestRequest {
+	r.contactGroups = &contactGroups
+	return r
+}
+
+// ContactGroupsCsv sets contactGroupsCsv on the request type.
+func (r APIUpdatePagespeedTestRequest) ContactGroupsCsv(contactGroupsCsv string) APIUpdatePagespeedTestRequest {
+	r.contactGroupsCsv = &contactGroupsCsv
 	return r
 }
 
@@ -741,18 +843,69 @@ func (r APIUpdatePagespeedTestRequest) Paused(paused bool) APIUpdatePagespeedTes
 	return r
 }
 
+// Region sets region on the request type.
+func (r APIUpdatePagespeedTestRequest) Region(region PagespeedTestRegion) APIUpdatePagespeedTestRequest {
+	r.region = &region
+	return r
+}
+
 // Execute executes the request.
 func (r APIUpdatePagespeedTestRequest) Execute() error {
 	return r.APIService.UpdatePagespeedTestExecute(r)
 }
 
-// UpdatePagespeedTest Update a pagespeed test.
+// UpdatePagespeedTest Update a pagespeed check.
 func (a *PagespeedService) UpdatePagespeedTest(ctx context.Context, testId string) APIUpdatePagespeedTestRequest {
 	return APIUpdatePagespeedTestRequest{
 		ctx:        ctx,
 		APIService: a,
 		testId:     testId,
 	}
+}
+
+// UpdatePagespeedTestWithData Update a pagespeed check.
+// The use of this method is discouraged as it does not provide the level of
+// type safety afforded by the field methods on the request type.
+func (a *PagespeedService) UpdatePagespeedTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIUpdatePagespeedTestRequest {
+	r := a.UpdatePagespeedTest(ctx, testId)
+
+	if prop, ok := m["name"].(string); ok {
+		r.name = &prop
+	}
+
+	if prop, ok := m["check_rate"].(PagespeedTestCheckRate); ok {
+		r.checkRate = &prop
+	}
+
+	if prop, ok := m["alert_bigger"].(int32); ok {
+		r.alertBigger = &prop
+	}
+
+	if prop, ok := m["alert_slower"].(int64); ok {
+		r.alertSlower = &prop
+	}
+
+	if prop, ok := m["alert_smaller"].(int32); ok {
+		r.alertSmaller = &prop
+	}
+
+	if prop, ok := m["contact_groups"].([]string); ok {
+		r.contactGroups = &prop
+	}
+
+	if prop, ok := m["contact_groups_csv"].(string); ok {
+		r.contactGroupsCsv = &prop
+	}
+
+	if prop, ok := m["paused"].(bool); ok {
+		r.paused = &prop
+	}
+
+	if prop, ok := m["region"].(PagespeedTestRegion); ok {
+		r.region = &prop
+	}
+
+	return r
 }
 
 // Execute executes the request.
@@ -764,7 +917,7 @@ func (a *PagespeedService) UpdatePagespeedTestExecute(r APIUpdatePagespeedTestRe
 		requestFileBytes     []byte
 	)
 
-	basePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "PagespeedService.UpdatePagespeedTest")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "PagespeedService.UpdatePagespeedTest")
 	if err != nil {
 		return err
 	}
@@ -798,10 +951,6 @@ func (a *PagespeedService) UpdatePagespeedTestExecute(r APIUpdatePagespeedTestRe
 		formParams.Add("name", parameterToString(*r.name))
 	}
 
-	if r.locationIso != nil {
-		formParams.Add("location_iso", parameterToString(*r.locationIso))
-	}
-
 	if r.checkRate != nil {
 		formParams.Add("check_rate", parameterToString(*r.checkRate))
 	}
@@ -818,12 +967,27 @@ func (a *PagespeedService) UpdatePagespeedTestExecute(r APIUpdatePagespeedTestRe
 		formParams.Add("alert_smaller", parameterToString(*r.alertSmaller))
 	}
 
+	if r.contactGroups != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.contactGroups) == 0 {
+			formParams.Add("contact_groups[]", "")
+		}
+		for _, val := range *r.contactGroups {
+			formParams.Add("contact_groups[]", parameterToString(val))
+		}
+	}
+
 	if r.contactGroupsCsv != nil {
 		formParams.Add("contact_groups_csv", parameterToString(*r.contactGroupsCsv))
 	}
 
 	if r.paused != nil {
 		formParams.Add("paused", parameterToString(*r.paused))
+	}
+
+	if r.region != nil {
+		formParams.Add("region", parameterToString(*r.region))
 	}
 	req, err := a.client.prepareRequest(r.ctx, requestPath, http.MethodPut, requestBody, headerParams, queryParams, formParams, requestFormFieldName, requestFileName, requestFileBytes)
 	if err != nil {

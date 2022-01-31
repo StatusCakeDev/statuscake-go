@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -35,7 +35,7 @@ import (
 
 // SSLTests struct for SSLTests
 type SSLTests struct {
-	// List of SSL tests
+	// List of SSL checks
 	Data []SSLTest `json:"data"`
 }
 
@@ -49,6 +49,7 @@ func NewSSLTests(data []SSLTest) *SSLTests {
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o SSLTests) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {

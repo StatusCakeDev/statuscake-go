@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -34,24 +34,27 @@ import (
 	"fmt"
 )
 
-// UptimeTestType Uptime test type
+// UptimeTestType Uptime check type
 type UptimeTestType string
 
 const (
-	// UptimeTestTypeDNS a DNS uptime test.
+	// UptimeTestTypeDNS a DNS uptime check.
 	UptimeTestTypeDNS UptimeTestType = "DNS"
-	// UptimeTestTypeHEAD a HTTP uptime test specifically using the HEAD verb.
+	// UptimeTestTypeHEAD an HTTP uptime check (HEAD verb).
 	UptimeTestTypeHEAD UptimeTestType = "HEAD"
-	// UptimeTestTypeHTTP a HTTP uptime test.
+	// UptimeTestTypeHTTP an HTTP uptime check (GET or POST verbs).
 	UptimeTestTypeHTTP UptimeTestType = "HTTP"
-	// UptimeTestTypePING a PING uptime test.
+	// UptimeTestTypePING an PING uptime check.
 	UptimeTestTypePING UptimeTestType = "PING"
-	// UptimeTestTypeSSH a SSH uptime test.
+	// UptimeTestTypeSMTP an SMTP uptime check.
+	UptimeTestTypeSMTP UptimeTestType = "SMTP"
+	// UptimeTestTypeSSH an SSH uptime check.
 	UptimeTestTypeSSH UptimeTestType = "SSH"
-	// UptimeTestTypeTCP a TCP uptime test.
+	// UptimeTestTypeTCP a TCP uptime check.
 	UptimeTestTypeTCP UptimeTestType = "TCP"
 )
 
+// Unmarshal JSON data into any of the pointers in the type.
 func (v *UptimeTestType) UnmarshalJSON(src []byte) error {
 	var value string
 	if err := json.Unmarshal(src, &value); err != nil {
@@ -69,16 +72,17 @@ func (v *UptimeTestType) UnmarshalJSON(src []byte) error {
 
 // Valid determines if the value is valid.
 func (v UptimeTestType) Valid() bool {
-	return v == UptimeTestTypeDNS || v == UptimeTestTypeHEAD || v == UptimeTestTypeHTTP || v == UptimeTestTypePING || v == UptimeTestTypeSSH || v == UptimeTestTypeTCP
+	return v == UptimeTestTypeDNS || v == UptimeTestTypeHEAD || v == UptimeTestTypeHTTP || v == UptimeTestTypePING || v == UptimeTestTypeSMTP || v == UptimeTestTypeSSH || v == UptimeTestTypeTCP
 }
 
-// UptimeTestTypeValues returns the values of UptimeTestType
+// UptimeTestTypeValues returns the values of UptimeTestType.
 func UptimeTestTypeValues() []string {
 	return []string{
 		"DNS",
 		"HEAD",
 		"HTTP",
 		"PING",
+		"SMTP",
 		"SSH",
 		"TCP",
 	}

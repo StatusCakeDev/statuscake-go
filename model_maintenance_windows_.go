@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -49,6 +49,7 @@ func NewMaintenanceWindows(data []MaintenanceWindow) *MaintenanceWindows {
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o MaintenanceWindows) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {

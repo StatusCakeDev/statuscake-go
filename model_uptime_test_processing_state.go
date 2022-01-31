@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -34,20 +34,21 @@ import (
 	"fmt"
 )
 
-// UptimeTestProcessingState Uptime test proccessing state
+// UptimeTestProcessingState Uptime check proccessing state
 type UptimeTestProcessingState string
 
 const (
-	// UptimeTestProcessingStateComplete a completed test state.
+	// UptimeTestProcessingStateComplete a completed check state.
 	UptimeTestProcessingStateComplete UptimeTestProcessingState = "complete"
-	// UptimeTestProcessingStatePretest a pretest test state.
+	// UptimeTestProcessingStatePretest a pretest check state.
 	UptimeTestProcessingStatePretest UptimeTestProcessingState = "pretest"
-	// UptimeTestProcessingStateRetest a retest test state.
+	// UptimeTestProcessingStateRetest a retest check state.
 	UptimeTestProcessingStateRetest UptimeTestProcessingState = "retest"
-	// UptimeTestProcessingStateUpRetest an up retest test state.
+	// UptimeTestProcessingStateUpRetest an up retest check state.
 	UptimeTestProcessingStateUpRetest UptimeTestProcessingState = "up_retest"
 )
 
+// Unmarshal JSON data into any of the pointers in the type.
 func (v *UptimeTestProcessingState) UnmarshalJSON(src []byte) error {
 	var value string
 	if err := json.Unmarshal(src, &value); err != nil {
@@ -68,7 +69,7 @@ func (v UptimeTestProcessingState) Valid() bool {
 	return v == UptimeTestProcessingStateComplete || v == UptimeTestProcessingStatePretest || v == UptimeTestProcessingStateRetest || v == UptimeTestProcessingStateUpRetest
 }
 
-// UptimeTestProcessingStateValues returns the values of UptimeTestProcessingState
+// UptimeTestProcessingStateValues returns the values of UptimeTestProcessingState.
 func UptimeTestProcessingStateValues() []string {
 	return []string{
 		"complete",

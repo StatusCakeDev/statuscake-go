@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -34,7 +34,7 @@ import (
 	"fmt"
 )
 
-// SSLTestCheckRate Number of seconds between tests
+// SSLTestCheckRate Number of seconds between checks
 type SSLTestCheckRate int32
 
 const (
@@ -52,6 +52,7 @@ const (
 	SSLTestCheckRateOneWeek SSLTestCheckRate = 2073600
 )
 
+// Unmarshal JSON data into any of the pointers in the type.
 func (v *SSLTestCheckRate) UnmarshalJSON(src []byte) error {
 	var value int32
 	if err := json.Unmarshal(src, &value); err != nil {
@@ -72,7 +73,7 @@ func (v SSLTestCheckRate) Valid() bool {
 	return v == SSLTestCheckRateFiveMinutes || v == SSLTestCheckRateTenMinutes || v == SSLTestCheckRateThirtyMinutes || v == SSLTestCheckRateOneHour || v == SSLTestCheckRateOneDay || v == SSLTestCheckRateOneWeek
 }
 
-// SSLTestCheckRateValues returns the values of SSLTestCheckRate
+// SSLTestCheckRateValues returns the values of SSLTestCheckRate.
 func SSLTestCheckRateValues() []int32 {
 	return []int32{
 		300,

@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -35,30 +35,31 @@ import (
 
 // SSLTestMixedContent struct for SSLTestMixedContent
 type SSLTestMixedContent struct {
-	// Type of the content
-	Type string `json:"type"`
 	// Full path to the content resource
 	URL string `json:"src"`
+	// Type of the content
+	Type string `json:"type"`
 }
 
 // NewSSLTestMixedContent instantiates a new SSLTestMixedContent object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewSSLTestMixedContent(type_ string, src string) *SSLTestMixedContent {
+func NewSSLTestMixedContent(src string, type_ string) *SSLTestMixedContent {
 	return &SSLTestMixedContent{
-		Type: type_,
 		URL:  src,
+		Type: type_,
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o SSLTestMixedContent) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
-		toSerialize["type"] = o.Type
+		toSerialize["src"] = o.URL
 	}
 	if true {
-		toSerialize["src"] = o.URL
+		toSerialize["type"] = o.Type
 	}
 	return json.Marshal(toSerialize)
 }

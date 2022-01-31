@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -53,6 +53,7 @@ func NewMetadata() *Metadata {
 	return &Metadata{}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o Metadata) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if o.Page != nil {

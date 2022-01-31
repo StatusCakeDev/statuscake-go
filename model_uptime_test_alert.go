@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2021 StatusCake
+ * Copyright (c) 2022
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -36,10 +36,10 @@ import (
 
 // UptimeTestAlert struct for UptimeTestAlert
 type UptimeTestAlert struct {
-	// Uptime test ID
+	// Uptime check ID
 	ID     string           `json:"id"`
 	Status UptimeTestStatus `json:"status"`
-	// Uptime test status code
+	// Uptime check status code
 	StatusCode int32 `json:"status_code"`
 	// When the alert was triggered (RFC3339 format)
 	Triggered *time.Time `json:"triggered_at,omitempty"`
@@ -57,6 +57,7 @@ func NewUptimeTestAlert(id string, status UptimeTestStatus, statusCode int32) *U
 	}
 }
 
+// Marshal data from the in the struct to JSON.
 func (o UptimeTestAlert) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
