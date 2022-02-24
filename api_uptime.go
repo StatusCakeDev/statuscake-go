@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.1
+ * API version: 1.0.0-beta.2
  * Contact: support@statuscake.com
  */
 
@@ -908,19 +908,19 @@ type APIListUptimeTestAlertsRequest struct {
 	ctx        context.Context
 	APIService UptimeAPI
 	testId     string
-	start      *int64
 	limit      *int32
-}
-
-// Start sets start on the request type.
-func (r APIListUptimeTestAlertsRequest) Start(start int64) APIListUptimeTestAlertsRequest {
-	r.start = &start
-	return r
+	before     *int64
 }
 
 // Limit sets limit on the request type.
 func (r APIListUptimeTestAlertsRequest) Limit(limit int32) APIListUptimeTestAlertsRequest {
 	r.limit = &limit
+	return r
+}
+
+// Before sets before on the request type.
+func (r APIListUptimeTestAlertsRequest) Before(before int64) APIListUptimeTestAlertsRequest {
+	r.before = &before
 	return r
 }
 
@@ -968,11 +968,11 @@ func (a *UptimeService) ListUptimeTestAlertsExecute(r APIListUptimeTestAlertsReq
 	queryParams := url.Values{}
 	formParams := url.Values{}
 
-	if r.start != nil {
-		queryParams.Add("start", parameterToString(*r.start))
-	}
 	if r.limit != nil {
 		queryParams.Add("limit", parameterToString(*r.limit))
+	}
+	if r.before != nil {
+		queryParams.Add("before", parameterToString(*r.before))
 	}
 	// Determine the Content-Type header.
 	contentTypes := []string{}
@@ -1040,26 +1040,19 @@ type APIListUptimeTestHistoryRequest struct {
 	ctx        context.Context
 	APIService UptimeAPI
 	testId     string
-	start      *int64
-	end        *int64
 	limit      *int32
-}
-
-// Start sets start on the request type.
-func (r APIListUptimeTestHistoryRequest) Start(start int64) APIListUptimeTestHistoryRequest {
-	r.start = &start
-	return r
-}
-
-// End sets end on the request type.
-func (r APIListUptimeTestHistoryRequest) End(end int64) APIListUptimeTestHistoryRequest {
-	r.end = &end
-	return r
+	before     *int64
 }
 
 // Limit sets limit on the request type.
 func (r APIListUptimeTestHistoryRequest) Limit(limit int32) APIListUptimeTestHistoryRequest {
 	r.limit = &limit
+	return r
+}
+
+// Before sets before on the request type.
+func (r APIListUptimeTestHistoryRequest) Before(before int64) APIListUptimeTestHistoryRequest {
+	r.before = &before
 	return r
 }
 
@@ -1107,14 +1100,11 @@ func (a *UptimeService) ListUptimeTestHistoryExecute(r APIListUptimeTestHistoryR
 	queryParams := url.Values{}
 	formParams := url.Values{}
 
-	if r.start != nil {
-		queryParams.Add("start", parameterToString(*r.start))
-	}
-	if r.end != nil {
-		queryParams.Add("end", parameterToString(*r.end))
-	}
 	if r.limit != nil {
 		queryParams.Add("limit", parameterToString(*r.limit))
+	}
+	if r.before != nil {
+		queryParams.Add("before", parameterToString(*r.before))
 	}
 	// Determine the Content-Type header.
 	contentTypes := []string{}
@@ -1182,6 +1172,20 @@ type APIListUptimeTestPeriodsRequest struct {
 	ctx        context.Context
 	APIService UptimeAPI
 	testId     string
+	limit      *int32
+	before     *int64
+}
+
+// Limit sets limit on the request type.
+func (r APIListUptimeTestPeriodsRequest) Limit(limit int32) APIListUptimeTestPeriodsRequest {
+	r.limit = &limit
+	return r
+}
+
+// Before sets before on the request type.
+func (r APIListUptimeTestPeriodsRequest) Before(before int64) APIListUptimeTestPeriodsRequest {
+	r.before = &before
+	return r
 }
 
 // Execute executes the request.
@@ -1228,6 +1232,12 @@ func (a *UptimeService) ListUptimeTestPeriodsExecute(r APIListUptimeTestPeriodsR
 	queryParams := url.Values{}
 	formParams := url.Values{}
 
+	if r.limit != nil {
+		queryParams.Add("limit", parameterToString(*r.limit))
+	}
+	if r.before != nil {
+		queryParams.Add("before", parameterToString(*r.before))
+	}
 	// Determine the Content-Type header.
 	contentTypes := []string{}
 

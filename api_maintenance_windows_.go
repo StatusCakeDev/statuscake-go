@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.1
+ * API version: 1.0.0-beta.2
  * Contact: support@statuscake.com
  */
 
@@ -543,7 +543,21 @@ func (a *MaintenanceWindowsService) GetMaintenanceWindowExecute(r APIGetMaintena
 type APIListMaintenanceWindowsRequest struct {
 	ctx        context.Context
 	APIService MaintenanceWindowsAPI
+	page       *int32
+	limit      *int32
 	state      *string
+}
+
+// Page sets page on the request type.
+func (r APIListMaintenanceWindowsRequest) Page(page int32) APIListMaintenanceWindowsRequest {
+	r.page = &page
+	return r
+}
+
+// Limit sets limit on the request type.
+func (r APIListMaintenanceWindowsRequest) Limit(limit int32) APIListMaintenanceWindowsRequest {
+	r.limit = &limit
+	return r
 }
 
 // State sets state on the request type.
@@ -594,6 +608,12 @@ func (a *MaintenanceWindowsService) ListMaintenanceWindowsExecute(r APIListMaint
 	queryParams := url.Values{}
 	formParams := url.Values{}
 
+	if r.page != nil {
+		queryParams.Add("page", parameterToString(*r.page))
+	}
+	if r.limit != nil {
+		queryParams.Add("limit", parameterToString(*r.limit))
+	}
 	if r.state != nil {
 		queryParams.Add("state", parameterToString(*r.state))
 	}

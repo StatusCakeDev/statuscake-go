@@ -23,7 +23,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.1
+ * API version: 1.0.0-beta.2
  * Contact: support@statuscake.com
  */
 
@@ -397,6 +397,12 @@ func TestListUptimeTests(t *testing.T) {
 						"uptime":         Decimal(100),
 					}, 1,
 				),
+				"metadata": matchers.StructMatcher{
+					"page":        Like(1),
+					"per_page":    Like(25),
+					"page_count":  Like(1),
+					"total_count": Like(5),
+				},
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
@@ -435,6 +441,12 @@ func TestListUptimeTests(t *testing.T) {
 			WithHeader("Content-Type", S("application/json")).
 			WithJSONBody(Map{
 				"data": Like([]interface{}{}),
+				"metadata": matchers.StructMatcher{
+					"page":        Like(1),
+					"per_page":    Like(25),
+					"page_count":  Like(1),
+					"total_count": 0,
+				},
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {

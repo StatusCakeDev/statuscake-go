@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.1
+ * API version: 1.0.0-beta.2
  * Contact: support@statuscake.com
  */
 
@@ -36,16 +36,18 @@ import (
 // SSLTests struct for SSLTests
 type SSLTests struct {
 	// List of SSL checks
-	Data []SSLTest `json:"data"`
+	Data     []SSLTest `json:"data"`
+	Metadata Metadata  `json:"metadata"`
 }
 
 // NewSSLTests instantiates a new SSLTests object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewSSLTests(data []SSLTest) *SSLTests {
+func NewSSLTests(data []SSLTest, metadata Metadata) *SSLTests {
 	return &SSLTests{
-		Data: data,
+		Data:     data,
+		Metadata: metadata,
 	}
 }
 
@@ -54,6 +56,9 @@ func (o SSLTests) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
 		toSerialize["data"] = o.Data
+	}
+	if true {
+		toSerialize["metadata"] = o.Metadata
 	}
 	return json.Marshal(toSerialize)
 }

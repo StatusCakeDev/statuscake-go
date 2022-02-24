@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.1
+ * API version: 1.0.0-beta.2
  * Contact: support@statuscake.com
  */
 
@@ -36,16 +36,18 @@ import (
 // ContactGroups struct for ContactGroups
 type ContactGroups struct {
 	// List of contact groups
-	Data []ContactGroup `json:"data"`
+	Data     []ContactGroup `json:"data"`
+	Metadata Metadata       `json:"metadata"`
 }
 
 // NewContactGroups instantiates a new ContactGroups object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewContactGroups(data []ContactGroup) *ContactGroups {
+func NewContactGroups(data []ContactGroup, metadata Metadata) *ContactGroups {
 	return &ContactGroups{
-		Data: data,
+		Data:     data,
+		Metadata: metadata,
 	}
 }
 
@@ -54,6 +56,9 @@ func (o ContactGroups) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
 		toSerialize["data"] = o.Data
+	}
+	if true {
+		toSerialize["metadata"] = o.Metadata
 	}
 	return json.Marshal(toSerialize)
 }

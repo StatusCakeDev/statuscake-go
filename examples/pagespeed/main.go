@@ -77,9 +77,7 @@ func main() {
 
 	fmt.Printf("PAGESPEED CHECKS: %+v\n", tests.Data)
 
-	results, err := client.ListPagespeedTestHistory(context.Background(), testID).
-		Days(4).
-		Execute()
+	results, err := client.ListPagespeedTestHistory(context.Background(), testID).Execute()
 	if err != nil {
 		printError(err)
 	}
