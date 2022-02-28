@@ -23,7 +23,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.1
+ * API version: 1.0.0-beta.2
  * Contact: support@statuscake.com
  */
 
@@ -310,6 +310,12 @@ func TestListPagespeedTests(t *testing.T) {
 						"paused":   Like(true),
 					}, 1,
 				),
+				"metadata": matchers.StructMatcher{
+					"page":        Like(1),
+					"per_page":    Like(25),
+					"page_count":  Like(1),
+					"total_count": Like(5),
+				},
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
@@ -351,6 +357,12 @@ func TestListPagespeedTests(t *testing.T) {
 			WithHeader("Content-Type", S("application/json")).
 			WithJSONBody(Map{
 				"data": Like([]interface{}{}),
+				"metadata": matchers.StructMatcher{
+					"page":        Like(1),
+					"per_page":    Like(25),
+					"page_count":  Like(1),
+					"total_count": 0,
+				},
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
@@ -369,7 +381,6 @@ func TestListPagespeedTestHistory(t *testing.T) {
 			}).
 			UponReceiving("A request to get a list of pagespeed test history results").
 			WithRequest(http.MethodGet, FromProviderState("/v1/pagespeed/${id}/history", "/v1/pagespeed/1/history")).
-			WithQuery("days", Integer(10)).
 			WithHeaders(matchers.HeadersMatcher{
 				"Accept":        []Matcher{S("application/json")},
 				"Authorization": []Matcher{S("Bearer 123456789")},
@@ -410,9 +421,7 @@ func TestListPagespeedTestHistory(t *testing.T) {
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
-			results, _ := c.ListPagespeedTestHistory(context.Background(), "1").
-				Days(10).
-				Execute()
+			results, _ := c.ListPagespeedTestHistory(context.Background(), "1").Execute()
 
 			return equal(results.Data, statuscake.PagespeedTestHistoryData{
 				Aggregated: statuscake.PagespeedTestHistoryDataAggregated{
@@ -452,7 +461,6 @@ func TestListPagespeedTestHistory(t *testing.T) {
 			AddInteraction().
 			UponReceiving("A request to get a list of pagespeed test history results").
 			WithRequest(http.MethodGet, S("/v1/pagespeed/2/history")).
-			WithQuery("days", Integer(10)).
 			WithHeaders(matchers.HeadersMatcher{
 				"Accept":        []Matcher{S("application/json")},
 				"Authorization": []Matcher{S("Bearer 123456789")},
@@ -465,9 +473,7 @@ func TestListPagespeedTestHistory(t *testing.T) {
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
-			_, err := c.ListPagespeedTestHistory(context.Background(), "2").
-				Days(10).
-				Execute()
+			_, err := c.ListPagespeedTestHistory(context.Background(), "2").Execute()
 
 			return equal(err, statuscake.APIError{
 				Status:  http.StatusNotFound,
@@ -485,7 +491,6 @@ func TestListPagespeedTestHistory(t *testing.T) {
 			}).
 			UponReceiving("A request to get a list of pagespeed test history results").
 			WithRequest(http.MethodGet, FromProviderState("/v1/pagespeed/${id}/history", "/v1/pagespeed/1/history")).
-			WithQuery("days", Integer(10)).
 			WithHeaders(matchers.HeadersMatcher{
 				"Accept":        []Matcher{S("application/json")},
 				"Authorization": []Matcher{S("Bearer 123456789")},
@@ -497,9 +502,7 @@ func TestListPagespeedTestHistory(t *testing.T) {
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
-			results, _ := c.ListPagespeedTestHistory(context.Background(), "1").
-				Days(10).
-				Execute()
+			results, _ := c.ListPagespeedTestHistory(context.Background(), "1").Execute()
 
 			return equal(results.Data, statuscake.PagespeedTestHistoryData{})
 		})

@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.1
+ * API version: 1.0.0-beta.2
  * Contact: support@statuscake.com
  */
 
@@ -37,16 +37,17 @@ import (
 type UptimeTests struct {
 	// List of uptime checks
 	Data     []UptimeTestOverview `json:"data"`
-	Metadata *Metadata            `json:"metadata,omitempty"`
+	Metadata Metadata             `json:"metadata"`
 }
 
 // NewUptimeTests instantiates a new UptimeTests object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewUptimeTests(data []UptimeTestOverview) *UptimeTests {
+func NewUptimeTests(data []UptimeTestOverview, metadata Metadata) *UptimeTests {
 	return &UptimeTests{
-		Data: data,
+		Data:     data,
+		Metadata: metadata,
 	}
 }
 
@@ -56,7 +57,7 @@ func (o UptimeTests) MarshalJSON() ([]byte, error) {
 	if true {
 		toSerialize["data"] = o.Data
 	}
-	if o.Metadata != nil {
+	if true {
 		toSerialize["metadata"] = o.Metadata
 	}
 	return json.Marshal(toSerialize)

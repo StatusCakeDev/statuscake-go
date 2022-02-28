@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.1
+ * API version: 1.0.0-beta.2
  * Contact: support@statuscake.com
  */
 
@@ -553,12 +553,19 @@ type APIListPagespeedTestHistoryRequest struct {
 	ctx        context.Context
 	APIService PagespeedAPI
 	testId     string
-	days       *int32
+	limit      *int32
+	before     *int64
 }
 
-// Days sets days on the request type.
-func (r APIListPagespeedTestHistoryRequest) Days(days int32) APIListPagespeedTestHistoryRequest {
-	r.days = &days
+// Limit sets limit on the request type.
+func (r APIListPagespeedTestHistoryRequest) Limit(limit int32) APIListPagespeedTestHistoryRequest {
+	r.limit = &limit
+	return r
+}
+
+// Before sets before on the request type.
+func (r APIListPagespeedTestHistoryRequest) Before(before int64) APIListPagespeedTestHistoryRequest {
+	r.before = &before
 	return r
 }
 
@@ -606,8 +613,11 @@ func (a *PagespeedService) ListPagespeedTestHistoryExecute(r APIListPagespeedTes
 	queryParams := url.Values{}
 	formParams := url.Values{}
 
-	if r.days != nil {
-		queryParams.Add("days", parameterToString(*r.days))
+	if r.limit != nil {
+		queryParams.Add("limit", parameterToString(*r.limit))
+	}
+	if r.before != nil {
+		queryParams.Add("before", parameterToString(*r.before))
 	}
 	// Determine the Content-Type header.
 	contentTypes := []string{}
@@ -674,6 +684,20 @@ func (a *PagespeedService) ListPagespeedTestHistoryExecute(r APIListPagespeedTes
 type APIListPagespeedTestsRequest struct {
 	ctx        context.Context
 	APIService PagespeedAPI
+	page       *int32
+	limit      *int32
+}
+
+// Page sets page on the request type.
+func (r APIListPagespeedTestsRequest) Page(page int32) APIListPagespeedTestsRequest {
+	r.page = &page
+	return r
+}
+
+// Limit sets limit on the request type.
+func (r APIListPagespeedTestsRequest) Limit(limit int32) APIListPagespeedTestsRequest {
+	r.limit = &limit
+	return r
 }
 
 // Execute executes the request.
@@ -718,6 +742,12 @@ func (a *PagespeedService) ListPagespeedTestsExecute(r APIListPagespeedTestsRequ
 	queryParams := url.Values{}
 	formParams := url.Values{}
 
+	if r.page != nil {
+		queryParams.Add("page", parameterToString(*r.page))
+	}
+	if r.limit != nil {
+		queryParams.Add("limit", parameterToString(*r.limit))
+	}
 	// Determine the Content-Type header.
 	contentTypes := []string{}
 

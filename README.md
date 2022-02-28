@@ -14,7 +14,7 @@ You will need the following things properly installed on your computer.
 ## Installation
 
 With [Go module](https://github.com/golang/go/wiki/Modules) support (Go 1.11+),
-simply add the following import
+add the following import
 
 ```go
 import "github.com/StatusCakeDev/statuscake-go"
@@ -27,6 +27,33 @@ Otherwise, to install the `statuscake-go` package, run the following command:
 
 ```bash
 $ go get -u github.com/StatusCakeDev/statuscake-go
+```
+
+## Usage
+
+Within any Go file instantiate an API client and execute a request:
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/StatusCakeDev/statuscake-go"
+	"github.com/StatusCakeDev/statuscake-go/credentials"
+)
+
+func main() {
+	bearer := credentials.NewBearerWithStaticToken(apiToken)
+	client := statuscake.NewClient(statuscake.WithRequestCredentials(bearer))
+
+	tests, err := client.ListUptimeTests(context.Background()).Execute()
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printg("%+v\n", tests.Data)
 ```
 
 ## License

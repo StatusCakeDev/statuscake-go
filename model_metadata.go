@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.1
+ * API version: 1.0.0-beta.2
  * Contact: support@statuscake.com
  */
 
@@ -36,36 +36,41 @@ import (
 // Metadata struct for Metadata
 type Metadata struct {
 	// The current page of results
-	Page *int32 `json:"page,omitempty"`
+	Page int32 `json:"page"`
 	// The number of results per page
-	PerPage *int32 `json:"per_page,omitempty"`
+	PerPage int32 `json:"per_page"`
 	// The total number of pages
-	PageCount *int32 `json:"page_count,omitempty"`
+	PageCount int32 `json:"page_count"`
 	// The total number of results
-	TotalCount *int32 `json:"total_count,omitempty"`
+	TotalCount int32 `json:"total_count"`
 }
 
 // NewMetadata instantiates a new Metadata object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewMetadata() *Metadata {
-	return &Metadata{}
+func NewMetadata(page int32, perPage int32, pageCount int32, totalCount int32) *Metadata {
+	return &Metadata{
+		Page:       page,
+		PerPage:    perPage,
+		PageCount:  pageCount,
+		TotalCount: totalCount,
+	}
 }
 
 // Marshal data from the in the struct to JSON.
 func (o Metadata) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
-	if o.Page != nil {
+	if true {
 		toSerialize["page"] = o.Page
 	}
-	if o.PerPage != nil {
+	if true {
 		toSerialize["per_page"] = o.PerPage
 	}
-	if o.PageCount != nil {
+	if true {
 		toSerialize["page_count"] = o.PageCount
 	}
-	if o.TotalCount != nil {
+	if true {
 		toSerialize["total_count"] = o.TotalCount
 	}
 	return json.Marshal(toSerialize)
