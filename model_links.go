@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.2
+ * API version: 1.0.0-beta.3
  * Contact: support@statuscake.com
  */
 
@@ -33,45 +33,57 @@ import (
 	"encoding/json"
 )
 
-// Metadata struct for Metadata
-type Metadata struct {
-	// The current page of results
-	Page int32 `json:"page"`
-	// The number of results per page
-	PerPage int32 `json:"per_page"`
-	// The total number of pages
-	PageCount int32 `json:"page_count"`
-	// The total number of results
-	TotalCount int32 `json:"total_count"`
+// Links struct for Links
+type Links struct {
+	// The URL that created the current response document
+	Self string `json:"self"`
+	// Additional links. The nature of these fields is described in the endpoint description
+	AdditionalProperties map[string]interface{}
 }
 
-// NewMetadata instantiates a new Metadata object.
+type _Links Links
+
+// NewLinks instantiates a new Links object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewMetadata(page int32, perPage int32, pageCount int32, totalCount int32) *Metadata {
-	return &Metadata{
-		Page:       page,
-		PerPage:    perPage,
-		PageCount:  pageCount,
-		TotalCount: totalCount,
+func NewLinks(self string) *Links {
+	return &Links{
+		Self: self,
 	}
 }
 
-// Marshal data from the in the struct to JSON.
-func (o Metadata) MarshalJSON() ([]byte, error) {
+// MarshalJSON serialises data in the struct to JSON.
+func (o Links) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
-		toSerialize["page"] = o.Page
+		toSerialize["self"] = o.Self
 	}
-	if true {
-		toSerialize["per_page"] = o.PerPage
-	}
-	if true {
-		toSerialize["page_count"] = o.PageCount
-	}
-	if true {
-		toSerialize["total_count"] = o.TotalCount
+	for key, value := range o.AdditionalProperties {
+		toSerialize[key] = value
 	}
 	return json.Marshal(toSerialize)
+}
+
+// UnmarshalJSON deserialises JSON into a struct.
+func (o *Links) UnmarshalJSON(bytes []byte) error {
+	varLinks := _Links{}
+	if err := json.Unmarshal(bytes, &varLinks); err != nil {
+		return err
+	}
+
+	*o = Links(varLinks)
+
+	additionalProperties := make(map[string]interface{})
+	if err := json.Unmarshal(bytes, &additionalProperties); err != nil {
+		return err
+	}
+
+	// This is a hack to ensure the `self` key is removed from additional
+	// properies. This is adequate since we only expect this single key to be
+	// present. But this is not scalable.
+	delete(additionalProperties, "self")
+	o.AdditionalProperties = additionalProperties
+
+	return nil
 }

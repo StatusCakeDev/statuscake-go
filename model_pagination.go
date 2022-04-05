@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.2
+ * API version: 1.0.0-beta.3
  * Contact: support@statuscake.com
  */
 
@@ -33,39 +33,45 @@ import (
 	"encoding/json"
 )
 
-// PagespeedTestHistoryDataAggregatedFilesize Aggregate filesize (kb)
-type PagespeedTestHistoryDataAggregatedFilesize struct {
-	// Minimum filesize across all checks
-	Min float32 `json:"min"`
-	// Maximum filesize across all checks
-	Max float32 `json:"max"`
-	// Average filesize acress all checks
-	Avg float32 `json:"avg"`
+// Pagination struct for Pagination
+type Pagination struct {
+	// The current page of results
+	Page int32 `json:"page"`
+	// The number of results per page
+	PerPage int32 `json:"per_page"`
+	// The total number of pages
+	PageCount int32 `json:"page_count"`
+	// The total number of results
+	TotalCount int32 `json:"total_count"`
 }
 
-// NewPagespeedTestHistoryDataAggregatedFilesize instantiates a new PagespeedTestHistoryDataAggregatedFilesize object.
+// NewPagination instantiates a new Pagination object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewPagespeedTestHistoryDataAggregatedFilesize(min float32, max float32, avg float32) *PagespeedTestHistoryDataAggregatedFilesize {
-	return &PagespeedTestHistoryDataAggregatedFilesize{
-		Min: min,
-		Max: max,
-		Avg: avg,
+func NewPagination(page int32, perPage int32, pageCount int32, totalCount int32) *Pagination {
+	return &Pagination{
+		Page:       page,
+		PerPage:    perPage,
+		PageCount:  pageCount,
+		TotalCount: totalCount,
 	}
 }
 
-// Marshal data from the in the struct to JSON.
-func (o PagespeedTestHistoryDataAggregatedFilesize) MarshalJSON() ([]byte, error) {
+// MarshalJSON serialises data in the struct to JSON.
+func (o Pagination) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
-		toSerialize["min"] = o.Min
+		toSerialize["page"] = o.Page
 	}
 	if true {
-		toSerialize["max"] = o.Max
+		toSerialize["per_page"] = o.PerPage
 	}
 	if true {
-		toSerialize["avg"] = o.Avg
+		toSerialize["page_count"] = o.PageCount
+	}
+	if true {
+		toSerialize["total_count"] = o.TotalCount
 	}
 	return json.Marshal(toSerialize)
 }

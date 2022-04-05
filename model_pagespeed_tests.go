@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.2
+ * API version: 1.0.0-beta.3
  * Contact: support@statuscake.com
  */
 
@@ -37,21 +37,21 @@ import (
 type PagespeedTests struct {
 	// List of pagespeed checks
 	Data     []PagespeedTest `json:"data"`
-	Metadata Metadata        `json:"metadata"`
+	Metadata Pagination      `json:"metadata"`
 }
 
 // NewPagespeedTests instantiates a new PagespeedTests object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewPagespeedTests(data []PagespeedTest, metadata Metadata) *PagespeedTests {
+func NewPagespeedTests(data []PagespeedTest, metadata Pagination) *PagespeedTests {
 	return &PagespeedTests{
 		Data:     data,
 		Metadata: metadata,
 	}
 }
 
-// Marshal data from the in the struct to JSON.
+// MarshalJSON serialises data in the struct to JSON.
 func (o PagespeedTests) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
