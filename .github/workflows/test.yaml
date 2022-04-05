@@ -10,11 +10,11 @@ jobs:
     strategy:
       matrix:
         go:
+        - "1.18"
+        - "1.17"
         - "1.16"
-        - "1.15"
-        - "1.14"
         include:
-        - go: "1.16"
+        - go: "1.18"
           publish: true
     steps:
     - uses: actions/checkout@v2
