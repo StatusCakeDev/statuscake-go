@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.2
+ * API version: 1.0.0-beta.3
  * Contact: support@statuscake.com
  */
 
@@ -36,24 +36,33 @@ import (
 // UptimeTestPeriods struct for UptimeTestPeriods
 type UptimeTestPeriods struct {
 	// List of uptime check periods
-	Data []UptimeTestPeriod `json:"data"`
+	Data     []UptimeTestPeriod     `json:"data"`
+	Links    Links                  `json:"links"`
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
 }
 
 // NewUptimeTestPeriods instantiates a new UptimeTestPeriods object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewUptimeTestPeriods(data []UptimeTestPeriod) *UptimeTestPeriods {
+func NewUptimeTestPeriods(data []UptimeTestPeriod, links Links) *UptimeTestPeriods {
 	return &UptimeTestPeriods{
-		Data: data,
+		Data:  data,
+		Links: links,
 	}
 }
 
-// Marshal data from the in the struct to JSON.
+// MarshalJSON serialises data in the struct to JSON.
 func (o UptimeTestPeriods) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
 		toSerialize["data"] = o.Data
+	}
+	if true {
+		toSerialize["links"] = o.Links
+	}
+	if o.Metadata != nil {
+		toSerialize["metadata"] = o.Metadata
 	}
 	return json.Marshal(toSerialize)
 }

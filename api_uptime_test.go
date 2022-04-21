@@ -24,7 +24,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.2
+ * API version: 1.0.0-beta.3
  * Contact: support@statuscake.com
  */
 
@@ -481,6 +481,12 @@ func TestListUptimeTestHistory(t *testing.T) {
 						"status_code": Integer(200),
 					}, 1,
 				),
+				"links": matchers.StructMatcher{
+					"self": FromProviderState(
+						"https://api.statuscake.com/v1/uptime/${id}/history?limit=25&before=949411800",
+						"https://api.statuscake.com/v1/uptime/1/history?limit=25&before=949411800",
+					),
+				},
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
@@ -538,6 +544,12 @@ func TestListUptimeTestHistory(t *testing.T) {
 			WithHeader("Content-Type", S("application/json")).
 			WithJSONBody(Map{
 				"data": Like([]interface{}{}),
+				"links": matchers.StructMatcher{
+					"self": FromProviderState(
+						"https://api.statuscake.com/v1/uptime/${id}/history?limit=25&before=949411800",
+						"https://api.statuscake.com/v1/uptime/1/history?limit=25&before=949411800",
+					),
+				},
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
@@ -571,6 +583,12 @@ func TestListUptimeTestPeriods(t *testing.T) {
 						"status":     Status(),
 					}, 1,
 				),
+				"links": matchers.StructMatcher{
+					"self": FromProviderState(
+						"https://api.statuscake.com/v1/uptime/${id}/periods?limit=25&before=949411800",
+						"https://api.statuscake.com/v1/uptime/1/periods?limit=25&before=949411800",
+					),
+				},
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
@@ -628,6 +646,12 @@ func TestListUptimeTestPeriods(t *testing.T) {
 			WithHeader("Content-Type", S("application/json")).
 			WithJSONBody(Map{
 				"data": Like([]interface{}{}),
+				"links": matchers.StructMatcher{
+					"self": FromProviderState(
+						"https://api.statuscake.com/v1/uptime/${id}/periods?limit=25&before=949411800",
+						"https://api.statuscake.com/v1/uptime/1/periods?limit=25&before=949411800",
+					),
+				},
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
@@ -661,6 +685,12 @@ func TestListUptimeTestAlerts(t *testing.T) {
 						"triggered_at": Timestamp(),
 					}, 1,
 				),
+				"links": matchers.StructMatcher{
+					"self": FromProviderState(
+						"https://api.statuscake.com/v1/uptime/${id}/alerts?limit=25&before=949411800",
+						"https://api.statuscake.com/v1/uptime/1/alerts?limit=25&before=949411800",
+					),
+				},
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
@@ -719,6 +749,12 @@ func TestListUptimeTestAlerts(t *testing.T) {
 			WithHeader("Content-Type", S("application/json")).
 			WithJSONBody(Map{
 				"data": Like([]interface{}{}),
+				"links": matchers.StructMatcher{
+					"self": FromProviderState(
+						"https://api.statuscake.com/v1/uptime/${id}/alerts?limit=25&before=949411800",
+						"https://api.statuscake.com/v1/uptime/1/alerts?limit=25&before=949411800",
+					),
+				},
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {

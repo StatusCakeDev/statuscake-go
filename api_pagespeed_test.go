@@ -24,7 +24,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.2
+ * API version: 1.0.0-beta.3
  * Contact: support@statuscake.com
  */
 
@@ -389,8 +389,24 @@ func TestListPagespeedTestHistory(t *testing.T) {
 			WillRespondWith(http.StatusOK).
 			WithHeader("Content-Type", S("application/json")).
 			WithJSONBody(Map{
-				"data": matchers.StructMatcher{
-					"aggregated": matchers.StructMatcher{
+				"data": EachLike(
+					matchers.StructMatcher{
+						"created_at":   Timestamp(),
+						"loadtime":     Integer(1490),
+						"filesize":     Decimal(598.384),
+						"har_location": Like("https://16a0fd6b5b5bece1d29a-7aa19249e604542958e6a694f67d0bbf.ssl.cf5.rackcdn.com/53a6b075-3b93-4752-b707-93b08fe5ae44.json"),
+						"requests":     Integer(4),
+						"throttling":   Like("NONE"),
+					}, 1,
+				),
+				"links": matchers.StructMatcher{
+					"self": FromProviderState(
+						"https://api.statuscake.com/v1/pagespeed/${id}/history?limit=25&before=949411800",
+						"https://api.statuscake.com/v1/pagespeed/1/history?limit=25&before=949411800",
+					),
+				},
+				"metadata": matchers.StructMatcher{
+					"aggregates": matchers.StructMatcher{
 						"filesize": matchers.StructMatcher{
 							"min": Decimal(0),
 							"max": Decimal(598.384),
@@ -406,52 +422,21 @@ func TestListPagespeedTestHistory(t *testing.T) {
 							"max": Integer(4),
 							"avg": Decimal(4),
 						},
-						"results": Integer(1),
 					},
-					"results": EachLike(
-						matchers.StructMatcher{
-							"created_at":   Timestamp(),
-							"loadtime":     Integer(1490),
-							"filesize":     Decimal(598.384),
-							"har_location": Like("https://16a0fd6b5b5bece1d29a-7aa19249e604542958e6a694f67d0bbf.ssl.cf5.rackcdn.com/53a6b075-3b93-4752-b707-93b08fe5ae44.json"),
-							"requests":     Integer(4),
-							"throttling":   Like("NONE"),
-						}, 1,
-					),
 				},
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
 			results, _ := c.ListPagespeedTestHistory(context.Background(), "1").Execute()
 
-			return equal(results.Data, statuscake.PagespeedTestHistoryData{
-				Aggregated: statuscake.PagespeedTestHistoryDataAggregated{
-					Filesize: statuscake.PagespeedTestHistoryDataAggregatedFilesize{
-						Min: 0,
-						Max: 598.384,
-						Avg: 598.384,
-					},
-					Loadtime: statuscake.PagespeedTestHistoryDataAggregatedLoadtime{
-						Min: 0,
-						Max: 1490,
-						Avg: 1490,
-					},
-					Requests: statuscake.PagespeedTestHistoryDataAggregatedRequests{
-						Min: 0,
-						Max: 4,
-						Avg: 4,
-					},
-					Results: 1,
-				},
-				Results: []statuscake.PagespeedTestHistoryResult{
-					statuscake.PagespeedTestHistoryResult{
-						Created:     time.Date(2000, 2, 1, 12, 30, 0, 0, time.UTC),
-						Filesize:    598.384,
-						HARLocation: "https://16a0fd6b5b5bece1d29a-7aa19249e604542958e6a694f67d0bbf.ssl.cf5.rackcdn.com/53a6b075-3b93-4752-b707-93b08fe5ae44.json",
-						Loadtime:    1490,
-						Requests:    4,
-						Throttling:  statuscake.PagespeedTestThrottlingNone,
-					},
+			return equal(results.Data, []statuscake.PagespeedTestHistoryResult{
+				statuscake.PagespeedTestHistoryResult{
+					Created:     time.Date(2000, 2, 1, 12, 30, 0, 0, time.UTC),
+					Filesize:    598.384,
+					HARLocation: "https://16a0fd6b5b5bece1d29a-7aa19249e604542958e6a694f67d0bbf.ssl.cf5.rackcdn.com/53a6b075-3b93-4752-b707-93b08fe5ae44.json",
+					Loadtime:    1490,
+					Requests:    4,
+					Throttling:  statuscake.PagespeedTestThrottlingNone,
 				},
 			})
 		})
@@ -499,13 +484,19 @@ func TestListPagespeedTestHistory(t *testing.T) {
 			WillRespondWith(http.StatusOK).
 			WithHeader("Content-Type", S("application/json")).
 			WithJSONBody(Map{
-				"data": matchers.StructMatcher{},
+				"data": Like([]interface{}{}),
+				"links": matchers.StructMatcher{
+					"self": FromProviderState(
+						"https://api.statuscake.com/v1/pagespeed/${id}/history?limit=25&before=949411800",
+						"https://api.statuscake.com/v1/pagespeed/1/history?limit=25&before=949411800",
+					),
+				},
 			})
 
 		executeTest(t, func(c *statuscake.Client) error {
 			results, _ := c.ListPagespeedTestHistory(context.Background(), "1").Execute()
 
-			return equal(results.Data, statuscake.PagespeedTestHistoryData{})
+			return equal(results.Data, []statuscake.PagespeedTestHistoryResult{})
 		})
 	})
 }

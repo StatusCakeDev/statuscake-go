@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.2
+ * API version: 1.0.0-beta.3
  * Contact: support@statuscake.com
  */
 
@@ -48,7 +48,7 @@ func NewMaintenanceWindowResponse(data MaintenanceWindow) *MaintenanceWindowResp
 	}
 }
 
-// Marshal data from the in the struct to JSON.
+// MarshalJSON serialises data in the struct to JSON.
 func (o MaintenanceWindowResponse) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
