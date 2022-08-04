@@ -258,7 +258,7 @@ func (c *Client) prepareRequest(ctx context.Context, path string, method string,
 	// Add form parameters and file if available.
 	if strings.HasPrefix(headerParams["Content-Type"], "multipart/form-data") && len(formParams) > 0 || (len(fileBytes) > 0 && fileName != "") {
 		if body != nil {
-			return nil, errors.New("Cannot specify postBody and multipart form at the same time.")
+			return nil, errors.New("Cannot specify postBody and multipart form at the same time")
 		}
 
 		body = &bytes.Buffer{}
@@ -299,7 +299,7 @@ func (c *Client) prepareRequest(ctx context.Context, path string, method string,
 
 	if strings.HasPrefix(headerParams["Content-Type"], "application/x-www-form-urlencoded") && len(formParams) > 0 {
 		if body != nil {
-			return nil, errors.New("Cannot specify postBody and x-www-form-urlencoded form at the same time.")
+			return nil, errors.New("Cannot specify postBody and x-www-form-urlencoded form at the same time")
 		}
 
 		body = &bytes.Buffer{}
@@ -481,7 +481,7 @@ func setBody(body interface{}, contentType string) (bodyBuf *bytes.Buffer, err e
 	}
 
 	if bodyBuf.Len() == 0 {
-		err = fmt.Errorf("Invalid body type %s\n", contentType)
+		err = fmt.Errorf("Invalid body type %s", contentType)
 		return nil, err
 	}
 
