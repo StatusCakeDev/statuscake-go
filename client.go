@@ -405,6 +405,10 @@ func (c *Client) decode(v interface{}, b []byte, contentType string) error {
 		}
 
 		_, err = (*f).Write(b)
+		if err != nil {
+			return err
+		}
+
 		_, err = (*f).Seek(0, io.SeekStart)
 
 		return err
