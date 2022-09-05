@@ -41,7 +41,9 @@ jobs:
         # causes the step to fail. Here we're bypassing the default entrypoint
         # and calling pact directly.
         entrypoint: bundle
-        args: exec /pact/bin/pact publish pacts --consumer-app-version ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }} --tag ${{ github.event_name == 'pull_request' && github.head_ref || 'master' }}
+        args: exec /pact/bin/pact publish pacts --consumer-app-version ${PACT_CONSUMER_APP_VERSION} --tag ${PACT_TAG}
       env:
-        PACT_BROKER_BASE_URL: "https://statuscake.pact.dius.com.au"
+        PACT_BROKER_BASE_URL: "https://statuscake.pactflow.io"
         PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
+        PACT_CONSUMER_APP_VERSION: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        PACT_TAG: ${{ github.event_name == 'pull_request' && github.head_ref || 'master' }}

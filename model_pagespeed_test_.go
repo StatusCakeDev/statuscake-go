@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.3
+ * API version: 1.0.0
  * Contact: support@statuscake.com
  */
 
@@ -39,7 +39,7 @@ type PagespeedTest struct {
 	ID string `json:"id"`
 	// Name of the check
 	Name string `json:"name"`
-	// URL or IP address of the website under test
+	// URL, FQDN, or IP address of the website under test
 	WebsiteURL string                 `json:"website_url"`
 	CheckRate  PagespeedTestCheckRate `json:"check_rate"`
 	// An alert will be sent if the size of the page is larger than this value (kb). A value of 0 prevents alerts being sent.

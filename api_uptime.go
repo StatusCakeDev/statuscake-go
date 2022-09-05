@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.3
+ * API version: 1.0.0
  * Contact: support@statuscake.com
  */
 
@@ -68,40 +68,37 @@ type UptimeService service
 
 // APICreateUptimeTestRequest represents a request type.
 type APICreateUptimeTestRequest struct {
-	ctx              context.Context
-	APIService       UptimeAPI
-	name             *string
-	testType         *UptimeTestType
-	websiteUrl       *string
-	checkRate        *UptimeTestCheckRate
-	basicUsername    *string
-	basicPassword    *string
-	confirmation     *int32
-	contactGroups    *[]string
-	contactGroupsCsv *string
-	customHeader     *string
-	doNotFind        *bool
-	dnsIps           *[]string
-	dnsIpsCsv        *string
-	dnsServer        *string
-	enableSslAlert   *bool
-	finalEndpoint    *string
-	findString       *string
-	followRedirects  *bool
-	host             *string
-	includeHeader    *bool
-	paused           *bool
-	port             *int32
-	postBody         *string
-	postRaw          *string
-	regions          *[]string
-	statusCodesCsv   *string
-	tags             *[]string
-	tagsCsv          *string
-	timeout          *int32
-	triggerRate      *int32
-	useJar           *bool
-	userAgent        *string
+	ctx             context.Context
+	APIService      UptimeAPI
+	name            *string
+	testType        *UptimeTestType
+	websiteUrl      *string
+	checkRate       *UptimeTestCheckRate
+	basicUsername   *string
+	basicPassword   *string
+	confirmation    *int32
+	contactGroups   *[]string
+	customHeader    *string
+	doNotFind       *bool
+	dnsIps          *[]string
+	dnsServer       *string
+	enableSslAlert  *bool
+	finalEndpoint   *string
+	findString      *string
+	followRedirects *bool
+	host            *string
+	includeHeader   *bool
+	paused          *bool
+	port            *int32
+	postBody        *string
+	postRaw         *string
+	regions         *[]string
+	statusCodesCsv  *string
+	tags            *[]string
+	timeout         *int32
+	triggerRate     *int32
+	useJar          *bool
+	userAgent       *string
 }
 
 // Name sets name on the request type.
@@ -152,12 +149,6 @@ func (r APICreateUptimeTestRequest) ContactGroups(contactGroups []string) APICre
 	return r
 }
 
-// ContactGroupsCsv sets contactGroupsCsv on the request type.
-func (r APICreateUptimeTestRequest) ContactGroupsCsv(contactGroupsCsv string) APICreateUptimeTestRequest {
-	r.contactGroupsCsv = &contactGroupsCsv
-	return r
-}
-
 // CustomHeader sets customHeader on the request type.
 func (r APICreateUptimeTestRequest) CustomHeader(customHeader string) APICreateUptimeTestRequest {
 	r.customHeader = &customHeader
@@ -173,12 +164,6 @@ func (r APICreateUptimeTestRequest) DoNotFind(doNotFind bool) APICreateUptimeTes
 // DNSIPs sets dnsIps on the request type.
 func (r APICreateUptimeTestRequest) DNSIPs(dnsIps []string) APICreateUptimeTestRequest {
 	r.dnsIps = &dnsIps
-	return r
-}
-
-// DnsIpsCsv sets dnsIpsCsv on the request type.
-func (r APICreateUptimeTestRequest) DnsIpsCsv(dnsIpsCsv string) APICreateUptimeTestRequest {
-	r.dnsIpsCsv = &dnsIpsCsv
 	return r
 }
 
@@ -266,12 +251,6 @@ func (r APICreateUptimeTestRequest) Tags(tags []string) APICreateUptimeTestReque
 	return r
 }
 
-// TagsCsv sets tagsCsv on the request type.
-func (r APICreateUptimeTestRequest) TagsCsv(tagsCsv string) APICreateUptimeTestRequest {
-	r.tagsCsv = &tagsCsv
-	return r
-}
-
 // Timeout sets timeout on the request type.
 func (r APICreateUptimeTestRequest) Timeout(timeout int32) APICreateUptimeTestRequest {
 	r.timeout = &timeout
@@ -347,10 +326,6 @@ func (a *UptimeService) CreateUptimeTestWithData(ctx context.Context, m map[stri
 		r.contactGroups = &prop
 	}
 
-	if prop, ok := m["contact_groups_csv"].(string); ok {
-		r.contactGroupsCsv = &prop
-	}
-
 	if prop, ok := m["custom_header"].(string); ok {
 		r.customHeader = &prop
 	}
@@ -361,10 +336,6 @@ func (a *UptimeService) CreateUptimeTestWithData(ctx context.Context, m map[stri
 
 	if prop, ok := m["dns_ips"].([]string); ok {
 		r.dnsIps = &prop
-	}
-
-	if prop, ok := m["dns_ips_csv"].(string); ok {
-		r.dnsIpsCsv = &prop
 	}
 
 	if prop, ok := m["dns_server"].(string); ok {
@@ -421,10 +392,6 @@ func (a *UptimeService) CreateUptimeTestWithData(ctx context.Context, m map[stri
 
 	if prop, ok := m["tags"].([]string); ok {
 		r.tags = &prop
-	}
-
-	if prop, ok := m["tags_csv"].(string); ok {
-		r.tagsCsv = &prop
 	}
 
 	if prop, ok := m["timeout"].(int32); ok {
@@ -529,10 +496,6 @@ func (a *UptimeService) CreateUptimeTestExecute(r APICreateUptimeTestRequest) (A
 		}
 	}
 
-	if r.contactGroupsCsv != nil {
-		formParams.Add("contact_groups_csv", parameterToString(*r.contactGroupsCsv))
-	}
-
 	if r.customHeader != nil {
 		formParams.Add("custom_header", parameterToString(*r.customHeader))
 	}
@@ -550,10 +513,6 @@ func (a *UptimeService) CreateUptimeTestExecute(r APICreateUptimeTestRequest) (A
 		for _, val := range *r.dnsIps {
 			formParams.Add("dns_ips[]", parameterToString(val))
 		}
-	}
-
-	if r.dnsIpsCsv != nil {
-		formParams.Add("dns_ips_csv", parameterToString(*r.dnsIpsCsv))
 	}
 
 	if r.dnsServer != nil {
@@ -624,10 +583,6 @@ func (a *UptimeService) CreateUptimeTestExecute(r APICreateUptimeTestRequest) (A
 		for _, val := range *r.tags {
 			formParams.Add("tags[]", parameterToString(val))
 		}
-	}
-
-	if r.tagsCsv != nil {
-		formParams.Add("tags_csv", parameterToString(*r.tagsCsv))
 	}
 
 	if r.timeout != nil {
@@ -1470,39 +1425,36 @@ func (a *UptimeService) ListUptimeTestsExecute(r APIListUptimeTestsRequest) (Upt
 
 // APIUpdateUptimeTestRequest represents a request type.
 type APIUpdateUptimeTestRequest struct {
-	ctx              context.Context
-	APIService       UptimeAPI
-	testId           string
-	name             *string
-	checkRate        *UptimeTestCheckRate
-	basicUsername    *string
-	basicPassword    *string
-	confirmation     *int32
-	contactGroups    *[]string
-	contactGroupsCsv *string
-	customHeader     *string
-	doNotFind        *bool
-	dnsIps           *[]string
-	dnsIpsCsv        *string
-	dnsServer        *string
-	enableSslAlert   *bool
-	finalEndpoint    *string
-	findString       *string
-	followRedirects  *bool
-	host             *string
-	includeHeader    *bool
-	paused           *bool
-	port             *int32
-	postBody         *string
-	postRaw          *string
-	regions          *[]string
-	statusCodesCsv   *string
-	tags             *[]string
-	tagsCsv          *string
-	timeout          *int32
-	triggerRate      *int32
-	useJar           *bool
-	userAgent        *string
+	ctx             context.Context
+	APIService      UptimeAPI
+	testId          string
+	name            *string
+	checkRate       *UptimeTestCheckRate
+	basicUsername   *string
+	basicPassword   *string
+	confirmation    *int32
+	contactGroups   *[]string
+	customHeader    *string
+	doNotFind       *bool
+	dnsIps          *[]string
+	dnsServer       *string
+	enableSslAlert  *bool
+	finalEndpoint   *string
+	findString      *string
+	followRedirects *bool
+	host            *string
+	includeHeader   *bool
+	paused          *bool
+	port            *int32
+	postBody        *string
+	postRaw         *string
+	regions         *[]string
+	statusCodesCsv  *string
+	tags            *[]string
+	timeout         *int32
+	triggerRate     *int32
+	useJar          *bool
+	userAgent       *string
 }
 
 // Name sets name on the request type.
@@ -1541,12 +1493,6 @@ func (r APIUpdateUptimeTestRequest) ContactGroups(contactGroups []string) APIUpd
 	return r
 }
 
-// ContactGroupsCsv sets contactGroupsCsv on the request type.
-func (r APIUpdateUptimeTestRequest) ContactGroupsCsv(contactGroupsCsv string) APIUpdateUptimeTestRequest {
-	r.contactGroupsCsv = &contactGroupsCsv
-	return r
-}
-
 // CustomHeader sets customHeader on the request type.
 func (r APIUpdateUptimeTestRequest) CustomHeader(customHeader string) APIUpdateUptimeTestRequest {
 	r.customHeader = &customHeader
@@ -1562,12 +1508,6 @@ func (r APIUpdateUptimeTestRequest) DoNotFind(doNotFind bool) APIUpdateUptimeTes
 // DNSIPs sets dnsIps on the request type.
 func (r APIUpdateUptimeTestRequest) DNSIPs(dnsIps []string) APIUpdateUptimeTestRequest {
 	r.dnsIps = &dnsIps
-	return r
-}
-
-// DnsIpsCsv sets dnsIpsCsv on the request type.
-func (r APIUpdateUptimeTestRequest) DnsIpsCsv(dnsIpsCsv string) APIUpdateUptimeTestRequest {
-	r.dnsIpsCsv = &dnsIpsCsv
 	return r
 }
 
@@ -1655,12 +1595,6 @@ func (r APIUpdateUptimeTestRequest) Tags(tags []string) APIUpdateUptimeTestReque
 	return r
 }
 
-// TagsCsv sets tagsCsv on the request type.
-func (r APIUpdateUptimeTestRequest) TagsCsv(tagsCsv string) APIUpdateUptimeTestRequest {
-	r.tagsCsv = &tagsCsv
-	return r
-}
-
 // Timeout sets timeout on the request type.
 func (r APIUpdateUptimeTestRequest) Timeout(timeout int32) APIUpdateUptimeTestRequest {
 	r.timeout = &timeout
@@ -1729,10 +1663,6 @@ func (a *UptimeService) UpdateUptimeTestWithData(ctx context.Context, testId str
 		r.contactGroups = &prop
 	}
 
-	if prop, ok := m["contact_groups_csv"].(string); ok {
-		r.contactGroupsCsv = &prop
-	}
-
 	if prop, ok := m["custom_header"].(string); ok {
 		r.customHeader = &prop
 	}
@@ -1743,10 +1673,6 @@ func (a *UptimeService) UpdateUptimeTestWithData(ctx context.Context, testId str
 
 	if prop, ok := m["dns_ips"].([]string); ok {
 		r.dnsIps = &prop
-	}
-
-	if prop, ok := m["dns_ips_csv"].(string); ok {
-		r.dnsIpsCsv = &prop
 	}
 
 	if prop, ok := m["dns_server"].(string); ok {
@@ -1803,10 +1729,6 @@ func (a *UptimeService) UpdateUptimeTestWithData(ctx context.Context, testId str
 
 	if prop, ok := m["tags"].([]string); ok {
 		r.tags = &prop
-	}
-
-	if prop, ok := m["tags_csv"].(string); ok {
-		r.tagsCsv = &prop
 	}
 
 	if prop, ok := m["timeout"].(int32); ok {
@@ -1898,10 +1820,6 @@ func (a *UptimeService) UpdateUptimeTestExecute(r APIUpdateUptimeTestRequest) er
 		}
 	}
 
-	if r.contactGroupsCsv != nil {
-		formParams.Add("contact_groups_csv", parameterToString(*r.contactGroupsCsv))
-	}
-
 	if r.customHeader != nil {
 		formParams.Add("custom_header", parameterToString(*r.customHeader))
 	}
@@ -1919,10 +1837,6 @@ func (a *UptimeService) UpdateUptimeTestExecute(r APIUpdateUptimeTestRequest) er
 		for _, val := range *r.dnsIps {
 			formParams.Add("dns_ips[]", parameterToString(val))
 		}
-	}
-
-	if r.dnsIpsCsv != nil {
-		formParams.Add("dns_ips_csv", parameterToString(*r.dnsIpsCsv))
 	}
 
 	if r.dnsServer != nil {
@@ -1993,10 +1907,6 @@ func (a *UptimeService) UpdateUptimeTestExecute(r APIUpdateUptimeTestRequest) er
 		for _, val := range *r.tags {
 			formParams.Add("tags[]", parameterToString(val))
 		}
-	}
-
-	if r.tagsCsv != nil {
-		formParams.Add("tags_csv", parameterToString(*r.tagsCsv))
 	}
 
 	if r.timeout != nil {

@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.3
+ * API version: 1.0.0
  * Contact: support@statuscake.com
  */
 
@@ -64,18 +64,17 @@ type PagespeedService service
 
 // APICreatePagespeedTestRequest represents a request type.
 type APICreatePagespeedTestRequest struct {
-	ctx              context.Context
-	APIService       PagespeedAPI
-	name             *string
-	websiteUrl       *string
-	checkRate        *PagespeedTestCheckRate
-	region           *PagespeedTestRegion
-	alertBigger      *int32
-	alertSlower      *int64
-	alertSmaller     *int32
-	contactGroups    *[]string
-	contactGroupsCsv *string
-	paused           *bool
+	ctx           context.Context
+	APIService    PagespeedAPI
+	name          *string
+	websiteUrl    *string
+	checkRate     *PagespeedTestCheckRate
+	region        *PagespeedTestRegion
+	alertBigger   *int32
+	alertSlower   *int64
+	alertSmaller  *int32
+	contactGroups *[]string
+	paused        *bool
 }
 
 // Name sets name on the request type.
@@ -123,12 +122,6 @@ func (r APICreatePagespeedTestRequest) AlertSmaller(alertSmaller int32) APICreat
 // ContactGroups sets contactGroups on the request type.
 func (r APICreatePagespeedTestRequest) ContactGroups(contactGroups []string) APICreatePagespeedTestRequest {
 	r.contactGroups = &contactGroups
-	return r
-}
-
-// ContactGroupsCsv sets contactGroupsCsv on the request type.
-func (r APICreatePagespeedTestRequest) ContactGroupsCsv(contactGroupsCsv string) APICreatePagespeedTestRequest {
-	r.contactGroupsCsv = &contactGroupsCsv
 	return r
 }
 
@@ -183,10 +176,6 @@ func (a *PagespeedService) CreatePagespeedTestWithData(ctx context.Context, m ma
 
 	if prop, ok := m["contact_groups"].([]string); ok {
 		r.contactGroups = &prop
-	}
-
-	if prop, ok := m["contact_groups_csv"].(string); ok {
-		r.contactGroupsCsv = &prop
 	}
 
 	if prop, ok := m["paused"].(bool); ok {
@@ -280,10 +269,6 @@ func (a *PagespeedService) CreatePagespeedTestExecute(r APICreatePagespeedTestRe
 		for _, val := range *r.contactGroups {
 			formParams.Add("contact_groups[]", parameterToString(val))
 		}
-	}
-
-	if r.contactGroupsCsv != nil {
-		formParams.Add("contact_groups_csv", parameterToString(*r.contactGroupsCsv))
 	}
 
 	if r.paused != nil {
@@ -811,18 +796,17 @@ func (a *PagespeedService) ListPagespeedTestsExecute(r APIListPagespeedTestsRequ
 
 // APIUpdatePagespeedTestRequest represents a request type.
 type APIUpdatePagespeedTestRequest struct {
-	ctx              context.Context
-	APIService       PagespeedAPI
-	testId           string
-	name             *string
-	checkRate        *PagespeedTestCheckRate
-	alertBigger      *int32
-	alertSlower      *int64
-	alertSmaller     *int32
-	contactGroups    *[]string
-	contactGroupsCsv *string
-	paused           *bool
-	region           *PagespeedTestRegion
+	ctx           context.Context
+	APIService    PagespeedAPI
+	testId        string
+	name          *string
+	checkRate     *PagespeedTestCheckRate
+	alertBigger   *int32
+	alertSlower   *int64
+	alertSmaller  *int32
+	contactGroups *[]string
+	paused        *bool
+	region        *PagespeedTestRegion
 }
 
 // Name sets name on the request type.
@@ -858,12 +842,6 @@ func (r APIUpdatePagespeedTestRequest) AlertSmaller(alertSmaller int32) APIUpdat
 // ContactGroups sets contactGroups on the request type.
 func (r APIUpdatePagespeedTestRequest) ContactGroups(contactGroups []string) APIUpdatePagespeedTestRequest {
 	r.contactGroups = &contactGroups
-	return r
-}
-
-// ContactGroupsCsv sets contactGroupsCsv on the request type.
-func (r APIUpdatePagespeedTestRequest) ContactGroupsCsv(contactGroupsCsv string) APIUpdatePagespeedTestRequest {
-	r.contactGroupsCsv = &contactGroupsCsv
 	return r
 }
 
@@ -921,10 +899,6 @@ func (a *PagespeedService) UpdatePagespeedTestWithData(ctx context.Context, test
 
 	if prop, ok := m["contact_groups"].([]string); ok {
 		r.contactGroups = &prop
-	}
-
-	if prop, ok := m["contact_groups_csv"].(string); ok {
-		r.contactGroupsCsv = &prop
 	}
 
 	if prop, ok := m["paused"].(bool); ok {
@@ -1006,10 +980,6 @@ func (a *PagespeedService) UpdatePagespeedTestExecute(r APIUpdatePagespeedTestRe
 		for _, val := range *r.contactGroups {
 			formParams.Add("contact_groups[]", parameterToString(val))
 		}
-	}
-
-	if r.contactGroupsCsv != nil {
-		formParams.Add("contact_groups_csv", parameterToString(*r.contactGroupsCsv))
 	}
 
 	if r.paused != nil {
