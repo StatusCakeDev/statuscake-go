@@ -258,7 +258,7 @@ func (c *Client) prepareRequest(ctx context.Context, path string, method string,
 	// Add form parameters and file if available.
 	if strings.HasPrefix(headerParams["Content-Type"], "multipart/form-data") && len(formParams) > 0 || (len(fileBytes) > 0 && fileName != "") {
 		if body != nil {
-			return nil, errors.New("Cannot specify postBody and multipart form at the same time.")
+			return nil, errors.New("cannot specify postBody and multipart form at the same time")
 		}
 
 		body = &bytes.Buffer{}
@@ -299,7 +299,7 @@ func (c *Client) prepareRequest(ctx context.Context, path string, method string,
 
 	if strings.HasPrefix(headerParams["Content-Type"], "application/x-www-form-urlencoded") && len(formParams) > 0 {
 		if body != nil {
-			return nil, errors.New("Cannot specify postBody and x-www-form-urlencoded form at the same time.")
+			return nil, errors.New("cannot specify postBody and x-www-form-urlencoded form at the same time")
 		}
 
 		body = &bytes.Buffer{}
@@ -405,6 +405,10 @@ func (c *Client) decode(v interface{}, b []byte, contentType string) error {
 		}
 
 		_, err = (*f).Write(b)
+		if err != nil {
+			return err
+		}
+
 		_, err = (*f).Seek(0, io.SeekStart)
 
 		return err
@@ -425,7 +429,7 @@ func (c *Client) decode(v interface{}, b []byte, contentType string) error {
 					return err
 				}
 			} else {
-				return errors.New("Unknown type with GetActualInstance but no unmarshalObj.UnmarshalJSON defined")
+				return errors.New("unknown type with GetActualInstance but no unmarshalObj.UnmarshalJSON defined")
 			}
 		} else if err := json.Unmarshal(b, v); err != nil { // simple model
 			return err
@@ -481,7 +485,7 @@ func setBody(body interface{}, contentType string) (bodyBuf *bytes.Buffer, err e
 	}
 
 	if bodyBuf.Len() == 0 {
-		err = fmt.Errorf("Invalid body type %s\n", contentType)
+		err = fmt.Errorf("invalid body type %s", contentType)
 		return nil, err
 	}
 
@@ -544,7 +548,7 @@ func getServerIndex(ctx context.Context) (int, error) {
 		if index, ok := si.(int); ok {
 			return index, nil
 		}
-		return 0, fmt.Errorf("Invalid type %T should be int", si)
+		return 0, fmt.Errorf("invalid type %T should be int", si)
 	}
 	return 0, nil
 }
@@ -553,7 +557,7 @@ func getServerOperationIndex(ctx context.Context, endpoint string) (int, error) 
 	osi := ctx.Value(ContextOperationServerIndices)
 	if osi != nil {
 		if operationIndices, ok := osi.(map[string]int); !ok {
-			return 0, fmt.Errorf("Invalid type %T should be map[string]int", osi)
+			return 0, fmt.Errorf("invalid type %T should be map[string]int", osi)
 		} else {
 			index, ok := operationIndices[endpoint]
 			if ok {
