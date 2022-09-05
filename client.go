@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.3
+ * API version: 1.0.0
  * Contact: support@statuscake.com
  */
 
@@ -88,7 +88,7 @@ func (c contextKey) String() string {
 	}
 }
 
-// Client manages communication with the StatusCake API API v1.0.0-beta.3
+// Client manages communication with the StatusCake API API v1.0.0
 // In most cases there should be only one, shared, Client.
 type Client struct {
 	options options
@@ -188,7 +188,7 @@ func (c *Client) callAPI(request *http.Request) (*http.Response, error) {
 
 	for backoffIdx <= c.options.maxRetries {
 		res, err = c.do(request)
-		if backoffIdx == c.options.maxRetries {
+		if err != nil && backoffIdx == c.options.maxRetries {
 			break
 		}
 		if err != nil {

@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.3
+ * API version: 1.0.0
  * Contact: support@statuscake.com
  */
 
@@ -71,9 +71,7 @@ type APICreateMaintenanceWindowRequest struct {
 	timezone       *string
 	repeatInterval *MaintenanceWindowRepeatInterval
 	tags           *[]string
-	tagsCsv        *string
 	tests          *[]string
-	testsCsv       *string
 }
 
 // Name sets name on the request type.
@@ -112,21 +110,9 @@ func (r APICreateMaintenanceWindowRequest) Tags(tags []string) APICreateMaintena
 	return r
 }
 
-// TagsCsv sets tagsCsv on the request type.
-func (r APICreateMaintenanceWindowRequest) TagsCsv(tagsCsv string) APICreateMaintenanceWindowRequest {
-	r.tagsCsv = &tagsCsv
-	return r
-}
-
 // Tests sets tests on the request type.
 func (r APICreateMaintenanceWindowRequest) Tests(tests []string) APICreateMaintenanceWindowRequest {
 	r.tests = &tests
-	return r
-}
-
-// TestsCsv sets testsCsv on the request type.
-func (r APICreateMaintenanceWindowRequest) TestsCsv(testsCsv string) APICreateMaintenanceWindowRequest {
-	r.testsCsv = &testsCsv
 	return r
 }
 
@@ -169,16 +155,8 @@ func (a *MaintenanceWindowsService) CreateMaintenanceWindowWithData(ctx context.
 		r.tags = &prop
 	}
 
-	if prop, ok := m["tags_csv"].(string); ok {
-		r.tagsCsv = &prop
-	}
-
 	if prop, ok := m["tests"].([]string); ok {
 		r.tests = &prop
-	}
-
-	if prop, ok := m["tests_csv"].(string); ok {
-		r.testsCsv = &prop
 	}
 
 	if prop, ok := m["timezone"].(string); ok {
@@ -262,10 +240,6 @@ func (a *MaintenanceWindowsService) CreateMaintenanceWindowExecute(r APICreateMa
 		}
 	}
 
-	if r.tagsCsv != nil {
-		formParams.Add("tags_csv", parameterToString(*r.tagsCsv))
-	}
-
 	if r.tests != nil {
 		// Explicity empty array. This indictes the consumer intended to pass an
 		// empty value and therefore likely want to nullify the field.
@@ -275,10 +249,6 @@ func (a *MaintenanceWindowsService) CreateMaintenanceWindowExecute(r APICreateMa
 		for _, val := range *r.tests {
 			formParams.Add("tests[]", parameterToString(val))
 		}
-	}
-
-	if r.testsCsv != nil {
-		formParams.Add("tests_csv", parameterToString(*r.testsCsv))
 	}
 	formParams.Add("timezone", parameterToString(*r.timezone))
 	req, err := a.client.prepareRequest(r.ctx, requestPath, http.MethodPost, requestBody, headerParams, queryParams, formParams, requestFormFieldName, requestFileName, requestFileBytes)
@@ -688,9 +658,7 @@ type APIUpdateMaintenanceWindowRequest struct {
 	repeatInterval *MaintenanceWindowRepeatInterval
 	startAt        *time.Time
 	tags           *[]string
-	tagsCsv        *string
 	tests          *[]string
-	testsCsv       *string
 	timezone       *string
 }
 
@@ -724,21 +692,9 @@ func (r APIUpdateMaintenanceWindowRequest) Tags(tags []string) APIUpdateMaintena
 	return r
 }
 
-// TagsCsv sets tagsCsv on the request type.
-func (r APIUpdateMaintenanceWindowRequest) TagsCsv(tagsCsv string) APIUpdateMaintenanceWindowRequest {
-	r.tagsCsv = &tagsCsv
-	return r
-}
-
 // Tests sets tests on the request type.
 func (r APIUpdateMaintenanceWindowRequest) Tests(tests []string) APIUpdateMaintenanceWindowRequest {
 	r.tests = &tests
-	return r
-}
-
-// TestsCsv sets testsCsv on the request type.
-func (r APIUpdateMaintenanceWindowRequest) TestsCsv(testsCsv string) APIUpdateMaintenanceWindowRequest {
-	r.testsCsv = &testsCsv
 	return r
 }
 
@@ -788,16 +744,8 @@ func (a *MaintenanceWindowsService) UpdateMaintenanceWindowWithData(ctx context.
 		r.tags = &prop
 	}
 
-	if prop, ok := m["tags_csv"].(string); ok {
-		r.tagsCsv = &prop
-	}
-
 	if prop, ok := m["tests"].([]string); ok {
 		r.tests = &prop
-	}
-
-	if prop, ok := m["tests_csv"].(string); ok {
-		r.testsCsv = &prop
 	}
 
 	if prop, ok := m["timezone"].(string); ok {
@@ -873,10 +821,6 @@ func (a *MaintenanceWindowsService) UpdateMaintenanceWindowExecute(r APIUpdateMa
 		}
 	}
 
-	if r.tagsCsv != nil {
-		formParams.Add("tags_csv", parameterToString(*r.tagsCsv))
-	}
-
 	if r.tests != nil {
 		// Explicity empty array. This indictes the consumer intended to pass an
 		// empty value and therefore likely want to nullify the field.
@@ -886,10 +830,6 @@ func (a *MaintenanceWindowsService) UpdateMaintenanceWindowExecute(r APIUpdateMa
 		for _, val := range *r.tests {
 			formParams.Add("tests[]", parameterToString(val))
 		}
-	}
-
-	if r.testsCsv != nil {
-		formParams.Add("tests_csv", parameterToString(*r.testsCsv))
 	}
 
 	if r.timezone != nil {

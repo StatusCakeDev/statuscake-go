@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.3
+ * API version: 1.0.0
  * Contact: support@statuscake.com
  */
 
@@ -62,22 +62,20 @@ type SslService service
 
 // APICreateSslTestRequest represents a request type.
 type APICreateSslTestRequest struct {
-	ctx              context.Context
-	APIService       SslAPI
-	websiteUrl       *string
-	checkRate        *SSLTestCheckRate
-	alertAt          *[]int32
-	alertAtCsv       *string
-	alertBroken      *bool
-	alertExpiry      *bool
-	alertMixed       *bool
-	alertReminder    *bool
-	contactGroups    *[]string
-	contactGroupsCsv *string
-	followRedirects  *bool
-	hostname         *string
-	paused           *bool
-	userAgent        *string
+	ctx             context.Context
+	APIService      SslAPI
+	websiteUrl      *string
+	checkRate       *SSLTestCheckRate
+	alertAt         *[]int32
+	alertBroken     *bool
+	alertExpiry     *bool
+	alertMixed      *bool
+	alertReminder   *bool
+	contactGroups   *[]string
+	followRedirects *bool
+	hostname        *string
+	paused          *bool
+	userAgent       *string
 }
 
 // WebsiteURL sets websiteUrl on the request type.
@@ -95,12 +93,6 @@ func (r APICreateSslTestRequest) CheckRate(checkRate SSLTestCheckRate) APICreate
 // AlertAt sets alertAt on the request type.
 func (r APICreateSslTestRequest) AlertAt(alertAt []int32) APICreateSslTestRequest {
 	r.alertAt = &alertAt
-	return r
-}
-
-// AlertAtCsv sets alertAtCsv on the request type.
-func (r APICreateSslTestRequest) AlertAtCsv(alertAtCsv string) APICreateSslTestRequest {
-	r.alertAtCsv = &alertAtCsv
 	return r
 }
 
@@ -131,12 +123,6 @@ func (r APICreateSslTestRequest) AlertReminder(alertReminder bool) APICreateSslT
 // ContactGroups sets contactGroups on the request type.
 func (r APICreateSslTestRequest) ContactGroups(contactGroups []string) APICreateSslTestRequest {
 	r.contactGroups = &contactGroups
-	return r
-}
-
-// ContactGroupsCsv sets contactGroupsCsv on the request type.
-func (r APICreateSslTestRequest) ContactGroupsCsv(contactGroupsCsv string) APICreateSslTestRequest {
-	r.contactGroupsCsv = &contactGroupsCsv
 	return r
 }
 
@@ -195,10 +181,6 @@ func (a *SslService) CreateSslTestWithData(ctx context.Context, m map[string]int
 		r.alertAt = &prop
 	}
 
-	if prop, ok := m["alert_at_csv"].(string); ok {
-		r.alertAtCsv = &prop
-	}
-
 	if prop, ok := m["alert_broken"].(bool); ok {
 		r.alertBroken = &prop
 	}
@@ -217,10 +199,6 @@ func (a *SslService) CreateSslTestWithData(ctx context.Context, m map[string]int
 
 	if prop, ok := m["contact_groups"].([]string); ok {
 		r.contactGroups = &prop
-	}
-
-	if prop, ok := m["contact_groups_csv"].(string); ok {
-		r.contactGroupsCsv = &prop
 	}
 
 	if prop, ok := m["follow_redirects"].(bool); ok {
@@ -271,6 +249,10 @@ func (a *SslService) CreateSslTestExecute(r APICreateSslTestRequest) (APIRespons
 		return returnValue, errorf("checkRate is required and must be specified")
 	}
 
+	if r.alertAt == nil {
+		return returnValue, errorf("alertAt is required and must be specified")
+	}
+
 	// Determine the Content-Type header.
 	contentTypes := []string{"application/x-www-form-urlencoded"}
 
@@ -291,20 +273,13 @@ func (a *SslService) CreateSslTestExecute(r APICreateSslTestRequest) (APIRespons
 
 	formParams.Add("website_url", parameterToString(*r.websiteUrl))
 	formParams.Add("check_rate", parameterToString(*r.checkRate))
-
-	if r.alertAt != nil {
-		// Explicity empty array. This indictes the consumer intended to pass an
-		// empty value and therefore likely want to nullify the field.
-		if len(*r.alertAt) == 0 {
-			formParams.Add("alert_at[]", "")
-		}
-		for _, val := range *r.alertAt {
-			formParams.Add("alert_at[]", parameterToString(val))
-		}
+	// Explicity empty array. This indictes the consumer intended to pass an
+	// empty value and therefore likely want to nullify the field.
+	if len(*r.alertAt) == 0 {
+		formParams.Add("alert_at[]", "")
 	}
-
-	if r.alertAtCsv != nil {
-		formParams.Add("alert_at_csv", parameterToString(*r.alertAtCsv))
+	for _, val := range *r.alertAt {
+		formParams.Add("alert_at[]", parameterToString(val))
 	}
 
 	if r.alertBroken != nil {
@@ -332,10 +307,6 @@ func (a *SslService) CreateSslTestExecute(r APICreateSslTestRequest) (APIRespons
 		for _, val := range *r.contactGroups {
 			formParams.Add("contact_groups[]", parameterToString(val))
 		}
-	}
-
-	if r.contactGroupsCsv != nil {
-		formParams.Add("contact_groups_csv", parameterToString(*r.contactGroupsCsv))
 	}
 
 	if r.followRedirects != nil {
@@ -742,22 +713,20 @@ func (a *SslService) ListSslTestsExecute(r APIListSslTestsRequest) (SSLTests, er
 
 // APIUpdateSslTestRequest represents a request type.
 type APIUpdateSslTestRequest struct {
-	ctx              context.Context
-	APIService       SslAPI
-	testId           string
-	checkRate        *SSLTestCheckRate
-	alertAt          *[]int32
-	alertAtCsv       *string
-	alertBroken      *bool
-	alertExpiry      *bool
-	alertMixed       *bool
-	alertReminder    *bool
-	contactGroups    *[]string
-	contactGroupsCsv *string
-	followRedirects  *bool
-	hostname         *string
-	paused           *bool
-	userAgent        *string
+	ctx             context.Context
+	APIService      SslAPI
+	testId          string
+	checkRate       *SSLTestCheckRate
+	alertAt         *[]int32
+	alertBroken     *bool
+	alertExpiry     *bool
+	alertMixed      *bool
+	alertReminder   *bool
+	contactGroups   *[]string
+	followRedirects *bool
+	hostname        *string
+	paused          *bool
+	userAgent       *string
 }
 
 // CheckRate sets checkRate on the request type.
@@ -769,12 +738,6 @@ func (r APIUpdateSslTestRequest) CheckRate(checkRate SSLTestCheckRate) APIUpdate
 // AlertAt sets alertAt on the request type.
 func (r APIUpdateSslTestRequest) AlertAt(alertAt []int32) APIUpdateSslTestRequest {
 	r.alertAt = &alertAt
-	return r
-}
-
-// AlertAtCsv sets alertAtCsv on the request type.
-func (r APIUpdateSslTestRequest) AlertAtCsv(alertAtCsv string) APIUpdateSslTestRequest {
-	r.alertAtCsv = &alertAtCsv
 	return r
 }
 
@@ -805,12 +768,6 @@ func (r APIUpdateSslTestRequest) AlertReminder(alertReminder bool) APIUpdateSslT
 // ContactGroups sets contactGroups on the request type.
 func (r APIUpdateSslTestRequest) ContactGroups(contactGroups []string) APIUpdateSslTestRequest {
 	r.contactGroups = &contactGroups
-	return r
-}
-
-// ContactGroupsCsv sets contactGroupsCsv on the request type.
-func (r APIUpdateSslTestRequest) ContactGroupsCsv(contactGroupsCsv string) APIUpdateSslTestRequest {
-	r.contactGroupsCsv = &contactGroupsCsv
 	return r
 }
 
@@ -866,10 +823,6 @@ func (a *SslService) UpdateSslTestWithData(ctx context.Context, testId string, m
 		r.alertAt = &prop
 	}
 
-	if prop, ok := m["alert_at_csv"].(string); ok {
-		r.alertAtCsv = &prop
-	}
-
 	if prop, ok := m["alert_broken"].(bool); ok {
 		r.alertBroken = &prop
 	}
@@ -888,10 +841,6 @@ func (a *SslService) UpdateSslTestWithData(ctx context.Context, testId string, m
 
 	if prop, ok := m["contact_groups"].([]string); ok {
 		r.contactGroups = &prop
-	}
-
-	if prop, ok := m["contact_groups_csv"].(string); ok {
-		r.contactGroupsCsv = &prop
 	}
 
 	if prop, ok := m["follow_redirects"].(bool); ok {
@@ -967,10 +916,6 @@ func (a *SslService) UpdateSslTestExecute(r APIUpdateSslTestRequest) error {
 		}
 	}
 
-	if r.alertAtCsv != nil {
-		formParams.Add("alert_at_csv", parameterToString(*r.alertAtCsv))
-	}
-
 	if r.alertBroken != nil {
 		formParams.Add("alert_broken", parameterToString(*r.alertBroken))
 	}
@@ -996,10 +941,6 @@ func (a *SslService) UpdateSslTestExecute(r APIUpdateSslTestRequest) error {
 		for _, val := range *r.contactGroups {
 			formParams.Add("contact_groups[]", parameterToString(val))
 		}
-	}
-
-	if r.contactGroupsCsv != nil {
-		formParams.Add("contact_groups_csv", parameterToString(*r.contactGroupsCsv))
 	}
 
 	if r.followRedirects != nil {

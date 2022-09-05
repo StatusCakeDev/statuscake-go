@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.3
+ * API version: 1.0.0
  * Contact: support@statuscake.com
  */
 
@@ -41,7 +41,7 @@ type UptimeTest struct {
 	// Name of the check
 	Name     string         `json:"name"`
 	TestType UptimeTestType `json:"test_type"`
-	// URL or IP address of the server under test
+	// URL, FQDN, or IP address of the server under test
 	WebsiteURL string              `json:"website_url"`
 	CheckRate  UptimeTestCheckRate `json:"check_rate"`
 	// Number of confirmation servers to confirm downtime before an alert is triggered
@@ -52,7 +52,7 @@ type UptimeTest struct {
 	CustomHeader *string `json:"custom_header,omitempty"`
 	// List of IP addresses to compare against returned DNS records
 	DNSIPs []string `json:"dns_ips"`
-	// Hostname or IP address of the nameserver to query
+	// FQDN or IP address of the nameserver to query
 	DNSServer *string `json:"dns_server,omitempty"`
 	// Whether to consider the check as down if the content is present within the response
 	DoNotFind bool `json:"do_not_find"`

@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.3
+ * API version: 1.0.0
  * Contact: support@statuscake.com
  */
 
@@ -55,14 +55,7 @@ type LocationsService service
 type APIListPagespeedMonitoringLocationsRequest struct {
 	ctx        context.Context
 	APIService LocationsAPI
-	best       *bool
 	location   *string
-}
-
-// Best sets best on the request type.
-func (r APIListPagespeedMonitoringLocationsRequest) Best(best bool) APIListPagespeedMonitoringLocationsRequest {
-	r.best = &best
-	return r
 }
 
 // Location sets location on the request type.
@@ -113,9 +106,6 @@ func (a *LocationsService) ListPagespeedMonitoringLocationsExecute(r APIListPage
 	queryParams := url.Values{}
 	formParams := url.Values{}
 
-	if r.best != nil {
-		queryParams.Add("best", parameterToString(*r.best))
-	}
 	if r.location != nil {
 		queryParams.Add("location", parameterToString(*r.location))
 	}
@@ -184,19 +174,19 @@ func (a *LocationsService) ListPagespeedMonitoringLocationsExecute(r APIListPage
 type APIListUptimeMonitoringLocationsRequest struct {
 	ctx        context.Context
 	APIService LocationsAPI
-	best       *bool
 	location   *string
-}
-
-// Best sets best on the request type.
-func (r APIListUptimeMonitoringLocationsRequest) Best(best bool) APIListUptimeMonitoringLocationsRequest {
-	r.best = &best
-	return r
+	regionCode *string
 }
 
 // Location sets location on the request type.
 func (r APIListUptimeMonitoringLocationsRequest) Location(location string) APIListUptimeMonitoringLocationsRequest {
 	r.location = &location
+	return r
+}
+
+// RegionCode sets regionCode on the request type.
+func (r APIListUptimeMonitoringLocationsRequest) RegionCode(regionCode string) APIListUptimeMonitoringLocationsRequest {
+	r.regionCode = &regionCode
 	return r
 }
 
@@ -242,11 +232,11 @@ func (a *LocationsService) ListUptimeMonitoringLocationsExecute(r APIListUptimeM
 	queryParams := url.Values{}
 	formParams := url.Values{}
 
-	if r.best != nil {
-		queryParams.Add("best", parameterToString(*r.best))
-	}
 	if r.location != nil {
 		queryParams.Add("location", parameterToString(*r.location))
+	}
+	if r.regionCode != nil {
+		queryParams.Add("region_code", parameterToString(*r.regionCode))
 	}
 	// Determine the Content-Type header.
 	contentTypes := []string{}

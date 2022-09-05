@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0-beta.3
+ * API version: 1.0.0
  * Contact: support@statuscake.com
  */
 
@@ -62,16 +62,13 @@ type ContactGroupsService service
 
 // APICreateContactGroupRequest represents a request type.
 type APICreateContactGroupRequest struct {
-	ctx               context.Context
-	APIService        ContactGroupsAPI
-	name              *string
-	emailAddresses    *[]string
-	emailAddressesCsv *string
-	integrations      *[]string
-	integrationsCsv   *string
-	mobileNumbers     *[]string
-	mobileNumbersCsv  *string
-	pingUrl           *string
+	ctx            context.Context
+	APIService     ContactGroupsAPI
+	name           *string
+	emailAddresses *[]string
+	integrations   *[]string
+	mobileNumbers  *[]string
+	pingUrl        *string
 }
 
 // Name sets name on the request type.
@@ -86,33 +83,15 @@ func (r APICreateContactGroupRequest) EmailAddresses(emailAddresses []string) AP
 	return r
 }
 
-// EmailAddressesCsv sets emailAddressesCsv on the request type.
-func (r APICreateContactGroupRequest) EmailAddressesCsv(emailAddressesCsv string) APICreateContactGroupRequest {
-	r.emailAddressesCsv = &emailAddressesCsv
-	return r
-}
-
 // Integrations sets integrations on the request type.
 func (r APICreateContactGroupRequest) Integrations(integrations []string) APICreateContactGroupRequest {
 	r.integrations = &integrations
 	return r
 }
 
-// IntegrationsCsv sets integrationsCsv on the request type.
-func (r APICreateContactGroupRequest) IntegrationsCsv(integrationsCsv string) APICreateContactGroupRequest {
-	r.integrationsCsv = &integrationsCsv
-	return r
-}
-
 // MobileNumbers sets mobileNumbers on the request type.
 func (r APICreateContactGroupRequest) MobileNumbers(mobileNumbers []string) APICreateContactGroupRequest {
 	r.mobileNumbers = &mobileNumbers
-	return r
-}
-
-// MobileNumbersCsv sets mobileNumbersCsv on the request type.
-func (r APICreateContactGroupRequest) MobileNumbersCsv(mobileNumbersCsv string) APICreateContactGroupRequest {
-	r.mobileNumbersCsv = &mobileNumbersCsv
 	return r
 }
 
@@ -149,24 +128,12 @@ func (a *ContactGroupsService) CreateContactGroupWithData(ctx context.Context, m
 		r.emailAddresses = &prop
 	}
 
-	if prop, ok := m["email_addresses_csv"].(string); ok {
-		r.emailAddressesCsv = &prop
-	}
-
 	if prop, ok := m["integrations"].([]string); ok {
 		r.integrations = &prop
 	}
 
-	if prop, ok := m["integrations_csv"].(string); ok {
-		r.integrationsCsv = &prop
-	}
-
 	if prop, ok := m["mobile_numbers"].([]string); ok {
 		r.mobileNumbers = &prop
-	}
-
-	if prop, ok := m["mobile_numbers_csv"].(string); ok {
-		r.mobileNumbersCsv = &prop
 	}
 
 	if prop, ok := m["ping_url"].(string); ok {
@@ -232,10 +199,6 @@ func (a *ContactGroupsService) CreateContactGroupExecute(r APICreateContactGroup
 		}
 	}
 
-	if r.emailAddressesCsv != nil {
-		formParams.Add("email_addresses_csv", parameterToString(*r.emailAddressesCsv))
-	}
-
 	if r.integrations != nil {
 		// Explicity empty array. This indictes the consumer intended to pass an
 		// empty value and therefore likely want to nullify the field.
@@ -247,10 +210,6 @@ func (a *ContactGroupsService) CreateContactGroupExecute(r APICreateContactGroup
 		}
 	}
 
-	if r.integrationsCsv != nil {
-		formParams.Add("integrations_csv", parameterToString(*r.integrationsCsv))
-	}
-
 	if r.mobileNumbers != nil {
 		// Explicity empty array. This indictes the consumer intended to pass an
 		// empty value and therefore likely want to nullify the field.
@@ -260,10 +219,6 @@ func (a *ContactGroupsService) CreateContactGroupExecute(r APICreateContactGroup
 		for _, val := range *r.mobileNumbers {
 			formParams.Add("mobile_numbers[]", parameterToString(val))
 		}
-	}
-
-	if r.mobileNumbersCsv != nil {
-		formParams.Add("mobile_numbers_csv", parameterToString(*r.mobileNumbersCsv))
 	}
 
 	if r.pingUrl != nil {
@@ -658,17 +613,14 @@ func (a *ContactGroupsService) ListContactGroupsExecute(r APIListContactGroupsRe
 
 // APIUpdateContactGroupRequest represents a request type.
 type APIUpdateContactGroupRequest struct {
-	ctx               context.Context
-	APIService        ContactGroupsAPI
-	groupId           string
-	name              *string
-	emailAddresses    *[]string
-	emailAddressesCsv *string
-	integrations      *[]string
-	integrationsCsv   *string
-	mobileNumbers     *[]string
-	mobileNumbersCsv  *string
-	pingUrl           *string
+	ctx            context.Context
+	APIService     ContactGroupsAPI
+	groupId        string
+	name           *string
+	emailAddresses *[]string
+	integrations   *[]string
+	mobileNumbers  *[]string
+	pingUrl        *string
 }
 
 // Name sets name on the request type.
@@ -683,33 +635,15 @@ func (r APIUpdateContactGroupRequest) EmailAddresses(emailAddresses []string) AP
 	return r
 }
 
-// EmailAddressesCsv sets emailAddressesCsv on the request type.
-func (r APIUpdateContactGroupRequest) EmailAddressesCsv(emailAddressesCsv string) APIUpdateContactGroupRequest {
-	r.emailAddressesCsv = &emailAddressesCsv
-	return r
-}
-
 // Integrations sets integrations on the request type.
 func (r APIUpdateContactGroupRequest) Integrations(integrations []string) APIUpdateContactGroupRequest {
 	r.integrations = &integrations
 	return r
 }
 
-// IntegrationsCsv sets integrationsCsv on the request type.
-func (r APIUpdateContactGroupRequest) IntegrationsCsv(integrationsCsv string) APIUpdateContactGroupRequest {
-	r.integrationsCsv = &integrationsCsv
-	return r
-}
-
 // MobileNumbers sets mobileNumbers on the request type.
 func (r APIUpdateContactGroupRequest) MobileNumbers(mobileNumbers []string) APIUpdateContactGroupRequest {
 	r.mobileNumbers = &mobileNumbers
-	return r
-}
-
-// MobileNumbersCsv sets mobileNumbersCsv on the request type.
-func (r APIUpdateContactGroupRequest) MobileNumbersCsv(mobileNumbersCsv string) APIUpdateContactGroupRequest {
-	r.mobileNumbersCsv = &mobileNumbersCsv
 	return r
 }
 
@@ -747,24 +681,12 @@ func (a *ContactGroupsService) UpdateContactGroupWithData(ctx context.Context, g
 		r.emailAddresses = &prop
 	}
 
-	if prop, ok := m["email_addresses_csv"].(string); ok {
-		r.emailAddressesCsv = &prop
-	}
-
 	if prop, ok := m["integrations"].([]string); ok {
 		r.integrations = &prop
 	}
 
-	if prop, ok := m["integrations_csv"].(string); ok {
-		r.integrationsCsv = &prop
-	}
-
 	if prop, ok := m["mobile_numbers"].([]string); ok {
 		r.mobileNumbers = &prop
-	}
-
-	if prop, ok := m["mobile_numbers_csv"].(string); ok {
-		r.mobileNumbersCsv = &prop
 	}
 
 	if prop, ok := m["ping_url"].(string); ok {
@@ -828,10 +750,6 @@ func (a *ContactGroupsService) UpdateContactGroupExecute(r APIUpdateContactGroup
 		}
 	}
 
-	if r.emailAddressesCsv != nil {
-		formParams.Add("email_addresses_csv", parameterToString(*r.emailAddressesCsv))
-	}
-
 	if r.integrations != nil {
 		// Explicity empty array. This indictes the consumer intended to pass an
 		// empty value and therefore likely want to nullify the field.
@@ -843,10 +761,6 @@ func (a *ContactGroupsService) UpdateContactGroupExecute(r APIUpdateContactGroup
 		}
 	}
 
-	if r.integrationsCsv != nil {
-		formParams.Add("integrations_csv", parameterToString(*r.integrationsCsv))
-	}
-
 	if r.mobileNumbers != nil {
 		// Explicity empty array. This indictes the consumer intended to pass an
 		// empty value and therefore likely want to nullify the field.
@@ -856,10 +770,6 @@ func (a *ContactGroupsService) UpdateContactGroupExecute(r APIUpdateContactGroup
 		for _, val := range *r.mobileNumbers {
 			formParams.Add("mobile_numbers[]", parameterToString(val))
 		}
-	}
-
-	if r.mobileNumbersCsv != nil {
-		formParams.Add("mobile_numbers_csv", parameterToString(*r.mobileNumbersCsv))
 	}
 
 	if r.pingUrl != nil {
