@@ -32,7 +32,7 @@ package statuscake
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -261,9 +261,9 @@ func (a *MaintenanceWindowsService) CreateMaintenanceWindowExecute(r APICreateMa
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -372,9 +372,9 @@ func (a *MaintenanceWindowsService) DeleteMaintenanceWindowExecute(r APIDeleteMa
 		return err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return err
 	}
@@ -476,9 +476,9 @@ func (a *MaintenanceWindowsService) GetMaintenanceWindowExecute(r APIGetMaintena
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -615,9 +615,9 @@ func (a *MaintenanceWindowsService) ListMaintenanceWindowsExecute(r APIListMaint
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -845,9 +845,9 @@ func (a *MaintenanceWindowsService) UpdateMaintenanceWindowExecute(r APIUpdateMa
 		return err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return err
 	}

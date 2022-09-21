@@ -32,7 +32,7 @@ package statuscake
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -610,9 +610,9 @@ func (a *UptimeService) CreateUptimeTestExecute(r APICreateUptimeTestRequest) (A
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -721,9 +721,9 @@ func (a *UptimeService) DeleteUptimeTestExecute(r APIDeleteUptimeTestRequest) er
 		return err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return err
 	}
@@ -825,9 +825,9 @@ func (a *UptimeService) GetUptimeTestExecute(r APIGetUptimeTestRequest) (UptimeT
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -957,9 +957,9 @@ func (a *UptimeService) ListUptimeTestAlertsExecute(r APIListUptimeTestAlertsReq
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -1089,9 +1089,9 @@ func (a *UptimeService) ListUptimeTestHistoryExecute(r APIListUptimeTestHistoryR
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -1221,9 +1221,9 @@ func (a *UptimeService) ListUptimeTestPeriodsExecute(r APIListUptimeTestPeriodsR
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -1390,9 +1390,9 @@ func (a *UptimeService) ListUptimeTestsExecute(r APIListUptimeTestsRequest) (Upt
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -1934,9 +1934,9 @@ func (a *UptimeService) UpdateUptimeTestExecute(r APIUpdateUptimeTestRequest) er
 		return err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return err
 	}

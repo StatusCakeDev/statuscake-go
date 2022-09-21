@@ -32,7 +32,7 @@ package statuscake
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -234,9 +234,9 @@ func (a *ContactGroupsService) CreateContactGroupExecute(r APICreateContactGroup
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -345,9 +345,9 @@ func (a *ContactGroupsService) DeleteContactGroupExecute(r APIDeleteContactGroup
 		return err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return err
 	}
@@ -449,9 +449,9 @@ func (a *ContactGroupsService) GetContactGroupExecute(r APIGetContactGroupReques
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -578,9 +578,9 @@ func (a *ContactGroupsService) ListContactGroupsExecute(r APIListContactGroupsRe
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -785,9 +785,9 @@ func (a *ContactGroupsService) UpdateContactGroupExecute(r APIUpdateContactGroup
 		return err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return err
 	}

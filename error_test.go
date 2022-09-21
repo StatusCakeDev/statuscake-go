@@ -84,7 +84,7 @@ func TestUnwrap(t *testing.T) {
 func TestErrors(t *testing.T) {
 	t.Run("returns error messages contained within the error", func(t *testing.T) {
 		errors := map[string][]string{
-			"field": []string{
+			"field": {
 				"is required",
 				"should be numeric",
 			},

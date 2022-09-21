@@ -32,7 +32,7 @@ package statuscake
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -334,9 +334,9 @@ func (a *SslService) CreateSslTestExecute(r APICreateSslTestRequest) (APIRespons
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -445,9 +445,9 @@ func (a *SslService) DeleteSslTestExecute(r APIDeleteSslTestRequest) error {
 		return err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return err
 	}
@@ -549,9 +549,9 @@ func (a *SslService) GetSslTestExecute(r APIGetSslTestRequest) (SSLTestResponse,
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -678,9 +678,9 @@ func (a *SslService) ListSslTestsExecute(r APIListSslTestsRequest) (SSLTests, er
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -968,9 +968,9 @@ func (a *SslService) UpdateSslTestExecute(r APIUpdateSslTestRequest) error {
 		return err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return err
 	}

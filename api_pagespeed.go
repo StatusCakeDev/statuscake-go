@@ -32,7 +32,7 @@ package statuscake
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -285,9 +285,9 @@ func (a *PagespeedService) CreatePagespeedTestExecute(r APICreatePagespeedTestRe
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -396,9 +396,9 @@ func (a *PagespeedService) DeletePagespeedTestExecute(r APIDeletePagespeedTestRe
 		return err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return err
 	}
@@ -500,9 +500,9 @@ func (a *PagespeedService) GetPagespeedTestExecute(r APIGetPagespeedTestRequest)
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -632,9 +632,9 @@ func (a *PagespeedService) ListPagespeedTestHistoryExecute(r APIListPagespeedTes
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -761,9 +761,9 @@ func (a *PagespeedService) ListPagespeedTestsExecute(r APIListPagespeedTestsRequ
 		return returnValue, err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return returnValue, err
 	}
@@ -999,9 +999,9 @@ func (a *PagespeedService) UpdatePagespeedTestExecute(r APIUpdatePagespeedTestRe
 		return err
 	}
 
-	responseBody, err := ioutil.ReadAll(res.Body)
+	responseBody, err := io.ReadAll(res.Body)
 	res.Body.Close()
-	res.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
+	res.Body = io.NopCloser(bytes.NewBuffer(responseBody))
 	if err != nil {
 		return err
 	}
