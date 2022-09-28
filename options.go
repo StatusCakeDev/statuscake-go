@@ -40,7 +40,7 @@ import (
 )
 
 var defaultOptions = options{
-	backoff:    backoff.Constant{BaseDelay: 0},
+	backoff:    backoff.Constant{BaseDelay: 1 * time.Second},
 	client:     http.DefaultClient,
 	headers:    http.Header{},
 	maxRetries: 1,
@@ -104,7 +104,7 @@ func (sc ServerConfigurations) URL(index int, variables map[string]string) (stri
 // Strategy describes a common interface to satisfy a backoff strategy when a
 // request fails.
 type Strategy interface {
-	Backoff(retries int) time.Duration
+	Backoff(idx int) time.Duration
 }
 
 // RequestCredentials describes a common interface for attaching security

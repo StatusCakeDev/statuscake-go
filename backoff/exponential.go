@@ -34,19 +34,22 @@ import "time"
 // Exponential is an implementation of a backoff strategy applying an
 // exponential function.
 type Exponential struct {
-	Config
+	BaseDelay  time.Duration
+	Multiplier float64
+	Jitter     float64
+	MaxDelay   time.Duration
 }
 
 // Backoff returns the duration to wait.
-func (b Exponential) Backoff(retries int) time.Duration {
-	if retries == 0 {
+func (b Exponential) Backoff(idx int) time.Duration {
+	if idx == 0 {
 		return b.BaseDelay
 	}
 
 	backoff, max := float64(b.BaseDelay), float64(b.MaxDelay)
-	for backoff < max && retries > 0 {
+	for backoff < max && idx > 0 {
 		backoff *= b.Multiplier
-		retries--
+		idx--
 	}
 
 	if backoff > max {

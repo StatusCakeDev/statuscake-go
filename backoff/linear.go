@@ -34,17 +34,15 @@ import "time"
 // Linear is an implementation of a backoff strategy applying a linear
 // function.
 type Linear struct {
-	Config
+	BaseDelay time.Duration
+	Jitter    float64
+	MaxDelay  time.Duration
 }
 
 // Backoff returns the duration to wait.
-func (b Linear) Backoff(retries int) time.Duration {
-	if retries == 0 {
-		return b.BaseDelay
-	}
-
+func (b Linear) Backoff(idx int) time.Duration {
 	backoff, max := float64(b.BaseDelay), float64(b.MaxDelay)
-	backoff *= b.Multiplier * float64(retries)
+	backoff *= float64(idx) + 1
 
 	if backoff > max {
 		backoff = max

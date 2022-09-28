@@ -38,6 +38,6 @@ type Constant struct {
 }
 
 // Backoff returns the duration to wait.
-func (b Constant) Backoff(retries int) time.Duration {
+func (b Constant) Backoff(idx int) time.Duration {
 	return b.BaseDelay
 }
