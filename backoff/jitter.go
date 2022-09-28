@@ -29,28 +29,7 @@
 
 package backoff
 
-import (
-	"math/rand"
-	"time"
-)
-
-// Config defines the configuration options for backoff.
-type Config struct {
-	BaseDelay  time.Duration
-	Multiplier float64
-	Jitter     float64
-	MaxDelay   time.Duration
-}
-
-// DefaultConfig is a backoff configuration with default values. This should be
-// useful for callers who want to configure backoff with non-default values
-// only for a subset of the options.
-var DefaultConfig = Config{
-	BaseDelay:  1.0 * time.Second,
-	Multiplier: 1.0,
-	Jitter:     0.2,
-	MaxDelay:   120 * time.Second,
-}
+import "math/rand"
 
 func addJitter(backoff, jitter float64) float64 {
 	backoff *= 1 + jitter*(rand.Float64()*2-1)

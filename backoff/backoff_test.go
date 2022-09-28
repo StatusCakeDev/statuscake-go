@@ -54,125 +54,78 @@ func TestConstant(t *testing.T) {
 }
 
 func TestExponential(t *testing.T) {
-	t.Run("returns the next duration in an exponential sequence", func(t *testing.T) {
-		b := backoff.Exponential{
-			backoff.Config{
-				BaseDelay:  1.0 * time.Second,
-				Multiplier: 2.0, // Exponential factor.
-				Jitter:     0,   // To make test predictible.
-				MaxDelay:   120 * time.Second,
-			},
-		}
+	b := backoff.Exponential{
+		BaseDelay:  1.0 * time.Second,
+		Multiplier: 2.0, // Exponential factor.
+		Jitter:     0,   // To make test predictible.
+		MaxDelay:   120 * time.Second,
+	}
 
-		retries := 5
-
-		expected := time.Duration(32 * time.Second)
-		got := b.Backoff(retries)
-
-		if expected != got {
-			t.Errorf("expected: %s, got: %s", expected, got)
-		}
-	})
-
-	t.Run("returns the base delay when there are no retries remaining", func(t *testing.T) {
-		b := backoff.Exponential{
-			backoff.Config{
-				BaseDelay:  1.0 * time.Second,
-				Multiplier: 2.0, // Exponential factor.
-				Jitter:     0,   // To make test predictible.
-				MaxDelay:   120 * time.Second,
-			},
-		}
-
-		retries := 0
-
-		expected := b.BaseDelay
-		got := b.Backoff(retries)
-
-		if expected != got {
-			t.Errorf("expected: %s, got: %s", expected, got)
-		}
-	})
-
-	t.Run("returns the maximum delay when the calculated backoff exceeds the maximum", func(t *testing.T) {
-		b := backoff.Exponential{
-			backoff.Config{
-				BaseDelay:  1.0 * time.Second,
-				Multiplier: 2.0, // Exponential factor.
-				Jitter:     0,   // To make test predictible.
-				MaxDelay:   120 * time.Second,
-			},
-		}
-
-		retries := 7
-
-		expected := b.MaxDelay
-		got := b.Backoff(retries)
-
-		if expected != got {
-			t.Errorf("expected: %s, got: %s", expected, got)
-		}
-	})
+	tests := []struct {
+		name     string
+		idx      int
+		expected time.Duration
+	}{
+		{
+			name:     "returns the base delay for the initial index",
+			idx:      0,
+			expected: b.BaseDelay,
+		},
+		{
+			name:     "returns the next duration in an exponential sequence",
+			idx:      5,
+			expected: time.Duration(32 * time.Second),
+		},
+		{
+			name:     "returns the maximum delay when the calculated backoff exceeds the maximum",
+			idx:      7,
+			expected: b.MaxDelay,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := b.Backoff(tt.idx)
+			if tt.expected != got {
+				t.Errorf("expected: %s, got: %s", tt.expected, got)
+			}
+		})
+	}
 }
 
 func TestLinear(t *testing.T) {
-	t.Run("returns the next duration in a linear sequence", func(t *testing.T) {
-		b := backoff.Linear{
-			backoff.Config{
-				BaseDelay:  1.0 * time.Second,
-				Multiplier: 1.0,
-				Jitter:     0, // To make test predictible.
-				MaxDelay:   120 * time.Second,
-			},
-		}
+	b := backoff.Linear{
+		BaseDelay: 1.0 * time.Second,
+		Jitter:    0, // To make test predictible.
+		MaxDelay:  120 * time.Second,
+	}
 
-		retries := 5
-
-		expected := time.Duration(5 * time.Second)
-		got := b.Backoff(retries)
-
-		if expected != got {
-			t.Errorf("expected: %s, got: %s", expected, got)
-		}
-	})
-
-	t.Run("returns the base delay when there are no retries remaining", func(t *testing.T) {
-		b := backoff.Linear{
-			backoff.Config{
-				BaseDelay:  1.0 * time.Second,
-				Multiplier: 1.0,
-				Jitter:     0, // To make test predictible.
-				MaxDelay:   120 * time.Second,
-			},
-		}
-
-		retries := 0
-
-		expected := b.BaseDelay
-		got := b.Backoff(retries)
-
-		if expected != got {
-			t.Errorf("expected: %s, got: %s", expected, got)
-		}
-	})
-
-	t.Run("returns the maximum delay when the calculated backoff exceeds the maximum", func(t *testing.T) {
-		b := backoff.Linear{
-			backoff.Config{
-				BaseDelay:  1.0 * time.Second,
-				Multiplier: 1.0,
-				Jitter:     0, // To make test predictible.
-				MaxDelay:   120 * time.Second,
-			},
-		}
-
-		retries := 121
-
-		expected := b.MaxDelay
-		got := b.Backoff(retries)
-
-		if expected != got {
-			t.Errorf("expected: %s, got: %s", expected, got)
-		}
-	})
+	tests := []struct {
+		name     string
+		idx      int
+		expected time.Duration
+	}{
+		{
+			name:     "returns the base delay for the initial index",
+			idx:      0,
+			expected: b.BaseDelay,
+		},
+		{
+			name:     "returns the next duration in a linear sequence",
+			idx:      5,
+			expected: time.Duration(6 * time.Second),
+		},
+		{
+			name:     "returns the maximum delay when the calculated backoff exceeds the maximum",
+			idx:      120,
+			expected: b.MaxDelay,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := b.Backoff(tt.idx)
+			if tt.expected != got {
+				t.Errorf("expected: %s, got: %s", tt.expected, got)
+			}
+		})
+	}
 }

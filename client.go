@@ -188,10 +188,11 @@ func (c *Client) callAPI(request *http.Request) (*http.Response, error) {
 
 	for backoffIdx <= c.options.maxRetries {
 		res, err = c.do(request)
-		if err != nil && backoffIdx == c.options.maxRetries {
-			break
-		}
-		if err != nil {
+		if err != nil || res.StatusCode < 200 || res.StatusCode >= 300 {
+			if backoffIdx == c.options.maxRetries {
+				err = errors.New("non 2xx status code")
+				break
+			}
 			backoffFor := c.options.backoff.Backoff(backoffIdx)
 
 			timer := time.NewTimer(backoffFor)
