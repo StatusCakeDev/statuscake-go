@@ -174,25 +174,59 @@ func parameterToJson(obj interface{}) (string, error) {
 	return string(jsonBuf), err
 }
 
-// callAPI wraps debug information around a HTTP request.
-func (c *Client) callAPI(request *http.Request) (*http.Response, error) {
-	if c.options.disableRetry {
-		return c.do(request)
+type ReadCloserFunc func() io.ReadCloser
+
+// helper for returning a copy of the request body.
+func bodyFunc(body io.Reader) (ReadCloserFunc, error) {
+	if body == nil {
+		return func() io.ReadCloser { return nil }, nil
 	}
 
-	ctx := request.Context()
+	buf, err := ioutil.ReadAll(body)
+	if err != nil {
+		return nil, err
+	}
+
+	return func() io.ReadCloser {
+		return io.NopCloser(bytes.NewReader(buf))
+	}, nil
+}
+
+// determine if the maximum number of retries has been exceeded.
+func (c *Client) retriesExceeded(idx int) bool {
+	return idx > c.options.maxRetries
+}
+
+// callAPI wraps debug information around a HTTP request.
+func (c *Client) callAPI(req *http.Request) (*http.Response, error) {
+	if c.options.disableRetry {
+		return c.do(req)
+	}
+
+	ctx := req.Context()
 	backoffIdx := 0
 
 	var res *http.Response
 	var err error
 
-	for backoffIdx <= c.options.maxRetries {
-		res, err = c.do(request)
-		if err != nil || res.StatusCode < 200 || res.StatusCode >= 300 {
-			if backoffIdx == c.options.maxRetries {
-				err = errors.New("non 2xx status code")
-				break
-			}
+	body, err := bodyFunc(req.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	for !c.retriesExceeded(backoffIdx) {
+		req.Body = body()
+		res, err = c.do(req)
+		// Exceeded retries but there is a transient error.
+		if err != nil && c.retriesExceeded(backoffIdx+1) {
+			return res, fmt.Errorf("retries exceeded: %w", err)
+		}
+		// Exceeded retries but there is a contextual transient error.
+		if res != nil && res.StatusCode == http.StatusTooManyRequests && c.retriesExceeded(backoffIdx+1) {
+			break
+		}
+		// Otherwise handle the error.
+		if err != nil || res.StatusCode == http.StatusTooManyRequests {
 			backoffFor := c.options.backoff.Backoff(backoffIdx)
 
 			timer := time.NewTimer(backoffFor)
@@ -205,15 +239,16 @@ func (c *Client) callAPI(request *http.Request) (*http.Response, error) {
 			}
 		}
 
-		return res, err
+		// Succeeded. Stop retrying the request.
+		break
 	}
 
-	return res, fmt.Errorf("retries exceeded: %w", err)
+	return res, err
 }
 
-func (c *Client) do(request *http.Request) (*http.Response, error) {
+func (c *Client) do(req *http.Request) (*http.Response, error) {
 	if c.options.debug {
-		dump, err := httputil.DumpRequestOut(request, true)
+		dump, err := httputil.DumpRequestOut(req, true)
 		if err != nil {
 			return nil, err
 		}
@@ -221,7 +256,7 @@ func (c *Client) do(request *http.Request) (*http.Response, error) {
 		log.Printf("\n%s\n", string(dump))
 	}
 
-	res, err := c.options.client.Do(request)
+	res, err := c.options.client.Do(req)
 	if err != nil {
 		return res, err
 	}
