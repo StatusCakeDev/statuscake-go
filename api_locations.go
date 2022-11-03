@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0
+ * API version: 1.0.1
  * Contact: support@statuscake.com
  */
 
@@ -174,14 +174,7 @@ func (a *LocationsService) ListPagespeedMonitoringLocationsExecute(r APIListPage
 type APIListUptimeMonitoringLocationsRequest struct {
 	ctx        context.Context
 	APIService LocationsAPI
-	location   *string
 	regionCode *string
-}
-
-// Location sets location on the request type.
-func (r APIListUptimeMonitoringLocationsRequest) Location(location string) APIListUptimeMonitoringLocationsRequest {
-	r.location = &location
-	return r
 }
 
 // RegionCode sets regionCode on the request type.
@@ -232,9 +225,6 @@ func (a *LocationsService) ListUptimeMonitoringLocationsExecute(r APIListUptimeM
 	queryParams := url.Values{}
 	formParams := url.Values{}
 
-	if r.location != nil {
-		queryParams.Add("location", parameterToString(*r.location))
-	}
 	if r.regionCode != nil {
 		queryParams.Add("region_code", parameterToString(*r.regionCode))
 	}

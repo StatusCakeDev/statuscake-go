@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0
+ * API version: 1.0.1
  * Contact: support@statuscake.com
  */
 
@@ -88,7 +88,7 @@ func (c contextKey) String() string {
 	}
 }
 
-// Client manages communication with the StatusCake API API v1.0.0
+// Client manages communication with the StatusCake API API v1.0.1
 // In most cases there should be only one, shared, Client.
 type Client struct {
 	options options
