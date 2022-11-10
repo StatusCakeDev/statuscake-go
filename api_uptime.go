@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0
+ * API version: 1.0.1
  * Contact: support@statuscake.com
  */
 
@@ -865,6 +865,7 @@ type APIListUptimeTestAlertsRequest struct {
 	testId     string
 	limit      *int32
 	before     *int64
+	after      *int64
 }
 
 // Limit sets limit on the request type.
@@ -876,6 +877,12 @@ func (r APIListUptimeTestAlertsRequest) Limit(limit int32) APIListUptimeTestAler
 // Before sets before on the request type.
 func (r APIListUptimeTestAlertsRequest) Before(before int64) APIListUptimeTestAlertsRequest {
 	r.before = &before
+	return r
+}
+
+// After sets after on the request type.
+func (r APIListUptimeTestAlertsRequest) After(after int64) APIListUptimeTestAlertsRequest {
+	r.after = &after
 	return r
 }
 
@@ -928,6 +935,9 @@ func (a *UptimeService) ListUptimeTestAlertsExecute(r APIListUptimeTestAlertsReq
 	}
 	if r.before != nil {
 		queryParams.Add("before", parameterToString(*r.before))
+	}
+	if r.after != nil {
+		queryParams.Add("after", parameterToString(*r.after))
 	}
 	// Determine the Content-Type header.
 	contentTypes := []string{}
@@ -997,6 +1007,7 @@ type APIListUptimeTestHistoryRequest struct {
 	testId     string
 	limit      *int32
 	before     *int64
+	after      *int64
 }
 
 // Limit sets limit on the request type.
@@ -1008,6 +1019,12 @@ func (r APIListUptimeTestHistoryRequest) Limit(limit int32) APIListUptimeTestHis
 // Before sets before on the request type.
 func (r APIListUptimeTestHistoryRequest) Before(before int64) APIListUptimeTestHistoryRequest {
 	r.before = &before
+	return r
+}
+
+// After sets after on the request type.
+func (r APIListUptimeTestHistoryRequest) After(after int64) APIListUptimeTestHistoryRequest {
+	r.after = &after
 	return r
 }
 
@@ -1060,6 +1077,9 @@ func (a *UptimeService) ListUptimeTestHistoryExecute(r APIListUptimeTestHistoryR
 	}
 	if r.before != nil {
 		queryParams.Add("before", parameterToString(*r.before))
+	}
+	if r.after != nil {
+		queryParams.Add("after", parameterToString(*r.after))
 	}
 	// Determine the Content-Type header.
 	contentTypes := []string{}
@@ -1129,6 +1149,7 @@ type APIListUptimeTestPeriodsRequest struct {
 	testId     string
 	limit      *int32
 	before     *int64
+	after      *int64
 }
 
 // Limit sets limit on the request type.
@@ -1140,6 +1161,12 @@ func (r APIListUptimeTestPeriodsRequest) Limit(limit int32) APIListUptimeTestPer
 // Before sets before on the request type.
 func (r APIListUptimeTestPeriodsRequest) Before(before int64) APIListUptimeTestPeriodsRequest {
 	r.before = &before
+	return r
+}
+
+// After sets after on the request type.
+func (r APIListUptimeTestPeriodsRequest) After(after int64) APIListUptimeTestPeriodsRequest {
+	r.after = &after
 	return r
 }
 
@@ -1192,6 +1219,9 @@ func (a *UptimeService) ListUptimeTestPeriodsExecute(r APIListUptimeTestPeriodsR
 	}
 	if r.before != nil {
 		queryParams.Add("before", parameterToString(*r.before))
+	}
+	if r.after != nil {
+		queryParams.Add("after", parameterToString(*r.after))
 	}
 	// Determine the Content-Type header.
 	contentTypes := []string{}

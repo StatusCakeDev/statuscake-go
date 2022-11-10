@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.0
+ * API version: 1.0.1
  * Contact: support@statuscake.com
  */
 
@@ -540,6 +540,7 @@ type APIListPagespeedTestHistoryRequest struct {
 	testId     string
 	limit      *int32
 	before     *int64
+	after      *int64
 }
 
 // Limit sets limit on the request type.
@@ -551,6 +552,12 @@ func (r APIListPagespeedTestHistoryRequest) Limit(limit int32) APIListPagespeedT
 // Before sets before on the request type.
 func (r APIListPagespeedTestHistoryRequest) Before(before int64) APIListPagespeedTestHistoryRequest {
 	r.before = &before
+	return r
+}
+
+// After sets after on the request type.
+func (r APIListPagespeedTestHistoryRequest) After(after int64) APIListPagespeedTestHistoryRequest {
+	r.after = &after
 	return r
 }
 
@@ -603,6 +610,9 @@ func (a *PagespeedService) ListPagespeedTestHistoryExecute(r APIListPagespeedTes
 	}
 	if r.before != nil {
 		queryParams.Add("before", parameterToString(*r.before))
+	}
+	if r.after != nil {
+		queryParams.Add("after", parameterToString(*r.after))
 	}
 	// Determine the Content-Type header.
 	contentTypes := []string{}
