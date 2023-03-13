@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2022
+ * Copyright (c) 2023
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.1
+ * API version: 1.1.0
  * Contact: support@statuscake.com
  */
 
@@ -716,6 +716,7 @@ type APIUpdateSslTestRequest struct {
 	ctx             context.Context
 	APIService      SslAPI
 	testId          string
+	websiteUrl      *string
 	checkRate       *SSLTestCheckRate
 	alertAt         *[]int32
 	alertBroken     *bool
@@ -727,6 +728,12 @@ type APIUpdateSslTestRequest struct {
 	hostname        *string
 	paused          *bool
 	userAgent       *string
+}
+
+// WebsiteURL sets websiteUrl on the request type.
+func (r APIUpdateSslTestRequest) WebsiteURL(websiteUrl string) APIUpdateSslTestRequest {
+	r.websiteUrl = &websiteUrl
+	return r
 }
 
 // CheckRate sets checkRate on the request type.
@@ -815,6 +822,10 @@ func (a *SslService) UpdateSslTest(ctx context.Context, testId string) APIUpdate
 func (a *SslService) UpdateSslTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIUpdateSslTestRequest {
 	r := a.UpdateSslTest(ctx, testId)
 
+	if prop, ok := m["website_url"].(string); ok {
+		r.websiteUrl = &prop
+	}
+
 	if prop, ok := m["check_rate"].(SSLTestCheckRate); ok {
 		r.checkRate = &prop
 	}
@@ -899,6 +910,10 @@ func (a *SslService) UpdateSslTestExecute(r APIUpdateSslTestRequest) error {
 	requestAcceptHeader := selectHeaderAccept(accepts)
 	if requestAcceptHeader != "" {
 		headerParams["Accept"] = requestAcceptHeader
+	}
+
+	if r.websiteUrl != nil {
+		formParams.Add("website_url", parameterToString(*r.websiteUrl))
 	}
 
 	if r.checkRate != nil {

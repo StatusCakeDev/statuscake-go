@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2022
+ * Copyright (c) 2023
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.1
+ * API version: 1.1.0
  * Contact: support@statuscake.com
  */
 
@@ -1459,6 +1459,7 @@ type APIUpdateUptimeTestRequest struct {
 	APIService      UptimeAPI
 	testId          string
 	name            *string
+	websiteUrl      *string
 	checkRate       *UptimeTestCheckRate
 	basicUsername   *string
 	basicPassword   *string
@@ -1490,6 +1491,12 @@ type APIUpdateUptimeTestRequest struct {
 // Name sets name on the request type.
 func (r APIUpdateUptimeTestRequest) Name(name string) APIUpdateUptimeTestRequest {
 	r.name = &name
+	return r
+}
+
+// WebsiteURL sets websiteUrl on the request type.
+func (r APIUpdateUptimeTestRequest) WebsiteURL(websiteUrl string) APIUpdateUptimeTestRequest {
+	r.websiteUrl = &websiteUrl
 	return r
 }
 
@@ -1673,6 +1680,10 @@ func (a *UptimeService) UpdateUptimeTestWithData(ctx context.Context, testId str
 		r.name = &prop
 	}
 
+	if prop, ok := m["website_url"].(string); ok {
+		r.websiteUrl = &prop
+	}
+
 	if prop, ok := m["check_rate"].(UptimeTestCheckRate); ok {
 		r.checkRate = &prop
 	}
@@ -1821,6 +1832,10 @@ func (a *UptimeService) UpdateUptimeTestExecute(r APIUpdateUptimeTestRequest) er
 
 	if r.name != nil {
 		formParams.Add("name", parameterToString(*r.name))
+	}
+
+	if r.websiteUrl != nil {
+		formParams.Add("website_url", parameterToString(*r.websiteUrl))
 	}
 
 	if r.checkRate != nil {

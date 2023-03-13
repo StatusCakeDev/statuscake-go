@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2022
+ * Copyright (c) 2023
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.1
+ * API version: 1.1.0
  * Contact: support@statuscake.com
  */
 
@@ -88,7 +88,7 @@ func (c contextKey) String() string {
 	}
 }
 
-// Client manages communication with the StatusCake API API v1.0.1
+// Client manages communication with the StatusCake API API v1.1.0
 // In most cases there should be only one, shared, Client.
 type Client struct {
 	options options
