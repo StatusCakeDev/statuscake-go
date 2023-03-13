@@ -1,7 +1,7 @@
 /*
  * StatusCake API
  *
- * Copyright (c) 2022
+ * Copyright (c) 2023
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.0.1
+ * API version: 1.1.0
  * Contact: support@statuscake.com
  */
 
@@ -810,6 +810,7 @@ type APIUpdatePagespeedTestRequest struct {
 	APIService    PagespeedAPI
 	testId        string
 	name          *string
+	websiteUrl    *string
 	checkRate     *PagespeedTestCheckRate
 	alertBigger   *int32
 	alertSlower   *int64
@@ -822,6 +823,12 @@ type APIUpdatePagespeedTestRequest struct {
 // Name sets name on the request type.
 func (r APIUpdatePagespeedTestRequest) Name(name string) APIUpdatePagespeedTestRequest {
 	r.name = &name
+	return r
+}
+
+// WebsiteURL sets websiteUrl on the request type.
+func (r APIUpdatePagespeedTestRequest) WebsiteURL(websiteUrl string) APIUpdatePagespeedTestRequest {
+	r.websiteUrl = &websiteUrl
 	return r
 }
 
@@ -889,6 +896,10 @@ func (a *PagespeedService) UpdatePagespeedTestWithData(ctx context.Context, test
 
 	if prop, ok := m["name"].(string); ok {
 		r.name = &prop
+	}
+
+	if prop, ok := m["website_url"].(string); ok {
+		r.websiteUrl = &prop
 	}
 
 	if prop, ok := m["check_rate"].(PagespeedTestCheckRate); ok {
@@ -963,6 +974,10 @@ func (a *PagespeedService) UpdatePagespeedTestExecute(r APIUpdatePagespeedTestRe
 
 	if r.name != nil {
 		formParams.Add("name", parameterToString(*r.name))
+	}
+
+	if r.websiteUrl != nil {
+		formParams.Add("website_url", parameterToString(*r.websiteUrl))
 	}
 
 	if r.checkRate != nil {
