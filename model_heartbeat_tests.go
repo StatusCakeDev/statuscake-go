@@ -33,26 +33,26 @@ import (
 	"encoding/json"
 )
 
-// UptimeTests struct for UptimeTests
-type UptimeTests struct {
-	// List of uptime checks
-	Data     []UptimeTestOverview `json:"data"`
-	Metadata Pagination           `json:"metadata"`
+// HeartbeatTests struct for HeartbeatTests
+type HeartbeatTests struct {
+	// List of heartbeat checks
+	Data     []HeartbeatTestOverview `json:"data"`
+	Metadata Pagination              `json:"metadata"`
 }
 
-// NewUptimeTests instantiates a new UptimeTests object.
+// NewHeartbeatTests instantiates a new HeartbeatTests object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewUptimeTests(data []UptimeTestOverview, metadata Pagination) *UptimeTests {
-	return &UptimeTests{
+func NewHeartbeatTests(data []HeartbeatTestOverview, metadata Pagination) *HeartbeatTests {
+	return &HeartbeatTests{
 		Data:     data,
 		Metadata: metadata,
 	}
 }
 
 // MarshalJSON serialises data in the struct to JSON.
-func (o UptimeTests) MarshalJSON() ([]byte, error) {
+func (o HeartbeatTests) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
 		toSerialize["data"] = o.Data

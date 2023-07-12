@@ -33,32 +33,73 @@ import (
 	"encoding/json"
 )
 
-// UptimeTests struct for UptimeTests
-type UptimeTests struct {
-	// List of uptime checks
-	Data     []UptimeTestOverview `json:"data"`
-	Metadata Pagination           `json:"metadata"`
+// HeartbeatTestOverview struct for HeartbeatTestOverview
+type HeartbeatTestOverview struct {
+	// Heartbeat check ID
+	ID string `json:"id"`
+	// Name of the check
+	Name string `json:"name"`
+	// URL of the check
+	WebsiteURL string `json:"url"`
+	// Number of seconds since the last ping before the check is considered down
+	Period int32 `json:"period"`
+	// List of contact group IDs
+	ContactGroups []string `json:"contact_groups"`
+	// Whether the check should be run
+	Paused bool                `json:"paused"`
+	Status HeartbeatTestStatus `json:"status"`
+	// List of tags
+	Tags []string `json:"tags"`
+	// Uptime percentage for a check
+	Uptime *float32 `json:"uptime,omitempty"`
 }
 
-// NewUptimeTests instantiates a new UptimeTests object.
+// NewHeartbeatTestOverview instantiates a new HeartbeatTestOverview object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewUptimeTests(data []UptimeTestOverview, metadata Pagination) *UptimeTests {
-	return &UptimeTests{
-		Data:     data,
-		Metadata: metadata,
+func NewHeartbeatTestOverview(id string, name string, url string, period int32, contactGroups []string, paused bool, status HeartbeatTestStatus, tags []string) *HeartbeatTestOverview {
+	return &HeartbeatTestOverview{
+		ID:            id,
+		Name:          name,
+		WebsiteURL:    url,
+		Period:        period,
+		ContactGroups: contactGroups,
+		Paused:        paused,
+		Status:        status,
+		Tags:          tags,
 	}
 }
 
 // MarshalJSON serialises data in the struct to JSON.
-func (o UptimeTests) MarshalJSON() ([]byte, error) {
+func (o HeartbeatTestOverview) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
-		toSerialize["data"] = o.Data
+		toSerialize["id"] = o.ID
 	}
 	if true {
-		toSerialize["metadata"] = o.Metadata
+		toSerialize["name"] = o.Name
+	}
+	if true {
+		toSerialize["url"] = o.WebsiteURL
+	}
+	if true {
+		toSerialize["period"] = o.Period
+	}
+	if true {
+		toSerialize["contact_groups"] = o.ContactGroups
+	}
+	if true {
+		toSerialize["paused"] = o.Paused
+	}
+	if true {
+		toSerialize["status"] = o.Status
+	}
+	if true {
+		toSerialize["tags"] = o.Tags
+	}
+	if o.Uptime != nil {
+		toSerialize["uptime"] = o.Uptime
 	}
 	return json.Marshal(toSerialize)
 }

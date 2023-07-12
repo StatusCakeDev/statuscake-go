@@ -31,53 +31,54 @@ package statuscake
 
 import (
 	"encoding/json"
+	"time"
 )
 
-// PagespeedTest struct for PagespeedTest
-type PagespeedTest struct {
-	// Pagespeed check ID
+// HeartbeatTest struct for HeartbeatTest
+type HeartbeatTest struct {
+	// Heartbeat check ID
 	ID string `json:"id"`
 	// Name of the check
 	Name string `json:"name"`
-	// URL, FQDN, or IP address of the website under test
-	WebsiteURL string                 `json:"website_url"`
-	CheckRate  PagespeedTestCheckRate `json:"check_rate"`
-	// An alert will be sent if the size of the page is larger than this value (kb). A value of 0 prevents alerts being sent.
-	AlertBigger int32 `json:"alert_bigger"`
-	// An alert will be sent if the load time of the page exceeds this value (ms). A value of 0 prevents alerts being sent
-	AlertSlower int64 `json:"alert_slower"`
-	// An alert will be sent if the size of the page is smaller than this value (kb). A value of 0 prevents alerts being sent
-	AlertSmaller int32 `json:"alert_smaller"`
+	// URL of the check
+	WebsiteURL string `json:"url"`
+	// Number of seconds since the last ping before the check is considered down
+	Period int32 `json:"period"`
 	// List of contact group IDs
-	ContactGroups []string            `json:"contact_groups"`
-	LatestStats   *PagespeedTestStats `json:"latest_stats,omitempty"`
-	// Assigned monitoring location on which checks will be run
-	Location string `json:"location"`
+	ContactGroups []string `json:"contact_groups"`
+	// Name of the hosting provider
+	Host *string `json:"host,omitempty"`
+	// When the check was last run (RFC3339 format)
+	LastTested *time.Time `json:"last_tested_at,omitempty"`
 	// Whether the check should be run
-	Paused bool `json:"paused"`
+	Paused bool                `json:"paused"`
+	Status HeartbeatTestStatus `json:"status"`
+	// List of tags
+	Tags []string `json:"tags"`
+	// Uptime percentage for a check
+	Uptime float32 `json:"uptime"`
 }
 
-// NewPagespeedTest instantiates a new PagespeedTest object.
+// NewHeartbeatTest instantiates a new HeartbeatTest object.
 // This constructor will assign default values to properties that have it
 // defined, and makes sure properties required by API are set, but the set of
 // arguments will change when the set of required properties is changed.
-func NewPagespeedTest(id string, name string, websiteUrl string, checkRate PagespeedTestCheckRate, alertBigger int32, alertSlower int64, alertSmaller int32, contactGroups []string, location string, paused bool) *PagespeedTest {
-	return &PagespeedTest{
+func NewHeartbeatTest(id string, name string, url string, period int32, contactGroups []string, paused bool, status HeartbeatTestStatus, tags []string, uptime float32) *HeartbeatTest {
+	return &HeartbeatTest{
 		ID:            id,
 		Name:          name,
-		WebsiteURL:    websiteUrl,
-		CheckRate:     checkRate,
-		AlertBigger:   alertBigger,
-		AlertSlower:   alertSlower,
-		AlertSmaller:  alertSmaller,
+		WebsiteURL:    url,
+		Period:        period,
 		ContactGroups: contactGroups,
-		Location:      location,
 		Paused:        paused,
+		Status:        status,
+		Tags:          tags,
+		Uptime:        uptime,
 	}
 }
 
 // MarshalJSON serialises data in the struct to JSON.
-func (o PagespeedTest) MarshalJSON() ([]byte, error) {
+func (o HeartbeatTest) MarshalJSON() ([]byte, error) {
 	toSerialize := map[string]interface{}{}
 	if true {
 		toSerialize["id"] = o.ID
@@ -86,31 +87,31 @@ func (o PagespeedTest) MarshalJSON() ([]byte, error) {
 		toSerialize["name"] = o.Name
 	}
 	if true {
-		toSerialize["website_url"] = o.WebsiteURL
+		toSerialize["url"] = o.WebsiteURL
 	}
 	if true {
-		toSerialize["check_rate"] = o.CheckRate
-	}
-	if true {
-		toSerialize["alert_bigger"] = o.AlertBigger
-	}
-	if true {
-		toSerialize["alert_slower"] = o.AlertSlower
-	}
-	if true {
-		toSerialize["alert_smaller"] = o.AlertSmaller
+		toSerialize["period"] = o.Period
 	}
 	if true {
 		toSerialize["contact_groups"] = o.ContactGroups
 	}
-	if o.LatestStats != nil {
-		toSerialize["latest_stats"] = o.LatestStats
+	if o.Host != nil {
+		toSerialize["host"] = o.Host
 	}
-	if true {
-		toSerialize["location"] = o.Location
+	if o.LastTested != nil {
+		toSerialize["last_tested_at"] = o.LastTested
 	}
 	if true {
 		toSerialize["paused"] = o.Paused
+	}
+	if true {
+		toSerialize["status"] = o.Status
+	}
+	if true {
+		toSerialize["tags"] = o.Tags
+	}
+	if true {
+		toSerialize["uptime"] = o.Uptime
 	}
 	return json.Marshal(toSerialize)
 }
