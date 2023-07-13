@@ -36,138 +36,126 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 )
 
 // Linger please
 var _ context.Context
 
-// MaintenanceWindowsAPI describes the necessary methods to adhere to this interface.
-type MaintenanceWindowsAPI interface {
-	CreateMaintenanceWindow(ctx context.Context) APICreateMaintenanceWindowRequest
-	CreateMaintenanceWindowWithData(ctx context.Context, m map[string]interface{}) APICreateMaintenanceWindowRequest
-	CreateMaintenanceWindowExecute(r APICreateMaintenanceWindowRequest) (APIResponse, error)
-	DeleteMaintenanceWindow(ctx context.Context, windowId string) APIDeleteMaintenanceWindowRequest
-	DeleteMaintenanceWindowExecute(r APIDeleteMaintenanceWindowRequest) error
-	GetMaintenanceWindow(ctx context.Context, windowId string) APIGetMaintenanceWindowRequest
-	GetMaintenanceWindowExecute(r APIGetMaintenanceWindowRequest) (MaintenanceWindowResponse, error)
-	ListMaintenanceWindows(ctx context.Context) APIListMaintenanceWindowsRequest
-	ListMaintenanceWindowsExecute(r APIListMaintenanceWindowsRequest) (MaintenanceWindows, error)
-	UpdateMaintenanceWindow(ctx context.Context, windowId string) APIUpdateMaintenanceWindowRequest
-	UpdateMaintenanceWindowWithData(ctx context.Context, windowId string, m map[string]interface{}) APIUpdateMaintenanceWindowRequest
-	UpdateMaintenanceWindowExecute(r APIUpdateMaintenanceWindowRequest) error
+// HeartbeatAPI describes the necessary methods to adhere to this interface.
+type HeartbeatAPI interface {
+	CreateHeartbeatTest(ctx context.Context) APICreateHeartbeatTestRequest
+	CreateHeartbeatTestWithData(ctx context.Context, m map[string]interface{}) APICreateHeartbeatTestRequest
+	CreateHeartbeatTestExecute(r APICreateHeartbeatTestRequest) (APIResponse, error)
+	DeleteHeartbeatTest(ctx context.Context, testId string) APIDeleteHeartbeatTestRequest
+	DeleteHeartbeatTestExecute(r APIDeleteHeartbeatTestRequest) error
+	GetHeartbeatTest(ctx context.Context, testId string) APIGetHeartbeatTestRequest
+	GetHeartbeatTestExecute(r APIGetHeartbeatTestRequest) (HeartbeatTestResponse, error)
+	ListHeartbeatTests(ctx context.Context) APIListHeartbeatTestsRequest
+	ListHeartbeatTestsExecute(r APIListHeartbeatTestsRequest) (HeartbeatTests, error)
+	UpdateHeartbeatTest(ctx context.Context, testId string) APIUpdateHeartbeatTestRequest
+	UpdateHeartbeatTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIUpdateHeartbeatTestRequest
+	UpdateHeartbeatTestExecute(r APIUpdateHeartbeatTestRequest) error
 }
 
-// MaintenanceWindowsService MaintenanceWindows service.
-type MaintenanceWindowsService service
+// HeartbeatService Heartbeat service.
+type HeartbeatService service
 
-// APICreateMaintenanceWindowRequest represents a request type.
-type APICreateMaintenanceWindowRequest struct {
-	ctx            context.Context
-	APIService     MaintenanceWindowsAPI
-	name           *string
-	endAt          *time.Time
-	startAt        *time.Time
-	timezone       *string
-	repeatInterval *MaintenanceWindowRepeatInterval
-	tags           *[]string
-	tests          *[]string
+// APICreateHeartbeatTestRequest represents a request type.
+type APICreateHeartbeatTestRequest struct {
+	ctx           context.Context
+	APIService    HeartbeatAPI
+	name          *string
+	period        *int32
+	contactGroups *[]string
+	host          *string
+	paused        *bool
+	tags          *[]string
 }
 
 // Name sets name on the request type.
-func (r APICreateMaintenanceWindowRequest) Name(name string) APICreateMaintenanceWindowRequest {
+func (r APICreateHeartbeatTestRequest) Name(name string) APICreateHeartbeatTestRequest {
 	r.name = &name
 	return r
 }
 
-// End sets endAt on the request type.
-func (r APICreateMaintenanceWindowRequest) End(endAt time.Time) APICreateMaintenanceWindowRequest {
-	r.endAt = &endAt
+// Period sets period on the request type.
+func (r APICreateHeartbeatTestRequest) Period(period int32) APICreateHeartbeatTestRequest {
+	r.period = &period
 	return r
 }
 
-// Start sets startAt on the request type.
-func (r APICreateMaintenanceWindowRequest) Start(startAt time.Time) APICreateMaintenanceWindowRequest {
-	r.startAt = &startAt
+// ContactGroups sets contactGroups on the request type.
+func (r APICreateHeartbeatTestRequest) ContactGroups(contactGroups []string) APICreateHeartbeatTestRequest {
+	r.contactGroups = &contactGroups
 	return r
 }
 
-// Timezone sets timezone on the request type.
-func (r APICreateMaintenanceWindowRequest) Timezone(timezone string) APICreateMaintenanceWindowRequest {
-	r.timezone = &timezone
+// Host sets host on the request type.
+func (r APICreateHeartbeatTestRequest) Host(host string) APICreateHeartbeatTestRequest {
+	r.host = &host
 	return r
 }
 
-// RepeatInterval sets repeatInterval on the request type.
-func (r APICreateMaintenanceWindowRequest) RepeatInterval(repeatInterval MaintenanceWindowRepeatInterval) APICreateMaintenanceWindowRequest {
-	r.repeatInterval = &repeatInterval
+// Paused sets paused on the request type.
+func (r APICreateHeartbeatTestRequest) Paused(paused bool) APICreateHeartbeatTestRequest {
+	r.paused = &paused
 	return r
 }
 
 // Tags sets tags on the request type.
-func (r APICreateMaintenanceWindowRequest) Tags(tags []string) APICreateMaintenanceWindowRequest {
+func (r APICreateHeartbeatTestRequest) Tags(tags []string) APICreateHeartbeatTestRequest {
 	r.tags = &tags
 	return r
 }
 
-// Tests sets tests on the request type.
-func (r APICreateMaintenanceWindowRequest) Tests(tests []string) APICreateMaintenanceWindowRequest {
-	r.tests = &tests
-	return r
-}
-
 // Execute executes the request.
-func (r APICreateMaintenanceWindowRequest) Execute() (APIResponse, error) {
-	return r.APIService.CreateMaintenanceWindowExecute(r)
+func (r APICreateHeartbeatTestRequest) Execute() (APIResponse, error) {
+	return r.APIService.CreateHeartbeatTestExecute(r)
 }
 
-// CreateMaintenanceWindow Create a maintenance window.
-func (a *MaintenanceWindowsService) CreateMaintenanceWindow(ctx context.Context) APICreateMaintenanceWindowRequest {
-	return APICreateMaintenanceWindowRequest{
+// CreateHeartbeatTest Create a heartbeat check.
+func (a *HeartbeatService) CreateHeartbeatTest(ctx context.Context) APICreateHeartbeatTestRequest {
+	return APICreateHeartbeatTestRequest{
 		ctx:        ctx,
 		APIService: a,
 	}
 }
 
-// CreateMaintenanceWindowWithData Create a maintenance window.
+// CreateHeartbeatTestWithData Create a heartbeat check.
 // The use of this method is discouraged as it does not provide the level of
 // type safety afforded by the field methods on the request type.
-func (a *MaintenanceWindowsService) CreateMaintenanceWindowWithData(ctx context.Context, m map[string]interface{}) APICreateMaintenanceWindowRequest {
-	r := a.CreateMaintenanceWindow(ctx)
+func (a *HeartbeatService) CreateHeartbeatTestWithData(ctx context.Context, m map[string]interface{}) APICreateHeartbeatTestRequest {
+	r := a.CreateHeartbeatTest(ctx)
 
 	if prop, ok := m["name"].(string); ok {
 		r.name = &prop
 	}
 
-	if prop, ok := m["end_at"].(time.Time); ok {
-		r.endAt = &prop
+	if prop, ok := m["period"].(int32); ok {
+		r.period = &prop
 	}
 
-	if prop, ok := m["repeat_interval"].(MaintenanceWindowRepeatInterval); ok {
-		r.repeatInterval = &prop
+	if prop, ok := m["contact_groups"].([]string); ok {
+		r.contactGroups = &prop
 	}
 
-	if prop, ok := m["start_at"].(time.Time); ok {
-		r.startAt = &prop
+	if prop, ok := m["host"].(string); ok {
+		r.host = &prop
+	}
+
+	if prop, ok := m["paused"].(bool); ok {
+		r.paused = &prop
 	}
 
 	if prop, ok := m["tags"].([]string); ok {
 		r.tags = &prop
 	}
 
-	if prop, ok := m["tests"].([]string); ok {
-		r.tests = &prop
-	}
-
-	if prop, ok := m["timezone"].(string); ok {
-		r.timezone = &prop
-	}
-
 	return r
 }
 
 // Execute executes the request.
-func (a *MaintenanceWindowsService) CreateMaintenanceWindowExecute(r APICreateMaintenanceWindowRequest) (APIResponse, error) {
+func (a *HeartbeatService) CreateHeartbeatTestExecute(r APICreateHeartbeatTestRequest) (APIResponse, error) {
 	var (
 		requestBody          interface{}
 		requestFormFieldName string
@@ -176,12 +164,12 @@ func (a *MaintenanceWindowsService) CreateMaintenanceWindowExecute(r APICreateMa
 		returnValue          APIResponse
 	)
 
-	basePath, err := a.client.ServerURLWithContext(r.ctx, "MaintenanceWindowsService.CreateMaintenanceWindow")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "HeartbeatService.CreateHeartbeatTest")
 	if err != nil {
 		return returnValue, err
 	}
 
-	requestPath := basePath + "/maintenance-windows"
+	requestPath := basePath + "/heartbeat"
 
 	headerParams := make(map[string]string)
 	queryParams := url.Values{}
@@ -191,16 +179,14 @@ func (a *MaintenanceWindowsService) CreateMaintenanceWindowExecute(r APICreateMa
 		return returnValue, errorf("name is required and must be specified")
 	}
 
-	if r.endAt == nil {
-		return returnValue, errorf("endAt is required and must be specified")
+	if r.period == nil {
+		return returnValue, errorf("period is required and must be specified")
 	}
-
-	if r.startAt == nil {
-		return returnValue, errorf("startAt is required and must be specified")
+	if *r.period < 30 {
+		return returnValue, errorf("period must be greater than 30")
 	}
-
-	if r.timezone == nil {
-		return returnValue, errorf("timezone is required and must be specified")
+	if *r.period > 172800 {
+		return returnValue, errorf("period must be less than 172800")
 	}
 
 	// Determine the Content-Type header.
@@ -222,12 +208,26 @@ func (a *MaintenanceWindowsService) CreateMaintenanceWindowExecute(r APICreateMa
 	}
 
 	formParams.Add("name", parameterToString(*r.name))
-	formParams.Add("end_at", parameterToString(*r.endAt))
+	formParams.Add("period", parameterToString(*r.period))
 
-	if r.repeatInterval != nil {
-		formParams.Add("repeat_interval", parameterToString(*r.repeatInterval))
+	if r.contactGroups != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.contactGroups) == 0 {
+			formParams.Add("contact_groups[]", "")
+		}
+		for _, val := range *r.contactGroups {
+			formParams.Add("contact_groups[]", parameterToString(val))
+		}
 	}
-	formParams.Add("start_at", parameterToString(*r.startAt))
+
+	if r.host != nil {
+		formParams.Add("host", parameterToString(*r.host))
+	}
+
+	if r.paused != nil {
+		formParams.Add("paused", parameterToString(*r.paused))
+	}
 
 	if r.tags != nil {
 		// Explicity empty array. This indictes the consumer intended to pass an
@@ -239,18 +239,6 @@ func (a *MaintenanceWindowsService) CreateMaintenanceWindowExecute(r APICreateMa
 			formParams.Add("tags[]", parameterToString(val))
 		}
 	}
-
-	if r.tests != nil {
-		// Explicity empty array. This indictes the consumer intended to pass an
-		// empty value and therefore likely want to nullify the field.
-		if len(*r.tests) == 0 {
-			formParams.Add("tests[]", "")
-		}
-		for _, val := range *r.tests {
-			formParams.Add("tests[]", parameterToString(val))
-		}
-	}
-	formParams.Add("timezone", parameterToString(*r.timezone))
 	req, err := a.client.prepareRequest(r.ctx, requestPath, http.MethodPost, requestBody, headerParams, queryParams, formParams, requestFormFieldName, requestFileName, requestFileBytes)
 	if err != nil {
 		return returnValue, err
@@ -294,37 +282,37 @@ func (a *MaintenanceWindowsService) CreateMaintenanceWindowExecute(r APICreateMa
 	return returnValue, nil
 }
 
-// APIDeleteMaintenanceWindowRequest represents a request type.
-type APIDeleteMaintenanceWindowRequest struct {
+// APIDeleteHeartbeatTestRequest represents a request type.
+type APIDeleteHeartbeatTestRequest struct {
 	ctx        context.Context
-	APIService MaintenanceWindowsAPI
-	windowId   string
+	APIService HeartbeatAPI
+	testId     string
 }
 
 // Execute executes the request.
-func (r APIDeleteMaintenanceWindowRequest) Execute() error {
-	return r.APIService.DeleteMaintenanceWindowExecute(r)
+func (r APIDeleteHeartbeatTestRequest) Execute() error {
+	return r.APIService.DeleteHeartbeatTestExecute(r)
 }
 
-// DeleteMaintenanceWindow Delete a maintenance window.
-func (a *MaintenanceWindowsService) DeleteMaintenanceWindow(ctx context.Context, windowId string) APIDeleteMaintenanceWindowRequest {
-	return APIDeleteMaintenanceWindowRequest{
+// DeleteHeartbeatTest Delete a heartbeat check.
+func (a *HeartbeatService) DeleteHeartbeatTest(ctx context.Context, testId string) APIDeleteHeartbeatTestRequest {
+	return APIDeleteHeartbeatTestRequest{
 		ctx:        ctx,
 		APIService: a,
-		windowId:   windowId,
+		testId:     testId,
 	}
 }
 
-// DeleteMaintenanceWindowWithData Delete a maintenance window.
+// DeleteHeartbeatTestWithData Delete a heartbeat check.
 // The use of this method is discouraged as it does not provide the level of
 // type safety afforded by the field methods on the request type.
-func (a *MaintenanceWindowsService) DeleteMaintenanceWindowWithData(ctx context.Context, windowId string, m map[string]interface{}) APIDeleteMaintenanceWindowRequest {
-	r := a.DeleteMaintenanceWindow(ctx, windowId)
+func (a *HeartbeatService) DeleteHeartbeatTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIDeleteHeartbeatTestRequest {
+	r := a.DeleteHeartbeatTest(ctx, testId)
 	return r
 }
 
 // Execute executes the request.
-func (a *MaintenanceWindowsService) DeleteMaintenanceWindowExecute(r APIDeleteMaintenanceWindowRequest) error {
+func (a *HeartbeatService) DeleteHeartbeatTestExecute(r APIDeleteHeartbeatTestRequest) error {
 	var (
 		requestBody          interface{}
 		requestFormFieldName string
@@ -332,13 +320,13 @@ func (a *MaintenanceWindowsService) DeleteMaintenanceWindowExecute(r APIDeleteMa
 		requestFileBytes     []byte
 	)
 
-	basePath, err := a.client.ServerURLWithContext(r.ctx, "MaintenanceWindowsService.DeleteMaintenanceWindow")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "HeartbeatService.DeleteHeartbeatTest")
 	if err != nil {
 		return err
 	}
 
-	requestPath := basePath + "/maintenance-windows/{window_id}"
-	requestPath = strings.Replace(requestPath, "{"+"window_id"+"}", url.PathEscape(parameterToString(r.windowId)), -1)
+	requestPath := basePath + "/heartbeat/{test_id}"
+	requestPath = strings.Replace(requestPath, "{"+"test_id"+"}", url.PathEscape(parameterToString(r.testId)), -1)
 
 	headerParams := make(map[string]string)
 	queryParams := url.Values{}
@@ -397,52 +385,52 @@ func (a *MaintenanceWindowsService) DeleteMaintenanceWindowExecute(r APIDeleteMa
 	return nil
 }
 
-// APIGetMaintenanceWindowRequest represents a request type.
-type APIGetMaintenanceWindowRequest struct {
+// APIGetHeartbeatTestRequest represents a request type.
+type APIGetHeartbeatTestRequest struct {
 	ctx        context.Context
-	APIService MaintenanceWindowsAPI
-	windowId   string
+	APIService HeartbeatAPI
+	testId     string
 }
 
 // Execute executes the request.
-func (r APIGetMaintenanceWindowRequest) Execute() (MaintenanceWindowResponse, error) {
-	return r.APIService.GetMaintenanceWindowExecute(r)
+func (r APIGetHeartbeatTestRequest) Execute() (HeartbeatTestResponse, error) {
+	return r.APIService.GetHeartbeatTestExecute(r)
 }
 
-// GetMaintenanceWindow Retrieve a maintenance window.
-func (a *MaintenanceWindowsService) GetMaintenanceWindow(ctx context.Context, windowId string) APIGetMaintenanceWindowRequest {
-	return APIGetMaintenanceWindowRequest{
+// GetHeartbeatTest Retrieve a heartbeat check.
+func (a *HeartbeatService) GetHeartbeatTest(ctx context.Context, testId string) APIGetHeartbeatTestRequest {
+	return APIGetHeartbeatTestRequest{
 		ctx:        ctx,
 		APIService: a,
-		windowId:   windowId,
+		testId:     testId,
 	}
 }
 
-// GetMaintenanceWindowWithData Retrieve a maintenance window.
+// GetHeartbeatTestWithData Retrieve a heartbeat check.
 // The use of this method is discouraged as it does not provide the level of
 // type safety afforded by the field methods on the request type.
-func (a *MaintenanceWindowsService) GetMaintenanceWindowWithData(ctx context.Context, windowId string, m map[string]interface{}) APIGetMaintenanceWindowRequest {
-	r := a.GetMaintenanceWindow(ctx, windowId)
+func (a *HeartbeatService) GetHeartbeatTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIGetHeartbeatTestRequest {
+	r := a.GetHeartbeatTest(ctx, testId)
 	return r
 }
 
 // Execute executes the request.
-func (a *MaintenanceWindowsService) GetMaintenanceWindowExecute(r APIGetMaintenanceWindowRequest) (MaintenanceWindowResponse, error) {
+func (a *HeartbeatService) GetHeartbeatTestExecute(r APIGetHeartbeatTestRequest) (HeartbeatTestResponse, error) {
 	var (
 		requestBody          interface{}
 		requestFormFieldName string
 		requestFileName      string
 		requestFileBytes     []byte
-		returnValue          MaintenanceWindowResponse
+		returnValue          HeartbeatTestResponse
 	)
 
-	basePath, err := a.client.ServerURLWithContext(r.ctx, "MaintenanceWindowsService.GetMaintenanceWindow")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "HeartbeatService.GetHeartbeatTest")
 	if err != nil {
 		return returnValue, err
 	}
 
-	requestPath := basePath + "/maintenance-windows/{window_id}"
-	requestPath = strings.Replace(requestPath, "{"+"window_id"+"}", url.PathEscape(parameterToString(r.windowId)), -1)
+	requestPath := basePath + "/heartbeat/{test_id}"
+	requestPath = strings.Replace(requestPath, "{"+"test_id"+"}", url.PathEscape(parameterToString(r.testId)), -1)
 
 	headerParams := make(map[string]string)
 	queryParams := url.Values{}
@@ -509,83 +497,113 @@ func (a *MaintenanceWindowsService) GetMaintenanceWindowExecute(r APIGetMaintena
 	return returnValue, nil
 }
 
-// APIListMaintenanceWindowsRequest represents a request type.
-type APIListMaintenanceWindowsRequest struct {
+// APIListHeartbeatTestsRequest represents a request type.
+type APIListHeartbeatTestsRequest struct {
 	ctx        context.Context
-	APIService MaintenanceWindowsAPI
+	APIService HeartbeatAPI
+	status     *string
 	page       *int32
 	limit      *int32
-	state      *string
+	tags       *string
+	matchany   *bool
+	nouptime   *bool
+}
+
+// Status sets status on the request type.
+func (r APIListHeartbeatTestsRequest) Status(status string) APIListHeartbeatTestsRequest {
+	r.status = &status
+	return r
 }
 
 // Page sets page on the request type.
-func (r APIListMaintenanceWindowsRequest) Page(page int32) APIListMaintenanceWindowsRequest {
+func (r APIListHeartbeatTestsRequest) Page(page int32) APIListHeartbeatTestsRequest {
 	r.page = &page
 	return r
 }
 
 // Limit sets limit on the request type.
-func (r APIListMaintenanceWindowsRequest) Limit(limit int32) APIListMaintenanceWindowsRequest {
+func (r APIListHeartbeatTestsRequest) Limit(limit int32) APIListHeartbeatTestsRequest {
 	r.limit = &limit
 	return r
 }
 
-// State sets state on the request type.
-func (r APIListMaintenanceWindowsRequest) State(state string) APIListMaintenanceWindowsRequest {
-	r.state = &state
+// Tags sets tags on the request type.
+func (r APIListHeartbeatTestsRequest) Tags(tags string) APIListHeartbeatTestsRequest {
+	r.tags = &tags
+	return r
+}
+
+// Matchany sets matchany on the request type.
+func (r APIListHeartbeatTestsRequest) Matchany(matchany bool) APIListHeartbeatTestsRequest {
+	r.matchany = &matchany
+	return r
+}
+
+// Nouptime sets nouptime on the request type.
+func (r APIListHeartbeatTestsRequest) Nouptime(nouptime bool) APIListHeartbeatTestsRequest {
+	r.nouptime = &nouptime
 	return r
 }
 
 // Execute executes the request.
-func (r APIListMaintenanceWindowsRequest) Execute() (MaintenanceWindows, error) {
-	return r.APIService.ListMaintenanceWindowsExecute(r)
+func (r APIListHeartbeatTestsRequest) Execute() (HeartbeatTests, error) {
+	return r.APIService.ListHeartbeatTestsExecute(r)
 }
 
-// ListMaintenanceWindows Get all maintenance windows.
-func (a *MaintenanceWindowsService) ListMaintenanceWindows(ctx context.Context) APIListMaintenanceWindowsRequest {
-	return APIListMaintenanceWindowsRequest{
+// ListHeartbeatTests Get all heartbeat checks.
+func (a *HeartbeatService) ListHeartbeatTests(ctx context.Context) APIListHeartbeatTestsRequest {
+	return APIListHeartbeatTestsRequest{
 		ctx:        ctx,
 		APIService: a,
 	}
 }
 
-// ListMaintenanceWindowsWithData Get all maintenance windows.
+// ListHeartbeatTestsWithData Get all heartbeat checks.
 // The use of this method is discouraged as it does not provide the level of
 // type safety afforded by the field methods on the request type.
-func (a *MaintenanceWindowsService) ListMaintenanceWindowsWithData(ctx context.Context, m map[string]interface{}) APIListMaintenanceWindowsRequest {
-	r := a.ListMaintenanceWindows(ctx)
+func (a *HeartbeatService) ListHeartbeatTestsWithData(ctx context.Context, m map[string]interface{}) APIListHeartbeatTestsRequest {
+	r := a.ListHeartbeatTests(ctx)
 	return r
 }
 
 // Execute executes the request.
-func (a *MaintenanceWindowsService) ListMaintenanceWindowsExecute(r APIListMaintenanceWindowsRequest) (MaintenanceWindows, error) {
+func (a *HeartbeatService) ListHeartbeatTestsExecute(r APIListHeartbeatTestsRequest) (HeartbeatTests, error) {
 	var (
 		requestBody          interface{}
 		requestFormFieldName string
 		requestFileName      string
 		requestFileBytes     []byte
-		returnValue          MaintenanceWindows
+		returnValue          HeartbeatTests
 	)
 
-	basePath, err := a.client.ServerURLWithContext(r.ctx, "MaintenanceWindowsService.ListMaintenanceWindows")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "HeartbeatService.ListHeartbeatTests")
 	if err != nil {
 		return returnValue, err
 	}
 
-	requestPath := basePath + "/maintenance-windows"
+	requestPath := basePath + "/heartbeat"
 
 	headerParams := make(map[string]string)
 	queryParams := url.Values{}
 	formParams := url.Values{}
 
+	if r.status != nil {
+		queryParams.Add("status", parameterToString(*r.status))
+	}
 	if r.page != nil {
 		queryParams.Add("page", parameterToString(*r.page))
 	}
 	if r.limit != nil {
 		queryParams.Add("limit", parameterToString(*r.limit))
 	}
-	if r.state != nil {
-		queryParams.Add("state", parameterToString(*r.state))
+	if r.tags != nil {
+		queryParams.Add("tags", parameterToString(*r.tags))
+	}
+	if r.matchany != nil {
+		queryParams.Add("matchany", parameterToString(*r.matchany))
+	}
+	if r.nouptime != nil {
+		queryParams.Add("nouptime", parameterToString(*r.nouptime))
 	}
 	// Determine the Content-Type header.
 	contentTypes := []string{}
@@ -648,115 +666,104 @@ func (a *MaintenanceWindowsService) ListMaintenanceWindowsExecute(r APIListMaint
 	return returnValue, nil
 }
 
-// APIUpdateMaintenanceWindowRequest represents a request type.
-type APIUpdateMaintenanceWindowRequest struct {
-	ctx            context.Context
-	APIService     MaintenanceWindowsAPI
-	windowId       string
-	name           *string
-	endAt          *time.Time
-	repeatInterval *MaintenanceWindowRepeatInterval
-	startAt        *time.Time
-	tags           *[]string
-	tests          *[]string
-	timezone       *string
+// APIUpdateHeartbeatTestRequest represents a request type.
+type APIUpdateHeartbeatTestRequest struct {
+	ctx           context.Context
+	APIService    HeartbeatAPI
+	testId        string
+	name          *string
+	period        *int32
+	contactGroups *[]string
+	host          *string
+	paused        *bool
+	tags          *[]string
 }
 
 // Name sets name on the request type.
-func (r APIUpdateMaintenanceWindowRequest) Name(name string) APIUpdateMaintenanceWindowRequest {
+func (r APIUpdateHeartbeatTestRequest) Name(name string) APIUpdateHeartbeatTestRequest {
 	r.name = &name
 	return r
 }
 
-// End sets endAt on the request type.
-func (r APIUpdateMaintenanceWindowRequest) End(endAt time.Time) APIUpdateMaintenanceWindowRequest {
-	r.endAt = &endAt
+// Period sets period on the request type.
+func (r APIUpdateHeartbeatTestRequest) Period(period int32) APIUpdateHeartbeatTestRequest {
+	r.period = &period
 	return r
 }
 
-// RepeatInterval sets repeatInterval on the request type.
-func (r APIUpdateMaintenanceWindowRequest) RepeatInterval(repeatInterval MaintenanceWindowRepeatInterval) APIUpdateMaintenanceWindowRequest {
-	r.repeatInterval = &repeatInterval
+// ContactGroups sets contactGroups on the request type.
+func (r APIUpdateHeartbeatTestRequest) ContactGroups(contactGroups []string) APIUpdateHeartbeatTestRequest {
+	r.contactGroups = &contactGroups
 	return r
 }
 
-// Start sets startAt on the request type.
-func (r APIUpdateMaintenanceWindowRequest) Start(startAt time.Time) APIUpdateMaintenanceWindowRequest {
-	r.startAt = &startAt
+// Host sets host on the request type.
+func (r APIUpdateHeartbeatTestRequest) Host(host string) APIUpdateHeartbeatTestRequest {
+	r.host = &host
+	return r
+}
+
+// Paused sets paused on the request type.
+func (r APIUpdateHeartbeatTestRequest) Paused(paused bool) APIUpdateHeartbeatTestRequest {
+	r.paused = &paused
 	return r
 }
 
 // Tags sets tags on the request type.
-func (r APIUpdateMaintenanceWindowRequest) Tags(tags []string) APIUpdateMaintenanceWindowRequest {
+func (r APIUpdateHeartbeatTestRequest) Tags(tags []string) APIUpdateHeartbeatTestRequest {
 	r.tags = &tags
 	return r
 }
 
-// Tests sets tests on the request type.
-func (r APIUpdateMaintenanceWindowRequest) Tests(tests []string) APIUpdateMaintenanceWindowRequest {
-	r.tests = &tests
-	return r
-}
-
-// Timezone sets timezone on the request type.
-func (r APIUpdateMaintenanceWindowRequest) Timezone(timezone string) APIUpdateMaintenanceWindowRequest {
-	r.timezone = &timezone
-	return r
-}
-
 // Execute executes the request.
-func (r APIUpdateMaintenanceWindowRequest) Execute() error {
-	return r.APIService.UpdateMaintenanceWindowExecute(r)
+func (r APIUpdateHeartbeatTestRequest) Execute() error {
+	return r.APIService.UpdateHeartbeatTestExecute(r)
 }
 
-// UpdateMaintenanceWindow Update a maintenance window.
-func (a *MaintenanceWindowsService) UpdateMaintenanceWindow(ctx context.Context, windowId string) APIUpdateMaintenanceWindowRequest {
-	return APIUpdateMaintenanceWindowRequest{
+// UpdateHeartbeatTest Update a heartbeat check.
+func (a *HeartbeatService) UpdateHeartbeatTest(ctx context.Context, testId string) APIUpdateHeartbeatTestRequest {
+	return APIUpdateHeartbeatTestRequest{
 		ctx:        ctx,
 		APIService: a,
-		windowId:   windowId,
+		testId:     testId,
 	}
 }
 
-// UpdateMaintenanceWindowWithData Update a maintenance window.
+// UpdateHeartbeatTestWithData Update a heartbeat check.
 // The use of this method is discouraged as it does not provide the level of
 // type safety afforded by the field methods on the request type.
-func (a *MaintenanceWindowsService) UpdateMaintenanceWindowWithData(ctx context.Context, windowId string, m map[string]interface{}) APIUpdateMaintenanceWindowRequest {
-	r := a.UpdateMaintenanceWindow(ctx, windowId)
+func (a *HeartbeatService) UpdateHeartbeatTestWithData(ctx context.Context, testId string, m map[string]interface{}) APIUpdateHeartbeatTestRequest {
+	r := a.UpdateHeartbeatTest(ctx, testId)
 
 	if prop, ok := m["name"].(string); ok {
 		r.name = &prop
 	}
 
-	if prop, ok := m["end_at"].(time.Time); ok {
-		r.endAt = &prop
+	if prop, ok := m["period"].(int32); ok {
+		r.period = &prop
 	}
 
-	if prop, ok := m["repeat_interval"].(MaintenanceWindowRepeatInterval); ok {
-		r.repeatInterval = &prop
+	if prop, ok := m["contact_groups"].([]string); ok {
+		r.contactGroups = &prop
 	}
 
-	if prop, ok := m["start_at"].(time.Time); ok {
-		r.startAt = &prop
+	if prop, ok := m["host"].(string); ok {
+		r.host = &prop
+	}
+
+	if prop, ok := m["paused"].(bool); ok {
+		r.paused = &prop
 	}
 
 	if prop, ok := m["tags"].([]string); ok {
 		r.tags = &prop
 	}
 
-	if prop, ok := m["tests"].([]string); ok {
-		r.tests = &prop
-	}
-
-	if prop, ok := m["timezone"].(string); ok {
-		r.timezone = &prop
-	}
-
 	return r
 }
 
 // Execute executes the request.
-func (a *MaintenanceWindowsService) UpdateMaintenanceWindowExecute(r APIUpdateMaintenanceWindowRequest) error {
+func (a *HeartbeatService) UpdateHeartbeatTestExecute(r APIUpdateHeartbeatTestRequest) error {
 	var (
 		requestBody          interface{}
 		requestFormFieldName string
@@ -764,13 +771,13 @@ func (a *MaintenanceWindowsService) UpdateMaintenanceWindowExecute(r APIUpdateMa
 		requestFileBytes     []byte
 	)
 
-	basePath, err := a.client.ServerURLWithContext(r.ctx, "MaintenanceWindowsService.UpdateMaintenanceWindow")
+	basePath, err := a.client.ServerURLWithContext(r.ctx, "HeartbeatService.UpdateHeartbeatTest")
 	if err != nil {
 		return err
 	}
 
-	requestPath := basePath + "/maintenance-windows/{window_id}"
-	requestPath = strings.Replace(requestPath, "{"+"window_id"+"}", url.PathEscape(parameterToString(r.windowId)), -1)
+	requestPath := basePath + "/heartbeat/{test_id}"
+	requestPath = strings.Replace(requestPath, "{"+"test_id"+"}", url.PathEscape(parameterToString(r.testId)), -1)
 
 	headerParams := make(map[string]string)
 	queryParams := url.Values{}
@@ -798,16 +805,27 @@ func (a *MaintenanceWindowsService) UpdateMaintenanceWindowExecute(r APIUpdateMa
 		formParams.Add("name", parameterToString(*r.name))
 	}
 
-	if r.endAt != nil {
-		formParams.Add("end_at", parameterToString(*r.endAt))
+	if r.period != nil {
+		formParams.Add("period", parameterToString(*r.period))
 	}
 
-	if r.repeatInterval != nil {
-		formParams.Add("repeat_interval", parameterToString(*r.repeatInterval))
+	if r.contactGroups != nil {
+		// Explicity empty array. This indictes the consumer intended to pass an
+		// empty value and therefore likely want to nullify the field.
+		if len(*r.contactGroups) == 0 {
+			formParams.Add("contact_groups[]", "")
+		}
+		for _, val := range *r.contactGroups {
+			formParams.Add("contact_groups[]", parameterToString(val))
+		}
 	}
 
-	if r.startAt != nil {
-		formParams.Add("start_at", parameterToString(*r.startAt))
+	if r.host != nil {
+		formParams.Add("host", parameterToString(*r.host))
+	}
+
+	if r.paused != nil {
+		formParams.Add("paused", parameterToString(*r.paused))
 	}
 
 	if r.tags != nil {
@@ -819,21 +837,6 @@ func (a *MaintenanceWindowsService) UpdateMaintenanceWindowExecute(r APIUpdateMa
 		for _, val := range *r.tags {
 			formParams.Add("tags[]", parameterToString(val))
 		}
-	}
-
-	if r.tests != nil {
-		// Explicity empty array. This indictes the consumer intended to pass an
-		// empty value and therefore likely want to nullify the field.
-		if len(*r.tests) == 0 {
-			formParams.Add("tests[]", "")
-		}
-		for _, val := range *r.tests {
-			formParams.Add("tests[]", parameterToString(val))
-		}
-	}
-
-	if r.timezone != nil {
-		formParams.Add("timezone", parameterToString(*r.timezone))
 	}
 	req, err := a.client.prepareRequest(r.ctx, requestPath, http.MethodPut, requestBody, headerParams, queryParams, formParams, requestFormFieldName, requestFileName, requestFileBytes)
 	if err != nil {

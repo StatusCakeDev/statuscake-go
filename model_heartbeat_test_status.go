@@ -31,34 +31,44 @@ package statuscake
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
-// UptimeTests struct for UptimeTests
-type UptimeTests struct {
-	// List of uptime checks
-	Data     []UptimeTestOverview `json:"data"`
-	Metadata Pagination           `json:"metadata"`
+// HeartbeatTestStatus The returned status of a heartbeat check
+type HeartbeatTestStatus string
+
+const (
+	// HeartbeatTestStatusDown a heartbeat check with a down status.
+	HeartbeatTestStatusDown HeartbeatTestStatus = "down"
+	// HeartbeatTestStatusUp a heartbeat check with an up status.
+	HeartbeatTestStatusUp HeartbeatTestStatus = "up"
+)
+
+// Unmarshal JSON data into any of the pointers in the type.
+func (v *HeartbeatTestStatus) UnmarshalJSON(src []byte) error {
+	var value string
+	if err := json.Unmarshal(src, &value); err != nil {
+		return err
+	}
+
+	ev := HeartbeatTestStatus(value)
+	if !ev.Valid() {
+		return fmt.Errorf("%+v is not a valid HeartbeatTestStatus", value)
+	}
+
+	*v = ev
+	return nil
 }
 
-// NewUptimeTests instantiates a new UptimeTests object.
-// This constructor will assign default values to properties that have it
-// defined, and makes sure properties required by API are set, but the set of
-// arguments will change when the set of required properties is changed.
-func NewUptimeTests(data []UptimeTestOverview, metadata Pagination) *UptimeTests {
-	return &UptimeTests{
-		Data:     data,
-		Metadata: metadata,
-	}
+// Valid determines if the value is valid.
+func (v HeartbeatTestStatus) Valid() bool {
+	return v == HeartbeatTestStatusDown || v == HeartbeatTestStatusUp
 }
 
-// MarshalJSON serialises data in the struct to JSON.
-func (o UptimeTests) MarshalJSON() ([]byte, error) {
-	toSerialize := map[string]interface{}{}
-	if true {
-		toSerialize["data"] = o.Data
+// HeartbeatTestStatusValues returns the values of HeartbeatTestStatus.
+func HeartbeatTestStatusValues() []string {
+	return []string{
+		"down",
+		"up",
 	}
-	if true {
-		toSerialize["metadata"] = o.Metadata
-	}
-	return json.Marshal(toSerialize)
 }

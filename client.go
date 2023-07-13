@@ -21,7 +21,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
  * IN THE SOFTWARE.
  *
- * API version: 1.1.0
+ * API version: 1.2.0
  * Contact: support@statuscake.com
  */
 
@@ -88,7 +88,7 @@ func (c contextKey) String() string {
 	}
 }
 
-// Client manages communication with the StatusCake API API v1.1.0
+// Client manages communication with the StatusCake API API v1.2.0
 // In most cases there should be only one, shared, Client.
 type Client struct {
 	options options
@@ -99,6 +99,7 @@ type Client struct {
 	// separate APIs. Since the operation IDs need to be unique within a
 	// specification this will not cause function conflicts.
 	ContactGroupsAPI
+	HeartbeatAPI
 	LocationsAPI
 	MaintenanceWindowsAPI
 	PagespeedAPI
@@ -119,6 +120,7 @@ func NewClient(opts ...Option) *Client {
 
 	// API Services
 	c.ContactGroupsAPI = (*ContactGroupsService)(&c.common)
+	c.HeartbeatAPI = (*HeartbeatService)(&c.common)
 	c.LocationsAPI = (*LocationsService)(&c.common)
 	c.MaintenanceWindowsAPI = (*MaintenanceWindowsService)(&c.common)
 	c.PagespeedAPI = (*PagespeedService)(&c.common)
