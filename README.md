@@ -6,9 +6,9 @@ can be found [here](https://www.statuscake.com/api/v1).
 
 ## Prerequisites
 
-You will need the following things properly installed on your computer.
+You will need the following things properly installed on your computer:
 
-* [Go](https://golang.org/): any one of the **three latest major**
+- [Go](https://golang.org/): any one of the **three latest major**
   [releases](https://golang.org/doc/devel/release.html)
 
 ## Installation
@@ -26,7 +26,7 @@ necessary dependencies.
 Otherwise, to install the `statuscake-go` package, run the following command:
 
 ```bash
-$ go get -u github.com/StatusCakeDev/statuscake-go
+go get -u github.com/StatusCakeDev/statuscake-go
 ```
 
 ## Usage
@@ -37,25 +37,26 @@ Within any Go file instantiate an API client and execute a request:
 package main
 
 import (
-	"context"
-	"fmt"
+  "context"
+  "fmt"
 
-	"github.com/StatusCakeDev/statuscake-go"
-	"github.com/StatusCakeDev/statuscake-go/credentials"
+  "github.com/StatusCakeDev/statuscake-go"
+  "github.com/StatusCakeDev/statuscake-go/credentials"
 )
 
 func main() {
-	bearer := credentials.NewBearerWithStaticToken(apiToken)
-	client := statuscake.NewClient(statuscake.WithRequestCredentials(bearer))
+  bearer := credentials.NewBearerWithStaticToken(apiToken)
+  client := statuscake.NewClient(statuscake.WithRequestCredentials(bearer))
 
-	tests, err := client.ListUptimeTests(context.Background()).Execute()
-	if err != nil {
-		panic(err)
-	}
+  tests, err := client.ListUptimeTests(context.Background()).Execute()
+  if err != nil {
+    panic(err)
+  }
 
-	fmt.Printg("%+v\n", tests.Data)
+  fmt.Printf("%+v\n", tests.Data)
+}
 ```
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE.md).
+This project is licensed under the [MIT License](LICENSE).
