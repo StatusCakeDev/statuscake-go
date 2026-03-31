@@ -199,6 +199,11 @@ func (c *Client) retriesExceeded(idx int) bool {
 	return idx > c.options.maxRetries
 }
 
+// determine if a status code is retryable (429 or 5xx errors).
+func isRetryableStatusCode(code int) bool {
+	return code == http.StatusTooManyRequests || (code >= 500 && code < 600)
+}
+
 // callAPI wraps debug information around a HTTP request.
 func (c *Client) callAPI(req *http.Request) (*http.Response, error) {
 	if c.options.disableRetry {
@@ -224,11 +229,11 @@ func (c *Client) callAPI(req *http.Request) (*http.Response, error) {
 			return res, fmt.Errorf("retries exceeded: %w", err)
 		}
 		// Exceeded retries but there is a contextual transient error.
-		if res != nil && res.StatusCode == http.StatusTooManyRequests && c.retriesExceeded(backoffIdx+1) {
+		if res != nil && isRetryableStatusCode(res.StatusCode) && c.retriesExceeded(backoffIdx+1) {
 			break
 		}
 		// Otherwise handle the error.
-		if err != nil || res.StatusCode == http.StatusTooManyRequests {
+		if err != nil || (res != nil && isRetryableStatusCode(res.StatusCode)) {
 			backoffFor := c.options.backoff.Backoff(backoffIdx)
 
 			timer := time.NewTimer(backoffFor)
