@@ -1,0 +1,334 @@
+[
+  {
+    "name": "create an uptime check sending arrays and scalars",
+    "operation": "create_uptime_test",
+    "args": {
+      "check_rate": 300,
+      "contact_groups": [
+        "1",
+        "2"
+      ],
+      "follow_redirects": false,
+      "name": "Example",
+      "paused": true,
+      "regions": [
+        "london",
+        "paris"
+      ],
+      "tags": [
+        "production"
+      ],
+      "test_type": "HTTP",
+      "website_url": "https://www.example.com"
+    },
+    "request": {
+      "method": "POST",
+      "path": "/v1/uptime",
+      "content_type": "application/x-www-form-urlencoded",
+      "form": [
+        [
+          "check_rate",
+          "300"
+        ],
+        [
+          "contact_groups[]",
+          "1"
+        ],
+        [
+          "contact_groups[]",
+          "2"
+        ],
+        [
+          "follow_redirects",
+          "false"
+        ],
+        [
+          "name",
+          "Example"
+        ],
+        [
+          "paused",
+          "true"
+        ],
+        [
+          "regions[]",
+          "london"
+        ],
+        [
+          "regions[]",
+          "paris"
+        ],
+        [
+          "tags[]",
+          "production"
+        ],
+        [
+          "test_type",
+          "HTTP"
+        ],
+        [
+          "website_url",
+          "https://www.example.com"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "create an uptime check with explicitly empty arrays",
+    "operation": "create_uptime_test",
+    "args": {
+      "check_rate": 300,
+      "contact_groups": [],
+      "name": "Example",
+      "tags": [],
+      "test_type": "HTTP",
+      "website_url": "https://www.example.com"
+    },
+    "request": {
+      "method": "POST",
+      "path": "/v1/uptime",
+      "content_type": "application/x-www-form-urlencoded",
+      "form": [
+        [
+          "check_rate",
+          "300"
+        ],
+        [
+          "contact_groups[]",
+          ""
+        ],
+        [
+          "name",
+          "Example"
+        ],
+        [
+          "tags[]",
+          ""
+        ],
+        [
+          "test_type",
+          "HTTP"
+        ],
+        [
+          "website_url",
+          "https://www.example.com"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "update an uptime check clearing one array and setting another",
+    "operation": "update_uptime_test",
+    "args": {
+      "dns_ips": [
+        "1.1.1.1",
+        "8.8.8.8"
+      ],
+      "regions": [],
+      "test_id": "123",
+      "timeout": 30
+    },
+    "request": {
+      "method": "PUT",
+      "path": "/v1/uptime/123",
+      "content_type": "application/x-www-form-urlencoded",
+      "form": [
+        [
+          "dns_ips[]",
+          "1.1.1.1"
+        ],
+        [
+          "dns_ips[]",
+          "8.8.8.8"
+        ],
+        [
+          "regions[]",
+          ""
+        ],
+        [
+          "timeout",
+          "30"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "create a contact group",
+    "operation": "create_contact_group",
+    "args": {
+      "email_addresses": [
+        "a@example.com",
+        "b@example.com"
+      ],
+      "integrations": [
+        "7"
+      ],
+      "mobile_numbers": [],
+      "name": "Operations"
+    },
+    "request": {
+      "method": "POST",
+      "path": "/v1/contact-groups",
+      "content_type": "application/x-www-form-urlencoded",
+      "form": [
+        [
+          "email_addresses[]",
+          "a@example.com"
+        ],
+        [
+          "email_addresses[]",
+          "b@example.com"
+        ],
+        [
+          "integrations[]",
+          "7"
+        ],
+        [
+          "mobile_numbers[]",
+          ""
+        ],
+        [
+          "name",
+          "Operations"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "create an SSL check with a numeric array",
+    "operation": "create_ssl_test",
+    "args": {
+      "alert_at": [
+        7,
+        14,
+        30
+      ],
+      "check_rate": 86400,
+      "contact_groups": [],
+      "website_url": "https://www.example.com"
+    },
+    "request": {
+      "method": "POST",
+      "path": "/v1/ssl",
+      "content_type": "application/x-www-form-urlencoded",
+      "form": [
+        [
+          "alert_at[]",
+          "7"
+        ],
+        [
+          "alert_at[]",
+          "14"
+        ],
+        [
+          "alert_at[]",
+          "30"
+        ],
+        [
+          "check_rate",
+          "86400"
+        ],
+        [
+          "contact_groups[]",
+          ""
+        ],
+        [
+          "website_url",
+          "https://www.example.com"
+        ]
+      ]
+    }
+  },
+  {
+    "name": "create a heartbeat check",
+    "operation": "create_heartbeat_test",
+    "args": {
+      "contact_groups": [
+        "1"
+      ],
+      "name": "Nightly job",
+      "period": 3600,
+      "tags": []
+    },
+    "request": {
+      "method": "POST",
+      "path": "/v1/heartbeat",
+      "content_type": "application/x-www-form-urlencoded",
+      "form": [
+        [
+          "contact_groups[]",
+          "1"
+        ],
+        [
+          "name",
+          "Nightly job"
+        ],
+        [
+          "period",
+          "3600"
+        ],
+        [
+          "tags[]",
+          ""
+        ]
+      ]
+    }
+  },
+  {
+    "name": "create a maintenance window",
+    "operation": "create_maintenance_window",
+    "args": {
+      "end_at": "2030-01-05T13:00:00Z",
+      "name": "Saturday maintenance",
+      "repeat_interval": "1w",
+      "start_at": "2030-01-05T10:00:00Z",
+      "tags": [
+        "testing"
+      ],
+      "tests": [
+        "1",
+        "2"
+      ],
+      "timezone": "UTC"
+    },
+    "request": {
+      "method": "POST",
+      "path": "/v1/maintenance-windows",
+      "content_type": "application/x-www-form-urlencoded",
+      "form": [
+        [
+          "end_at",
+          "2030-01-05T13:00:00Z"
+        ],
+        [
+          "name",
+          "Saturday maintenance"
+        ],
+        [
+          "repeat_interval",
+          "1w"
+        ],
+        [
+          "start_at",
+          "2030-01-05T10:00:00Z"
+        ],
+        [
+          "tags[]",
+          "testing"
+        ],
+        [
+          "tests[]",
+          "1"
+        ],
+        [
+          "tests[]",
+          "2"
+        ],
+        [
+          "timezone",
+          "UTC"
+        ]
+      ]
+    }
+  }
+]
