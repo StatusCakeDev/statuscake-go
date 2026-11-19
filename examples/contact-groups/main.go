@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -10,85 +11,73 @@ import (
 )
 
 func main() {
-	var apiToken string
+	if err := run(context.Background()); err != nil {
+		fmt.Println(err)
+		fmt.Printf("%+v\n", statuscake.Errors(err))
+		os.Exit(1)
+	}
+}
 
-	if apiToken = os.Getenv("STATUSCAKE_API_TOKEN"); apiToken == "" {
-		panic("STATUSCAKE_API_TOKEN not set in environment")
+func run(ctx context.Context) error {
+	token := os.Getenv("STATUSCAKE_API_TOKEN")
+	if token == "" {
+		return errors.New("STATUSCAKE_API_TOKEN not set in environment")
 	}
 
-	bearer := credentials.NewBearerWithStaticToken(apiToken)
-	client := statuscake.NewClient(statuscake.WithRequestCredentials(bearer))
+	client := statuscake.NewClient(statuscake.WithRequestCredentials(credentials.NewBearerWithStaticToken(token)))
 
-	res, err := client.CreateContactGroup(context.Background()).
+	res, err := client.CreateContactGroup(ctx).
 		Name("Operations Team").
-		EmailAddresses([]string{
-			"johnsmith@example.com",
-			"janesmith@example.com",
-		}).
-		Integrations([]string{
-			"1",
-			"2",
-			"3",
-		}).
-		MobileNumbers([]string{
-			"447712345678",
-			"447987462344",
-		}).
+		EmailAddresses([]string{"johnsmith@example.com", "janesmith@example.com"}).
+		Integrations([]string{"1", "2", "3"}).
+		MobileNumbers([]string{"447712345678", "447987462344"}).
 		PingURL("https://ping.example.com").
 		Execute()
 	if err != nil {
-		printError(err)
-		return
+		return err
 	}
 
 	groupID := res.Data.NewID
 	fmt.Printf("CONTACT GROUP ID: %s\n", groupID)
 
-	group, err := client.GetContactGroup(context.Background(), groupID).Execute()
+	// The group is deleted however the rest of the example ends.
+	defer func() {
+		if err := client.DeleteContactGroup(ctx, groupID).Execute(); err != nil {
+			fmt.Println("could not delete the contact group:", err)
+		}
+	}()
+
+	group, err := client.GetContactGroup(ctx, groupID).Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
 	fmt.Printf("CONTACT GROUP: %+v\n", group.Data)
 
-	err = client.UpdateContactGroup(context.Background(), groupID).
+	err = client.UpdateContactGroup(ctx, groupID).
 		Name("Development Team").
 		EmailAddresses([]string{}). // Remove all email addresses.
-		Integrations([]string{
-			"4",
-			"5",
-			"6",
-		}).
-		MobileNumbers([]string{
-			"447891998195",
-		}).
+		Integrations([]string{"4", "5", "6"}).
+		MobileNumbers([]string{"447891998195"}).
 		PingURL("https://ping.example.com/groups").
 		Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
-	group, err = client.GetContactGroup(context.Background(), groupID).Execute()
+	group, err = client.GetContactGroup(ctx, groupID).Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
 	fmt.Printf("UPDATED CONTACT GROUP: %+v\n", group.Data)
 
-	groups, err := client.ListContactGroups(context.Background()).Execute()
+	groups, err := client.ListContactGroups(ctx).Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
 	fmt.Printf("CONTACT GROUPS: %+v\n", groups.Data)
 
-	err = client.DeleteContactGroup(context.Background(), groupID).Execute()
-	if err != nil {
-		printError(err)
-	}
-}
-
-func printError(err error) {
-	fmt.Println(err)
-	fmt.Printf("%+v\n", statuscake.Errors(err))
+	return nil
 }

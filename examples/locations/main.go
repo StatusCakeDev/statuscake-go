@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -10,31 +11,35 @@ import (
 )
 
 func main() {
-	var apiToken string
+	if err := run(context.Background()); err != nil {
+		fmt.Println(err)
+		fmt.Printf("%+v\n", statuscake.Errors(err))
+		os.Exit(1)
+	}
+}
 
-	if apiToken = os.Getenv("STATUSCAKE_API_TOKEN"); apiToken == "" {
-		panic("STATUSCAKE_API_TOKEN not set in environment")
+func run(ctx context.Context) error {
+	token := os.Getenv("STATUSCAKE_API_TOKEN")
+	if token == "" {
+		return errors.New("STATUSCAKE_API_TOKEN not set in environment")
 	}
 
-	bearer := credentials.NewBearerWithStaticToken(apiToken)
-	client := statuscake.NewClient(statuscake.WithRequestCredentials(bearer))
+	client := statuscake.NewClient(statuscake.WithRequestCredentials(credentials.NewBearerWithStaticToken(token)))
 
-	locations, err := client.ListPagespeedMonitoringLocations(context.Background()).Execute()
+	locations, err := client.ListPagespeedMonitoringLocations(ctx).Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
 	fmt.Printf("PAGESPEED LOCATIONS: %+v\n", locations.Data)
 
-	locations, err = client.ListUptimeMonitoringLocations(context.Background()).Execute()
+	// The region codes are the values that an uptime check accepts as regions.
+	locations, err = client.ListUptimeMonitoringLocations(ctx).Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
 	fmt.Printf("UPTIME LOCATIONS: %+v\n", locations.Data)
-}
 
-func printError(err error) {
-	fmt.Println(err)
-	fmt.Printf("%+v\n", statuscake.Errors(err))
+	return nil
 }

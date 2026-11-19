@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -10,87 +11,94 @@ import (
 )
 
 func main() {
-	var apiToken string
+	if err := run(context.Background()); err != nil {
+		fmt.Println(err)
+		fmt.Printf("%+v\n", statuscake.Errors(err))
+		os.Exit(1)
+	}
+}
 
-	if apiToken = os.Getenv("STATUSCAKE_API_TOKEN"); apiToken == "" {
-		panic("STATUSCAKE_API_TOKEN not set in environment")
+func run(ctx context.Context) error {
+	token := os.Getenv("STATUSCAKE_API_TOKEN")
+	if token == "" {
+		return errors.New("STATUSCAKE_API_TOKEN not set in environment")
 	}
 
-	bearer := credentials.NewBearerWithStaticToken(apiToken)
-	client := statuscake.NewClient(statuscake.WithRequestCredentials(bearer))
+	client := statuscake.NewClient(statuscake.WithRequestCredentials(credentials.NewBearerWithStaticToken(token)))
 
-	res, _ := client.CreateContactGroup(context.Background()).
-		Name("Development Team").
-		Execute()
+	// A contact group for the check to alert, deleted however the example ends.
+	group, err := client.CreateContactGroup(ctx).Name("Development Team").Execute()
+	if err != nil {
+		return err
+	}
 
-	groupID := res.Data.NewID
-	defer client.DeleteContactGroup(context.Background(), groupID).Execute()
+	groupID := group.Data.NewID
+	defer func() {
+		if err := client.DeleteContactGroup(ctx, groupID).Execute(); err != nil {
+			fmt.Println("could not delete the contact group:", err)
+		}
+	}()
 
-	res, err := client.CreatePagespeedTest(context.Background()).
+	res, err := client.CreatePagespeedTest(ctx).
 		Name("statuscake.com").
 		WebsiteURL("https://www.statuscake.com").
 		CheckRate(statuscake.PagespeedTestCheckRateOneDay).
 		AlertSmaller(10).
 		AlertBigger(100).
 		AlertSlower(1000).
-		ContactGroups([]string{
-			groupID,
-		}).
+		ContactGroups([]string{groupID}).
 		Paused(true).
 		Region(statuscake.PagespeedTestRegionUnitedKingdom).
 		Execute()
 	if err != nil {
-		printError(err)
-		return
+		return err
 	}
 
 	testID := res.Data.NewID
 	fmt.Printf("PAGESPEED CHECK ID: %s\n", testID)
 
-	test, err := client.GetPagespeedTest(context.Background(), testID).Execute()
+	defer func() {
+		if err := client.DeletePagespeedTest(ctx, testID).Execute(); err != nil {
+			fmt.Println("could not delete the pagespeed check:", err)
+		}
+	}()
+
+	test, err := client.GetPagespeedTest(ctx, testID).Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
 	fmt.Printf("PAGESPEED CHECK: %+v\n", test.Data)
 
-	err = client.UpdatePagespeedTest(context.Background(), testID).
+	err = client.UpdatePagespeedTest(ctx, testID).
 		CheckRate(statuscake.PagespeedTestCheckRateOneHour).
 		ContactGroups([]string{}). // Remove all contact groups.
 		Paused(false).
 		Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
-	test, err = client.GetPagespeedTest(context.Background(), testID).Execute()
+	test, err = client.GetPagespeedTest(ctx, testID).Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
 	fmt.Printf("UPDATED PAGESPEED CHECK: %+v\n", test.Data)
 
-	tests, err := client.ListPagespeedTests(context.Background()).Execute()
+	tests, err := client.ListPagespeedTests(ctx).Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
 	fmt.Printf("PAGESPEED CHECKS: %+v\n", tests.Data)
 
-	results, err := client.ListPagespeedTestHistory(context.Background(), testID).Execute()
+	results, err := client.ListPagespeedTestHistory(ctx, testID).Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
 	fmt.Printf("PAGESPEED CHECK HISTORY: %+v\n", results.Data)
 
-	err = client.DeletePagespeedTest(context.Background(), testID).Execute()
-	if err != nil {
-		printError(err)
-	}
-}
-
-func printError(err error) {
-	fmt.Println(err)
-	fmt.Printf("%+v\n", statuscake.Errors(err))
+	return nil
 }

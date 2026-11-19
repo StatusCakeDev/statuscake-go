@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -10,77 +11,82 @@ import (
 )
 
 func main() {
-	var apiToken string
+	if err := run(context.Background()); err != nil {
+		fmt.Println(err)
+		fmt.Printf("%+v\n", statuscake.Errors(err))
+		os.Exit(1)
+	}
+}
 
-	if apiToken = os.Getenv("STATUSCAKE_API_TOKEN"); apiToken == "" {
-		panic("STATUSCAKE_API_TOKEN not set in environment")
+func run(ctx context.Context) error {
+	token := os.Getenv("STATUSCAKE_API_TOKEN")
+	if token == "" {
+		return errors.New("STATUSCAKE_API_TOKEN not set in environment")
 	}
 
-	bearer := credentials.NewBearerWithStaticToken(apiToken)
-	client := statuscake.NewClient(statuscake.WithRequestCredentials(bearer))
+	client := statuscake.NewClient(statuscake.WithRequestCredentials(credentials.NewBearerWithStaticToken(token)))
 
-	res, _ := client.CreateContactGroup(context.Background()).
-		Name("Development Team").
-		Execute()
+	// A contact group for the check to alert, deleted however the example ends.
+	group, err := client.CreateContactGroup(ctx).Name("Development Team").Execute()
+	if err != nil {
+		return err
+	}
 
-	groupID := res.Data.NewID
-	defer client.DeleteContactGroup(context.Background(), groupID).Execute()
+	groupID := group.Data.NewID
+	defer func() {
+		if err := client.DeleteContactGroup(ctx, groupID).Execute(); err != nil {
+			fmt.Println("could not delete the contact group:", err)
+		}
+	}()
 
-	res, err := client.CreateHeartbeatTest(context.Background()).
+	res, err := client.CreateHeartbeatTest(ctx).
 		Name("statuscake.com").
 		Period(1800).
-		ContactGroups([]string{
-			groupID,
-		}).
+		ContactGroups([]string{groupID}).
 		Paused(true).
-		Tags([]string{
-			"testing",
-		}).
+		Tags([]string{"testing"}).
 		Execute()
 	if err != nil {
-		printError(err)
-		return
+		return err
 	}
 
 	testID := res.Data.NewID
 	fmt.Printf("HEARTBEAT CHECK ID: %s\n", testID)
 
-	test, err := client.GetHeartbeatTest(context.Background(), testID).Execute()
+	defer func() {
+		if err := client.DeleteHeartbeatTest(ctx, testID).Execute(); err != nil {
+			fmt.Println("could not delete the heartbeat check:", err)
+		}
+	}()
+
+	test, err := client.GetHeartbeatTest(ctx, testID).Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
 	fmt.Printf("HEARTBEAT CHECK: %+v\n", test.Data)
 
-	err = client.UpdateHeartbeatTest(context.Background(), testID).
+	err = client.UpdateHeartbeatTest(ctx, testID).
 		Period(3600).
 		Paused(false).
 		Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
-	test, err = client.GetHeartbeatTest(context.Background(), testID).Execute()
+	test, err = client.GetHeartbeatTest(ctx, testID).Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
 	fmt.Printf("UPDATED HEARTBEAT CHECK: %+v\n", test.Data)
 
-	tests, err := client.ListHeartbeatTests(context.Background()).Execute()
+	tests, err := client.ListHeartbeatTests(ctx).Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
 	fmt.Printf("HEARTBEAT CHECKS: %+v\n", tests.Data)
 
-	err = client.DeleteHeartbeatTest(context.Background(), testID).Execute()
-	if err != nil {
-		printError(err)
-	}
-}
-
-func printError(err error) {
-	fmt.Println(err)
-	fmt.Printf("%+v\n", statuscake.Errors(err))
+	return nil
 }

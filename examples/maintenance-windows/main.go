@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -11,70 +12,74 @@ import (
 )
 
 func main() {
-	var apiToken string
+	if err := run(context.Background()); err != nil {
+		fmt.Println(err)
+		fmt.Printf("%+v\n", statuscake.Errors(err))
+		os.Exit(1)
+	}
+}
 
-	if apiToken = os.Getenv("STATUSCAKE_API_TOKEN"); apiToken == "" {
-		panic("STATUSCAKE_API_TOKEN not set in environment")
+func run(ctx context.Context) error {
+	token := os.Getenv("STATUSCAKE_API_TOKEN")
+	if token == "" {
+		return errors.New("STATUSCAKE_API_TOKEN not set in environment")
 	}
 
-	bearer := credentials.NewBearerWithStaticToken(apiToken)
-	client := statuscake.NewClient(statuscake.WithRequestCredentials(bearer))
+	client := statuscake.NewClient(statuscake.WithRequestCredentials(credentials.NewBearerWithStaticToken(token)))
 
 	t := time.Now()
-	res, err := client.CreateMaintenanceWindow(context.Background()).
+
+	res, err := client.CreateMaintenanceWindow(ctx).
 		Name("Weekly maintenance").
-		End(t.Add(time.Hour * 3)).
-		RepeatInterval(statuscake.MaintenanceWindowRepeatIntervalWeekly).
 		Start(t).
+		End(t.Add(3 * time.Hour)).
+		RepeatInterval(statuscake.MaintenanceWindowRepeatIntervalWeekly).
 		Tags([]string{"testing"}).
 		Timezone("UTC").
 		Execute()
 	if err != nil {
-		printError(err)
-		return
+		return err
 	}
 
 	windowID := res.Data.NewID
 	fmt.Printf("MAINTENANCE WINDOW ID: %s\n", windowID)
 
-	window, err := client.GetMaintenanceWindow(context.Background(), windowID).Execute()
+	defer func() {
+		if err := client.DeleteMaintenanceWindow(ctx, windowID).Execute(); err != nil {
+			fmt.Println("could not delete the maintenance window:", err)
+		}
+	}()
+
+	window, err := client.GetMaintenanceWindow(ctx, windowID).Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
 	fmt.Printf("MAINTENANCE WINDOW: %+v\n", window.Data)
 
-	err = client.UpdateMaintenanceWindow(context.Background(), windowID).
+	err = client.UpdateMaintenanceWindow(ctx, windowID).
 		Name("Monthly maintenance").
-		End(t.Add(time.Hour * 48)).
-		RepeatInterval(statuscake.MaintenanceWindowRepeatIntervalMonthly).
 		Start(t).
+		End(t.Add(48 * time.Hour)).
+		RepeatInterval(statuscake.MaintenanceWindowRepeatIntervalMonthly).
 		Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
-	window, err = client.GetMaintenanceWindow(context.Background(), windowID).Execute()
+	window, err = client.GetMaintenanceWindow(ctx, windowID).Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
 	fmt.Printf("UPDATED MAINTENANCE WINDOW: %+v\n", window.Data)
 
-	windows, err := client.ListMaintenanceWindows(context.Background()).Execute()
+	windows, err := client.ListMaintenanceWindows(ctx).Execute()
 	if err != nil {
-		printError(err)
+		return err
 	}
 
 	fmt.Printf("MAINTENANCE WINDOWS: %+v\n", windows.Data)
 
-	err = client.DeleteMaintenanceWindow(context.Background(), windowID).Execute()
-	if err != nil {
-		printError(err)
-	}
-}
-
-func printError(err error) {
-	fmt.Println(err)
-	fmt.Printf("%+v\n", statuscake.Errors(err))
+	return nil
 }
