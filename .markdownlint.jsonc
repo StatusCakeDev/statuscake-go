@@ -1,6 +1,0 @@
-{
-  "default": true,
-  "line-length": {
-    "tables": false
-  }
-}
